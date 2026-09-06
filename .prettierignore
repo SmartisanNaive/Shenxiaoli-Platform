@@ -1,0 +1,16 @@
+dist
+node_modules
+bun.lock
+bun.lockb
+.vite
+coverage
+docs/screenshots/
+
+# Ignore generated & snapshot files
+*.min.js
+*.min.css
+*.svg
+public/
+
+# Markdown is fine to format on demand
+# (kept here so `prettier --check .` is not required for docs)

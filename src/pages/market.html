@@ -1,0 +1,823 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="校园集市 · 闲置好物,物尽其用" />
+    <meta name="theme-color" content="#1b4332" />
+    <title>集市 | 深小狸校园</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Source+Serif+4:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <script type="module" src="../scripts/main.ts"></script>
+  </head>
+  <body class="bg-background font-body-md text-on-surface">
+    <div data-layout="header" data-active="market"></div>
+    <main class="min-h-screen w-full bg-background pt-20">
+      <div class="flex w-full flex-col">
+        <!-- Hero / Header Section -->
+        <section
+          class="mx-auto w-full max-w-[1200px] px-[32px] pb-[32px] pt-[48px]"
+        >
+          <div
+            class="flex flex-col justify-between gap-6 md:flex-row md:items-end"
+          >
+            <div>
+              <div class="mb-2 flex items-center gap-2">
+                <span
+                  class="rounded-full bg-surface-container-high px-3 py-1 text-label-sm font-semibold uppercase tracking-wider text-primary"
+                  >SUAT Market</span
+                >
+                <span class="text-body-sm text-outline"
+                  >• 校内闲置流转平台</span
+                >
+              </div>
+              <h1 class="font-headline-xl font-bold text-primary">校园集市</h1>
+              <p class="mt-1 text-body-lg text-on-surface-variant">
+                让闲置在校园里继续流动，寻找属于它们的下一位主人。
+              </p>
+            </div>
+            <div class="flex items-center gap-3">
+              <button
+                class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-label-md text-on-primary shadow-sm transition-all hover:bg-secondary"
+                onclick="openPublishModal()"
+              >
+                <span class="material-symbols-outlined text-sm">add_circle</span
+                >发布闲置
+              </button>
+            </div>
+          </div>
+          <!-- Category Filters -->
+          <div
+            class="no-scrollbar mt-8 flex items-center gap-2 overflow-x-auto pb-2"
+          >
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-label-md font-medium text-on-primary transition-all"
+              onclick="filterCategory('all', this)"
+            >
+              全部
+            </button>
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              onclick="filterCategory('数码电子', this)"
+            >
+              数码电子
+            </button>
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              onclick="filterCategory('教材书籍', this)"
+            >
+              教材书籍
+            </button>
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              onclick="filterCategory('宿舍用品', this)"
+            >
+              宿舍用品
+            </button>
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              onclick="filterCategory('生活用品', this)"
+            >
+              生活用品
+            </button>
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              onclick="filterCategory('运动户外', this)"
+            >
+              运动户外
+            </button>
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              onclick="filterCategory('乐器', this)"
+            >
+              乐器
+            </button>
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              onclick="filterCategory('自行车', this)"
+            >
+              自行车
+            </button>
+            <button
+              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              onclick="filterCategory('其他', this)"
+            >
+              其他
+            </button>
+          </div>
+        </section>
+        <!-- Items Grid Section -->
+        <section class="mx-auto w-full max-w-[1200px] px-[32px] pb-[64px]">
+          <div
+            class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4"
+            id="items-grid"
+          >
+            <!-- Item Card 1 -->
+            <div
+              class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl"
+              data-category="数码电子"
+              onclick="
+                openDetailModal({
+                  title: 'Keychron K2 机械键盘',
+                  price: '¥220',
+                  condition: '九成新',
+                  location: '校内面交',
+                  time: '2小时前',
+                  status: '在售',
+                  category: '数码电子',
+                  desc: '红轴热插拔，蓝牙双模，箱说全。因换了配列故出，无磕碰无暗病，成色极新。',
+                  seller: '计科院大三学长',
+                  avatar: 'placeholder',
+                })
+              "
+            >
+              <div
+                class="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-surface-container"
+              >
+                <div
+                  class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                  data-alt="Close up photograph of a mechanical keyboard Keychron K2 with warm wooden desk background, soft natural lighting, minimalist aesthetic, forest green tones."
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDa1zjJern60Yl61MVlUu6pBkaQzR83Bq69yhmEU7n5daBsF-Cr1M6Tj1kaVoK4JONfxvWsJb5qddV70dZEA2W6N4vwJU8hS6NMipPOS7wT5KXTRYcaQIn-R-uXf4MOHV7bsNpMUCAoH6Df7MlUmgmmAD9vytw4JrPatPX1saAKbsG57rbYaLsEu4DJXG3BtjV_lSHCqEdOF-1BMTSyy6Jrkf8Vy0DwWrk11T12C0lyaIzwPOA4q9q8EA');
+                  "
+                ></div>
+                <span
+                  class="absolute left-3 top-3 rounded-lg bg-surface/90 px-2.5 py-1 text-label-sm font-semibold text-primary backdrop-blur-md"
+                  >在售</span
+                >
+                <span
+                  class="absolute bottom-3 right-3 rounded-lg bg-primary px-2.5 py-1 text-label-sm font-bold text-on-primary"
+                  >¥220</span
+                >
+              </div>
+              <div>
+                <div class="mb-1 flex items-center gap-2">
+                  <span class="text-label-sm text-outline">九成新</span>
+                  <span class="text-outline-variant">•</span>
+                  <span class="text-label-sm text-outline">校内面交</span>
+                </div>
+                <h3
+                  class="line-clamp-1 font-headline-sm font-bold text-primary transition-colors group-hover:text-secondary"
+                >
+                  Keychron K2 机械键盘
+                </h3>
+                <p
+                  class="mt-1 line-clamp-2 text-body-sm text-on-surface-variant"
+                >
+                  红轴热插拔，蓝牙双模，箱说全，手感极佳，欢迎面交验货。
+                </p>
+              </div>
+              <div
+                class="mt-4 flex items-center justify-between border-t border-surface-container pt-3"
+              >
+                <div class="flex items-center gap-2">
+                  <img
+                    class="h-6 w-6 rounded-full object-cover"
+                    data-alt="Portrait of college student smiling"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_2B7PmOn9HW9nhqlv_dL4VIj3pX--W9QawUnEqD_nPkvHkTO111EzOKHC_JXuwJq8E2dmcst9x92BwyzSa8DA_lEpM21EPBVMOfp7VWl2TebEY_AIr_If73AN-SSpdKZQpQcp1N-JyxAlAaiGk1xu8vFH5F4t1tsNGJa3VGTRp1fZnhLP48Fn4UHk8L5IHANUDLiPntwCz1y6XishD5H72nfJzqpICYYV_KLtbpHsnpQOPdqUA3ld-w"
+                  />
+                  <span class="text-body-sm text-on-surface-variant"
+                    >计科院学长</span
+                  >
+                </div>
+                <span class="text-label-sm text-outline">2小时前</span>
+              </div>
+            </div>
+            <!-- Item Card 2 -->
+            <div
+              class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl"
+              data-category="教材书籍"
+              onclick="
+                openDetailModal({
+                  title: 'Python编程与数据科学教材',
+                  price: '¥45',
+                  condition: '八成新',
+                  location: '图书馆面交',
+                  time: '1天前',
+                  status: '在售',
+                  category: '教材书籍',
+                  desc: '上学期期末选修课教材，内有少量重点划线与笔记，无缺页。',
+                  seller: '数据学院研一',
+                  avatar: 'placeholder',
+                })
+              "
+            >
+              <div
+                class="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-surface-container"
+              >
+                <div
+                  class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                  data-alt="A stack of academic textbooks about Python programming and data science resting on a clean wooden library table, soft diffused lighting."
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBUZzQx8juuUN7DXsCgMeQ9gu9zsEDsF-sHWTNGuqdp72ZWftKmnDuIyYYyrtNWzhPE8XSHj1y12sXDOM3kv3mChPTbvMHM6_yTIdkw0AxGNzbXZXJOqifEG68nCRTW26Fny69SKAkQMZIxMDFN-rl11LBm7zxrPhpx9ecj61UPPrcYjxaSW1R9i3pz0FJr2GLohImb3hXRYYZ5Jh-Lj2hhViqxna5_31ZgVk1Kk6ijNazrLNxreEJ2rA');
+                  "
+                ></div>
+                <span
+                  class="absolute left-3 top-3 rounded-lg bg-surface/90 px-2.5 py-1 text-label-sm font-semibold text-primary backdrop-blur-md"
+                  >在售</span
+                >
+                <span
+                  class="absolute bottom-3 right-3 rounded-lg bg-primary px-2.5 py-1 text-label-sm font-bold text-on-primary"
+                  >¥45</span
+                >
+              </div>
+              <div>
+                <div class="mb-1 flex items-center gap-2">
+                  <span class="text-label-sm text-outline">八成新</span>
+                  <span class="text-outline-variant">•</span>
+                  <span class="text-label-sm text-outline">图书馆面交</span>
+                </div>
+                <h3
+                  class="line-clamp-1 font-headline-sm font-bold text-primary transition-colors group-hover:text-secondary"
+                >
+                  Python编程与数据科学教材
+                </h3>
+                <p
+                  class="mt-1 line-clamp-2 text-body-sm text-on-surface-variant"
+                >
+                  上学期选修课指定教材，无破损，带有学长精心整理的划线笔记。
+                </p>
+              </div>
+              <div
+                class="mt-4 flex items-center justify-between border-t border-surface-container pt-3"
+              >
+                <div class="flex items-center gap-2">
+                  <img
+                    class="h-6 w-6 rounded-full object-cover"
+                    data-alt="Portrait of student"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBllldqasCdqrAugp8avPNEattmQM2RWHaC7SDpE720JeNgqoqr6QGmsFq-RG55PsDeL5Kjotjc9Ebd3YS0vJPvtZnxWWBtxlTvvc_Gme9iEEOzdP8U6ObwxC8dyWIreNP-V9I7kWA7tSQA2NFp7L5yLJ0LICVIkAwGa8XbCh_uXfkIpUc0okjTVhGFWjuYIa-_74prEyP9QzEppixXInuf-NBxg7CqBYTiOGcTsfx2iZgKaSf_q9hDeA"
+                  />
+                  <span class="text-body-sm text-on-surface-variant"
+                    >数据学院研一</span
+                  >
+                </div>
+                <span class="text-label-sm text-outline">1天前</span>
+              </div>
+            </div>
+            <!-- Item Card 3 -->
+            <div
+              class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl"
+              data-category="自行车"
+              onclick="
+                openDetailModal({
+                  title: '捷安特山地自行车',
+                  price: '¥350',
+                  condition: '七成新',
+                  location: '宿舍区面交',
+                  time: '3天前',
+                  status: '已预订',
+                  category: '自行车',
+                  desc: '毕业出车，骑行顺畅，变速正常。附送车锁和太阳能车灯。',
+                  seller: '机械工程大四',
+                  avatar: 'placeholder',
+                })
+              "
+            >
+              <div
+                class="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-surface-container"
+              >
+                <div
+                  class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                  data-alt="Giant mountain bicycle parked against a brick wall on university campus during late afternoon golden hour light."
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAZM5-26ux6m0TJ6KDYCe6AsUikJcAY1bXJl7ah-slJNTAGFC604_SwAnWAGgHyGw1e5ZwiVzwMqrcrqqSnpj5NIxehVHrcqpZWsfNN6DcLR_ASCaSWtc4kOfb7EQestB6eZsEVjYmwLue0huuAvd9tIOsZZi9E-XrT0wciMDAU3YcPfDuPMbMPAfxIk3_GGqAc2b4-nKAGKDmaw8eCgr_L_KQQcaUPUt2ez-JgVji-GCmEWfvw6gxmgQ');
+                  "
+                ></div>
+                <span
+                  class="absolute left-3 top-3 rounded-lg bg-surface-variant/90 px-2.5 py-1 text-label-sm font-semibold text-on-surface-variant backdrop-blur-md"
+                  >已预订</span
+                >
+                <span
+                  class="absolute bottom-3 right-3 rounded-lg bg-primary px-2.5 py-1 text-label-sm font-bold text-on-primary"
+                  >¥350</span
+                >
+              </div>
+              <div>
+                <div class="mb-1 flex items-center gap-2">
+                  <span class="text-label-sm text-outline">七成新</span>
+                  <span class="text-outline-variant">•</span>
+                  <span class="text-label-sm text-outline">宿舍区面交</span>
+                </div>
+                <h3
+                  class="line-clamp-1 font-headline-sm font-bold text-primary transition-colors group-hover:text-secondary"
+                >
+                  捷安特山地自行车
+                </h3>
+                <p
+                  class="mt-1 line-clamp-2 text-body-sm text-on-surface-variant"
+                >
+                  毕业学长转让，车况良好，代步利器，宿舍区随时看车试骑。
+                </p>
+              </div>
+              <div
+                class="mt-4 flex items-center justify-between border-t border-surface-container pt-3"
+              >
+                <div class="flex items-center gap-2">
+                  <img
+                    class="h-6 w-6 rounded-full object-cover"
+                    data-alt="Portrait of senior student"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdPumkt5dj7ijj1AUBF_5c48Ygk2qx7VZcEbT3CHO3vlXGCjHn4ud3n3ls9XreM_mkhJp0QppxPiyzlOBBriKqRUABQbVkU0W5fTLT5tdq5AzdySw82ICB3eLvbcR7MscuOjIhyGqGbQAQmJd8lUcgN8wc5iqzuG0h9fGMcnlsM4aGafjBK1FqriJJjyRAAMiPU7qgHvTIaDr2BsFAfDpU-kG8zADvPM38ceRX1D-821-gbwHdYLjKAA"
+                  />
+                  <span class="text-body-sm text-on-surface-variant"
+                    >机械工程大四</span
+                  >
+                </div>
+                <span class="text-label-sm text-outline">3天前</span>
+              </div>
+            </div>
+            <!-- Item Card 4 -->
+            <div
+              class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl"
+              data-category="数码电子"
+              onclick="
+                openDetailModal({
+                  title: 'Sony WH-1000XM4 头戴耳机',
+                  price: '¥680',
+                  condition: '九成新',
+                  location: '实验楼面交',
+                  time: '5小时前',
+                  status: '在售',
+                  category: '数码电子',
+                  desc: '降噪神机，耳罩定期清洁，功能完好。配件齐，有收纳包。',
+                  seller: '电子系学姐',
+                  avatar: 'placeholder',
+                })
+              "
+            >
+              <div
+                class="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-surface-container"
+              >
+                <div
+                  class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
+                  data-alt="Sony WH-1000XM4 over-ear headphones neatly placed on a minimalist study desk with academic books in background."
+                  style="
+                    background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDJ-6x8Ef8ATG23zEBPX94U3bifuLWJmpLt5Lr6aWazyF4ynhwyXqmSeka0_v0RgRYk48bluR-RktrIkyrC6ztnx3Go_hMzgRUIexpKlWz73QLolsXkkuD8DKdnuKa30-SQo9NHDLi7QoJoMgBOKTMi2IDp3FG1NIFDgChPOv9bACRKD766VEx5rzW-VCzQllJHI31rQ6Wez7tuGMiM_jS9vUrXTDPoF4W-zxSmPhw0uc-vqcNFHl97Mw');
+                  "
+                ></div>
+                <span
+                  class="absolute left-3 top-3 rounded-lg bg-surface/90 px-2.5 py-1 text-label-sm font-semibold text-primary backdrop-blur-md"
+                  >在售</span
+                >
+                <span
+                  class="absolute bottom-3 right-3 rounded-lg bg-primary px-2.5 py-1 text-label-sm font-bold text-on-primary"
+                  >¥680</span
+                >
+              </div>
+              <div>
+                <div class="mb-1 flex items-center gap-2">
+                  <span class="text-label-sm text-outline">九成新</span>
+                  <span class="text-outline-variant">•</span>
+                  <span class="text-label-sm text-outline">实验楼面交</span>
+                </div>
+                <h3
+                  class="line-clamp-1 font-headline-sm font-bold text-primary transition-colors group-hover:text-secondary"
+                >
+                  Sony WH-1000XM4 头戴耳机
+                </h3>
+                <p
+                  class="mt-1 line-clamp-2 text-body-sm text-on-surface-variant"
+                >
+                  图书馆背书神器，降噪效果一流，成色爱惜无划痕。
+                </p>
+              </div>
+              <div
+                class="mt-4 flex items-center justify-between border-t border-surface-container pt-3"
+              >
+                <div class="flex items-center gap-2">
+                  <img
+                    class="h-6 w-6 rounded-full object-cover"
+                    data-alt="Portrait of female student"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFFVkaRRKuvSmVBaTXKqvANzcvPm_BGd5eGLSPmal0Mz4DsY3RATUmBTuLyd7ZIvW-_o7ZCNH627lOFlM1ssrhSMIjpHwnHQwvFv7wtzpEGYz1WAu1HNNDTEaMmddlx3N74eF0PS4Ur3zsHA_aVh1nIT0KFJWMPaBSy2_fh6c5f3qiUF6B5Ib35CpF7IQXlQgzC5ihgCYbpqoa4MAJ74JgHyHATgKJ0-2h92fBYxQvkBjL0TiWtahphg"
+                  />
+                  <span class="text-body-sm text-on-surface-variant"
+                    >电子系学姐</span
+                  >
+                </div>
+                <span class="text-label-sm text-outline">5小时前</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Item Detail Modal -->
+        <div
+          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+          id="detail-modal"
+        >
+          <div
+            class="relative m-4 max-h-[90vh] w-full max-w-2xl scale-95 transform overflow-y-auto rounded-3xl bg-surface-container-lowest p-8 shadow-2xl transition-transform duration-300"
+            id="detail-modal-content"
+          >
+            <button
+              class="absolute right-6 top-6 rounded-full bg-surface-container p-2 transition-colors hover:bg-surface-container-high"
+              onclick="closeDetailModal()"
+            >
+              <span class="material-symbols-outlined text-on-surface"
+                >close</span
+              >
+            </button>
+            <div class="mb-6 flex items-center gap-3">
+              <span
+                class="rounded-lg bg-surface-container px-3 py-1 text-label-sm font-semibold text-primary"
+                id="modal-category"
+                >数码电子</span
+              >
+              <span
+                class="rounded-lg bg-primary/10 px-3 py-1 text-label-sm font-semibold text-primary"
+                id="modal-status"
+                >在售</span
+              >
+            </div>
+            <div class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div
+                class="h-64 w-full rounded-2xl bg-surface-container bg-cover bg-center"
+                data-alt="Product detail view"
+                style="
+                  background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuClAY9vTQezOIIVnaPUGrquia2bcjwQSQr22WS7XfrM3qxDI7G9CdNtwknmKwKn0bolPuRWLMIiqei69DcDsG5ro-eN5qwolrOnU1tm9SKrlNZpvShX2vjqaQtR3YqUCEk8SaLN7nKaYPak_yyJS1QMwngHZ33CJaoyZRLQtZ69peT5JwOE5AI5cPjIqo2URiD-1VHjurQODzQxuRjqEHxwKVSadt1hA-rJTohinh7ZA5Xj1C5Lb1D8YQ');
+                "
+              ></div>
+              <div class="flex flex-col justify-between">
+                <div>
+                  <h2
+                    class="mb-2 font-headline-lg font-bold text-primary"
+                    id="modal-title"
+                  >
+                    Keychron K2 机械键盘
+                  </h2>
+                  <div
+                    class="mb-4 text-3xl font-bold text-primary"
+                    id="modal-price"
+                  >
+                    ¥220
+                  </div>
+                  <div class="mb-4 space-y-2">
+                    <div
+                      class="flex items-center gap-2 text-body-md text-on-surface-variant"
+                    >
+                      <span
+                        class="material-symbols-outlined text-sm text-primary"
+                        >verified</span
+                      >
+                      <span
+                        >成色：<strong
+                          class="text-on-surface"
+                          id="modal-condition"
+                          >九成新</strong
+                        ></span
+                      >
+                    </div>
+                    <div
+                      class="flex items-center gap-2 text-body-md text-on-surface-variant"
+                    >
+                      <span
+                        class="material-symbols-outlined text-sm text-primary"
+                        >location_on</span
+                      >
+                      <span
+                        >交易方式：<strong
+                          class="text-on-surface"
+                          id="modal-location"
+                          >校内面交</strong
+                        ></span
+                      >
+                    </div>
+                    <div
+                      class="flex items-center gap-2 text-body-md text-on-surface-variant"
+                    >
+                      <span
+                        class="material-symbols-outlined text-sm text-primary"
+                        >schedule</span
+                      >
+                      <span
+                        >发布时间：<span id="modal-time">2小时前</span></span
+                      >
+                    </div>
+                  </div>
+                </div>
+                <div
+                  class="flex items-center gap-3 border-t border-surface-container pt-4"
+                >
+                  <img
+                    class="h-10 w-10 rounded-full object-cover"
+                    data-alt="Seller avatar"
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKRBV6Rff8xPACQzOK7s73-B-Nv_4FBXUapE9InazkL9eYlibRCq0e6MmQBcxwnq3GO2wRBV7WOAK_-TYUS9_ZemNGtcAvAl5_EuVajrOPkXS8DoYdXvvWRigwNcnEQJE0DKzBk82rsm50p4BXR3RYT8YrKhgi_jKMLM5D4APMUxK14oTQmdf1vOzJ8m-ZfaHNtQbpqhN27v_sakHzMzWZRF4V5qov8cWZG-cWv_4MZOP1UQcT-aKAdw"
+                  />
+                  <div>
+                    <div
+                      class="font-label-md font-semibold text-primary"
+                      id="modal-seller"
+                    >
+                      计科院大三学长
+                    </div>
+                    <div class="text-body-sm text-outline">
+                      已通过校园实名认证
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mb-8">
+              <h4 class="mb-2 font-headline-sm font-bold text-primary">
+                商品详情
+              </h4>
+              <p
+                class="rounded-xl bg-surface-container-low p-4 text-body-md leading-relaxed text-on-surface-variant"
+                id="modal-desc"
+              >
+                红轴热插拔，蓝牙双模，箱说全。因换了配列故出，无磕碰无暗病，成色极新。
+              </p>
+            </div>
+            <!-- Campus Face-to-Face Notice -->
+            <div
+              class="mb-6 flex items-center gap-3 rounded-xl bg-surface-container-low p-4"
+            >
+              <span class="material-symbols-outlined text-2xl text-secondary"
+                >handshake</span
+              >
+              <div>
+                <h5 class="text-label-md font-semibold text-primary">
+                  倡导校内文明面交
+                </h5>
+                <p class="text-body-sm text-on-surface-variant">
+                  本平台专注校内流转，所有商品支持图书馆/食堂/宿舍区当面验货交易，安全无忧。
+                </p>
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-4">
+              <button
+                class="rounded-xl bg-surface-container px-6 py-3 font-label-md text-on-surface transition-colors hover:bg-surface-container-high"
+                onclick="closeDetailModal()"
+              >
+                关闭
+              </button>
+              <button
+                class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-secondary"
+                onclick="contactSeller()"
+              >
+                <span class="material-symbols-outlined text-sm">chat</span
+                >联系卖家
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Publish Listing Modal -->
+        <div
+          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+          id="publish-modal"
+        >
+          <div
+            class="relative m-4 max-h-[90vh] w-full max-w-xl scale-95 transform overflow-y-auto rounded-3xl bg-surface-container-lowest p-8 shadow-2xl transition-transform duration-300"
+            id="publish-modal-content"
+          >
+            <button
+              class="absolute right-6 top-6 rounded-full bg-surface-container p-2 transition-colors hover:bg-surface-container-high"
+              onclick="closePublishModal()"
+            >
+              <span class="material-symbols-outlined text-on-surface"
+                >close</span
+              >
+            </button>
+            <h2 class="mb-2 font-headline-lg font-bold text-primary">
+              发布校园闲置
+            </h2>
+            <p class="mb-6 text-body-md text-on-surface-variant">
+              快速发布你的闲置好物，让它在深小狸校园继续发挥价值。
+            </p>
+            <form class="space-y-4" onsubmit="handlePublish(event)">
+              <div>
+                <label
+                  class="mb-1 block text-label-md font-semibold text-primary"
+                  >商品标题</label
+                >
+                <input
+                  class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="例如：九成新机械键盘、考研英语高分笔记…"
+                  required=""
+                  type="text"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="mb-1 block text-label-md font-semibold text-primary"
+                    >分类</label
+                  >
+                  <select
+                    class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option>数码电子</option>
+                    <option>教材书籍</option>
+                    <option>宿舍用品</option>
+                    <option>生活用品</option>
+                    <option>运动户外</option>
+                    <option>乐器</option>
+                    <option>自行车</option>
+                    <option>其他</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="mb-1 block text-label-md font-semibold text-primary"
+                    >价格 (¥)</label
+                  >
+                  <input
+                    class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                    placeholder="0.00"
+                    required=""
+                    type="number"
+                  />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label
+                    class="mb-1 block text-label-md font-semibold text-primary"
+                    >成色</label
+                  >
+                  <select
+                    class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option>全新</option>
+                    <option>九成新</option>
+                    <option>八成新</option>
+                    <option>七成新及以下</option>
+                  </select>
+                </div>
+                <div>
+                  <label
+                    class="mb-1 block text-label-md font-semibold text-primary"
+                    >面交地点推荐</label
+                  >
+                  <select
+                    class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option>图书馆门前</option>
+                    <option>学生宿舍区</option>
+                    <option>第一食堂</option>
+                    <option>实验楼大厅</option>
+                  </select>
+                </div>
+              </div>
+              <div>
+                <label
+                  class="mb-1 block text-label-md font-semibold text-primary"
+                  >详细描述</label
+                >
+                <textarea
+                  class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="描述一下物品的来源、使用感受、转手原因等…"
+                  required=""
+                  rows="3"
+                ></textarea>
+              </div>
+              <div>
+                <label
+                  class="mb-1 block text-label-md font-semibold text-primary"
+                  >上传图片</label
+                >
+                <div
+                  class="cursor-pointer rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-low p-6 text-center transition-colors hover:bg-surface-container"
+                >
+                  <span
+                    class="material-symbols-outlined mb-1 text-3xl text-primary"
+                    >add_a_photo</span
+                  >
+                  <p class="text-body-sm text-on-surface-variant">
+                    点击或拖拽上传实物照片（最多4张）
+                  </p>
+                </div>
+              </div>
+              <div class="flex items-center justify-end gap-4 pt-4">
+                <button
+                  class="rounded-xl bg-surface-container px-6 py-3 font-label-md text-on-surface transition-colors hover:bg-surface-container-high"
+                  onclick="closePublishModal()"
+                  type="button"
+                >
+                  取消
+                </button>
+                <button
+                  class="rounded-xl bg-primary px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-secondary"
+                  type="submit"
+                >
+                  立即发布
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <!-- Script for interactions -->
+        <script>
+          function filterCategory(category, btn) {
+            document.querySelectorAll('.category-btn').forEach((b) => {
+              b.classList.remove('bg-primary', 'text-on-primary');
+              b.classList.add('bg-surface-container', 'text-on-surface');
+            });
+            btn.classList.remove('bg-surface-container', 'text-on-surface');
+            btn.classList.add('bg-primary', 'text-on-primary');
+
+            const cards = document.querySelectorAll('#items-grid > div');
+            cards.forEach((card) => {
+              if (
+                category === 'all' ||
+                card.getAttribute('data-category') === category
+              ) {
+                card.style.display = 'flex';
+              } else {
+                card.style.display = 'none';
+              }
+            });
+          }
+
+          function openDetailModal(data) {
+            document.getElementById('modal-title').innerText = data.title;
+            document.getElementById('modal-price').innerText = data.price;
+            document.getElementById('modal-condition').innerText =
+              data.condition;
+            document.getElementById('modal-location').innerText = data.location;
+            document.getElementById('modal-time').innerText = data.time;
+            document.getElementById('modal-status').innerText = data.status;
+            document.getElementById('modal-category').innerText = data.category;
+            document.getElementById('modal-desc').innerText = data.desc;
+            document.getElementById('modal-seller').innerText = data.seller;
+
+            const modal = document.getElementById('detail-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+              modal.classList.remove('opacity-0');
+              modal
+                .querySelector('#detail-modal-content')
+                .classList.remove('scale-95');
+              modal
+                .querySelector('#detail-modal-content')
+                .classList.add('scale-100');
+            }, 10);
+          }
+
+          function closeDetailModal() {
+            const modal = document.getElementById('detail-modal');
+            modal.classList.add('opacity-0');
+            modal
+              .querySelector('#detail-modal-content')
+              .classList.remove('scale-100');
+            modal
+              .querySelector('#detail-modal-content')
+              .classList.add('scale-95');
+            setTimeout(() => {
+              modal.classList.add('hidden');
+            }, 300);
+          }
+
+          function openPublishModal() {
+            const modal = document.getElementById('publish-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+              modal.classList.remove('opacity-0');
+              modal
+                .querySelector('#publish-modal-content')
+                .classList.remove('scale-95');
+              modal
+                .querySelector('#publish-modal-content')
+                .classList.add('scale-100');
+            }, 10);
+          }
+
+          function closePublishModal() {
+            const modal = document.getElementById('publish-modal');
+            modal.classList.add('opacity-0');
+            modal
+              .querySelector('#publish-modal-content')
+              .classList.remove('scale-100');
+            modal
+              .querySelector('#publish-modal-content')
+              .classList.add('scale-95');
+            setTimeout(() => {
+              modal.classList.add('hidden');
+            }, 300);
+          }
+
+          function contactSeller() {
+            alert(
+              '已向卖家发送私信通知，请在消息页面查看回复并约定校内面交时间。',
+            );
+            closeDetailModal();
+          }
+
+          function handlePublish(e) {
+            e.preventDefault();
+            alert('发布成功！您的闲置物品已上架至校园集市。');
+            closePublishModal();
+          }
+        </script>
+      </div>
+    </main>
+    <div data-layout="footer"></div>
+  </body>
+</html>

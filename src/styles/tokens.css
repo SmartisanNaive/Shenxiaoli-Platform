@@ -1,0 +1,93 @@
+/*
+ * Design tokens — Deep Forest Emerald Academic.
+ *
+ * Single source of truth for raw color, typography, radius, and
+ * spacing values. Mirrors `docs/DESIGN.md`. Tailwind utility
+ * classes consume these via `tailwind.config.ts`.
+ */
+
+:root {
+  /* --- Surface palette --- */
+  --color-surface: #f9faf6;
+  --color-surface-dim: #dadad7;
+  --color-surface-bright: #f9faf6;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #f3f4f1;
+  --color-surface-container: #eeeeeb;
+  --color-surface-container-high: #e8e8e5;
+  --color-surface-container-highest: #e2e3e0;
+  --color-on-surface: #1a1c1a;
+  --color-on-surface-variant: #414844;
+  --color-inverse-surface: #2f312f;
+  --color-inverse-on-surface: #f0f1ee;
+  --color-outline: #717973;
+  --color-outline-variant: #c1c8c2;
+  --color-surface-tint: #3f6653;
+  --color-surface-variant: #e2e3e0;
+
+  /* --- Primary (Forest Emerald) --- */
+  --color-primary: #012d1d;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #1b4332;
+  --color-on-primary-container: #86af99;
+  --color-inverse-primary: #a5d0b9;
+  --color-primary-fixed: #c1ecd4;
+  --color-primary-fixed-dim: #a5d0b9;
+  --color-on-primary-fixed: #002114;
+  --color-on-primary-fixed-variant: #274e3d;
+
+  /* --- Secondary (Pine Green) --- */
+  --color-secondary: #2c694e;
+  --color-on-secondary: #ffffff;
+  --color-secondary-container: #aeeecb;
+  --color-on-secondary-container: #316e52;
+  --color-secondary-fixed: #b1f0ce;
+  --color-secondary-fixed-dim: #95d4b3;
+  --color-on-secondary-fixed: #002114;
+  --color-on-secondary-fixed-variant: #0e5138;
+
+  /* --- Tertiary --- */
+  --color-tertiary: #1b2923;
+  --color-on-tertiary: #ffffff;
+  --color-tertiary-container: #313f39;
+  --color-on-tertiary-container: #9baaa2;
+  --color-tertiary-fixed: #d6e6dd;
+  --color-tertiary-fixed-dim: #bacac2;
+  --color-on-tertiary-fixed: #111e19;
+  --color-on-tertiary-fixed-variant: #3c4a43;
+
+  /* --- Error --- */
+  --color-error: #ba1a1a;
+  --color-on-error: #ffffff;
+  --color-error-container: #ffdad6;
+  --color-on-error-container: #93000a;
+
+  /* --- Background --- */
+  --color-background: #f9faf6;
+  --color-on-background: #1a1c1a;
+
+  /* --- Typography stacks --- */
+  --font-serif: 'Source Serif 4', 'Source Serif Pro', Georgia, serif;
+  --font-sans:
+    'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* --- Spacing scale --- */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+  --space-3xl: 64px;
+  --grid-max-width: 1200px;
+  --grid-gutter: 24px;
+  --grid-margin: 32px;
+
+  /* --- Radius scale --- */
+  --radius-sm: 0.125rem;
+  --radius-default: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-full: 9999px;
+}

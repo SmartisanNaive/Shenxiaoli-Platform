@@ -1,0 +1,19 @@
+# Bun configuration — https://bun.sh/docs/runtime/config
+# Use Bun as the package manager and JavaScript runtime.
+[install]
+# Track exact versions for reproducible builds.
+exact = true
+# Use the public npm registry.
+registry = "https://registry.npmjs.org/"
+
+[install.cache]
+# Disable the cache for CI environments by setting BUN_INSTALL_CACHE_DIR="" in CI.
+disable = false
+disableManifest = false
+
+[run]
+# Run TypeScript files directly without transpilation in development.
+bun = true
+
+[test]
+preload = []

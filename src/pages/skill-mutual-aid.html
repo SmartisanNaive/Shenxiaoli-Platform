@@ -1,0 +1,520 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="技能互助 · 找搭子,互帮互助" />
+    <meta name="theme-color" content="#1b4332" />
+    <title>技能互助 | 深小狸校园</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Source+Serif+4:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <script type="module" src="../scripts/main.ts"></script>
+  </head>
+  <body class="bg-background font-body-md text-on-surface">
+    <div data-layout="header" data-active="skill-mutual-aid"></div>
+    <main class="min-h-screen w-full bg-background pt-20">
+      <div class="flex w-full flex-col">
+        <!-- Hero / Header Intro Section -->
+        <section
+          class="mx-auto flex w-full max-w-[1200px] flex-col items-start justify-between gap-6 px-[32px] pb-8 pt-12 md:flex-row md:items-end"
+        >
+          <div class="flex flex-col gap-2">
+            <div
+              class="flex items-center gap-2 text-label-sm font-semibold uppercase tracking-wider text-secondary"
+            >
+              <span class="material-symbols-outlined text-sm">handshake</span>
+              SUAT Mutual Knowledge Exchange
+            </div>
+            <h1 class="font-headline-xl text-headline-xl text-primary">
+              技能互助
+            </h1>
+            <p class="max-w-xl text-body-lg text-on-surface-variant">
+              你会的，可能正是别人需要的。打破信息壁垒，以技能换技能，以经验聚同道。
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <button
+              class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-label-md font-semibold text-on-primary shadow-sm transition-all hover:bg-secondary"
+              onclick="
+                document
+                  .getElementById('publish-modal')
+                  .classList.remove('hidden')
+              "
+            >
+              <span class="material-symbols-outlined">add_circle</span>
+              发布技能或求助
+            </button>
+          </div>
+        </section>
+        <!-- Categories Bar -->
+        <section class="mx-auto mb-12 w-full max-w-[1200px] px-[32px]">
+          <div
+            class="scrollbar-none flex items-center gap-3 overflow-x-auto pb-2"
+          >
+            <button
+              class="whitespace-nowrap rounded-xl bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary shadow-sm transition-all"
+            >
+              全部领域
+            </button>
+            <button
+              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+            >
+              数据与科研
+            </button>
+            <button
+              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+            >
+              生物实验
+            </button>
+            <button
+              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+            >
+              工程开发
+            </button>
+            <button
+              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+            >
+              AI与计算
+            </button>
+            <button
+              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+            >
+              设计创作
+            </button>
+          </div>
+        </section>
+        <!-- Notice Banner -->
+        <section class="mx-auto mb-12 w-full max-w-[1200px] px-[32px]">
+          <div
+            class="flex items-start gap-4 rounded-2xl bg-surface-container-low p-6 shadow-sm"
+          >
+            <div
+              class="flex-shrink-0 rounded-xl bg-primary-fixed p-2.5 text-primary"
+            >
+              <span
+                class="material-symbols-outlined"
+                style="font-variation-settings: 'FILL' 1"
+                >verified_user</span
+              >
+            </div>
+            <div class="flex flex-col gap-1">
+              <h3 class="font-headline-sm text-headline-sm text-primary">
+                学术诚信与互助准则
+              </h3>
+              <p class="text-body-md text-on-surface-variant">
+                技能互助是学习、指导与协作，不是学术代做。请遵守课程学术诚信要求，共同营造严谨求实的校园学术氛围。
+              </p>
+            </div>
+          </div>
+        </section>
+        <!-- Main Content Grid -->
+        <section
+          class="mx-auto mb-24 grid w-full max-w-[1200px] grid-cols-1 gap-8 px-[32px] lg:grid-cols-12"
+        >
+          <!-- Left Column: Skill Exchange Cards (8 cols) -->
+          <div class="flex flex-col gap-6 lg:col-span-8">
+            <div class="flex items-center justify-between">
+              <h2
+                class="flex items-center gap-2 font-headline-md text-headline-md text-primary"
+              >
+                <span class="material-symbols-outlined text-secondary"
+                  >psychology</span
+                >
+                达人技能库
+              </h2>
+              <span class="text-body-sm text-on-surface-variant"
+                >显示近期活跃的技能分享</span
+              >
+            </div>
+            <!-- Skill Card 1 -->
+            <div
+              class="flex flex-col gap-6 rounded-2xl bg-surface-container-lowest p-8 shadow-sm transition-all hover:shadow-md"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex items-center gap-4">
+                  <img
+                    class="h-12 w-12 rounded-full object-cover"
+                    data-alt="A smiling East Asian university student portrait with neat short hair wearing casual smart attire against a soft blurred laboratory background with warm natural lighting."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnN57gCzTyhUXR7zV9Dpw-SIcDCcxj7TzH80ETR1nGKp8wgf55FhYfDDwVN0ghkt2dIkKAq5bUWNjzoJYkbQxJWpQVYf5pf_4lITM6yDMw__TGrEDC0cNW8xn08QgFsDv-CV2_xKkPYxT8sf6eVJ8K-tvrIx3qDDPe5Jgs9BcGaXCBK3NLjrxxVPoNHQZpkrq74kycc03UfhZvVifBWjUolquA53W-BdRPh_ZSFm2a8fLOxDmBZ9Ohgg"
+                  />
+                  <div>
+                    <h4
+                      class="font-headline-sm text-headline-sm text-on-surface"
+                    >
+                      组学数据分析 / R
+                    </h4>
+                    <p class="text-body-sm text-on-surface-variant">
+                      @狸友021 · 生命科学学院
+                    </p>
+                  </div>
+                </div>
+                <span
+                  class="rounded-full bg-surface-container px-3 py-1 text-label-sm font-medium text-secondary"
+                  >技能交换</span
+                >
+              </div>
+              <p class="text-body-md text-on-surface">
+                “熟悉 RNA-seq
+                和基础转录组分析，可以带入门或者一起排查分析流程。”
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  class="rounded-lg bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant"
+                  >R</span
+                >
+                <span
+                  class="rounded-lg bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant"
+                  >RNA-seq</span
+                >
+                <span
+                  class="rounded-lg bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant"
+                  >DESeq2</span
+                >
+                <span
+                  class="rounded-lg bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant"
+                  >ggplot</span
+                >
+              </div>
+              <div
+                class="flex flex-col justify-between gap-4 rounded-xl bg-surface-container-low p-4 sm:flex-row sm:items-center"
+              >
+                <div class="flex items-center gap-3 text-body-sm">
+                  <div class="flex items-center gap-1 font-medium text-primary">
+                    <span class="material-symbols-outlined text-sm"
+                      >arrow_forward</span
+                    >
+                    我能提供: 组学分析/R
+                  </div>
+                  <span class="text-outline">|</span>
+                  <div
+                    class="flex items-center gap-1 font-medium text-secondary"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >arrow_back</span
+                    >
+                    我想学习: STM32/嵌入式开发
+                  </div>
+                </div>
+                <button
+                  class="rounded-xl bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary transition-all hover:bg-secondary"
+                  onclick="alert('已向 狸友021 发送联系请求！')"
+                >
+                  联系 TA
+                </button>
+              </div>
+            </div>
+            <!-- Skill Card 2 (Additional for visual richness) -->
+            <div
+              class="flex flex-col gap-6 rounded-2xl bg-surface-container-lowest p-8 shadow-sm transition-all hover:shadow-md"
+            >
+              <div class="flex items-start justify-between">
+                <div class="flex items-center gap-4">
+                  <img
+                    class="h-12 w-12 rounded-full object-cover"
+                    data-alt="A focused student researcher with glasses examining circuit boards under a desk lamp in a modern SUAT engineering workshop."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb_UP_C4oCoWZ0Y5oDAIJ4NMCK4Nu-nVbie_YQnYUQnmeMNoobKK8prGYLlUdnjeE5WySvGCqSsu7HGHfznG3yMQJyv-DmfYEVVUu46rCs8LuyIoGK4kk_WDo-JYKSrujg1EyHicdGahMmBK0nqO2cF8190nsRPHzQS8gogsT3m9N-q7NmJYKcH9WDkBDcDdLnXxElVxAremHAZ8gWJMgz25Q4n-Cwue_Fi7ugXu_P0oCieCXfFNIFWA"
+                  />
+                  <div>
+                    <h4
+                      class="font-headline-sm text-headline-sm text-on-surface"
+                    >
+                      Python 深度学习建模与 PyTorch
+                    </h4>
+                    <p class="text-body-sm text-on-surface-variant">
+                      @CodeAlchemist · 智能科学与工程学院
+                    </p>
+                  </div>
+                </div>
+                <span
+                  class="rounded-full bg-surface-container px-3 py-1 text-label-sm font-medium text-secondary"
+                  >经验指导</span
+                >
+              </div>
+              <p class="text-body-md text-on-surface">
+                “长期从事计算机视觉相关研究，可辅导 CNN/Transformer
+                模型搭建、PyTorch 训练调优及 GPU 集群排错。”
+              </p>
+              <div class="flex flex-wrap gap-2">
+                <span
+                  class="rounded-lg bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant"
+                  >Python</span
+                >
+                <span
+                  class="rounded-lg bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant"
+                  >PyTorch</span
+                >
+                <span
+                  class="rounded-lg bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant"
+                  >CUDA</span
+                >
+                <span
+                  class="rounded-lg bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant"
+                  >CV</span
+                >
+              </div>
+              <div class="flex items-center justify-between pt-2">
+                <span class="text-body-sm text-on-surface-variant"
+                  >已帮助 14 位同学解决模型过拟合与加速问题</span
+                >
+                <button
+                  class="rounded-xl bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary transition-all hover:bg-secondary"
+                  onclick="alert('已向 CodeAlchemist 发送联系请求！')"
+                >
+                  联系 TA
+                </button>
+              </div>
+            </div>
+          </div>
+          <!-- Right Column: Help Plaza (4 cols) -->
+          <div class="flex flex-col gap-6 lg:col-span-4">
+            <div class="flex items-center justify-between">
+              <h2
+                class="flex items-center gap-2 font-headline-md text-headline-md text-primary"
+              >
+                <span class="material-symbols-outlined text-secondary"
+                  >help_center</span
+                >
+                求助广场
+              </h2>
+              <span class="text-body-sm text-on-surface-variant">急需支援</span>
+            </div>
+            <!-- Help Plaza Item 1 -->
+            <div
+              class="flex flex-col gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm transition-all hover:shadow-md"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <img
+                    class="h-10 w-10 rounded-full object-cover"
+                    data-alt="A graduate student studying in a quiet SUAT library corner with textbooks and laptop."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0UgabILbmkaiPe7jY9uhgWiETmz7onPGN3rIloc9sXKY7ZpbVc8apPwzEzPpcI0QEDG_CBFOGUdFvOVXL16vP4UISjsT_up-DEtV904xUYHLh3xn2lgNKmzMPWWwvil35zBCd7hlecQuG3RFKNL_QQQDiBjncVqvfeEQGbsi3F1GcUy_V6eOjNDVmv6BBwxH8klXFfAz4p-QnLxG1Lf9RfJmYI9vDeo2JLrdGU46UFtVkM9hswr9HbQ"
+                  />
+                  <div>
+                    <h5 class="text-label-md font-semibold text-on-surface">
+                      @小叶子
+                    </h5>
+                    <p class="text-body-sm text-outline">2小时前发布</p>
+                  </div>
+                </div>
+                <span
+                  class="rounded-lg bg-secondary-fixed px-2.5 py-1 text-label-sm font-medium text-on-secondary-fixed"
+                  >奶茶致谢</span
+                >
+              </div>
+              <h4 class="font-headline-sm text-headline-sm text-on-surface">
+                想学单细胞 RNA-seq 分析
+              </h4>
+              <p class="text-body-md text-on-surface-variant">
+                已有表达矩阵，想学习 Seurat 基础流程和可视化。
+              </p>
+              <div
+                class="flex flex-wrap gap-1.5 text-label-sm font-medium text-secondary"
+              >
+                <span>#单细胞</span>
+                <span>#R</span>
+                <span>#生物信息学</span>
+              </div>
+              <button
+                class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-surface-container py-2.5 text-label-md font-semibold text-primary transition-all hover:bg-surface-container-high"
+                onclick="alert('您已接受求助，快去私信联系对方吧！')"
+              >
+                <span class="material-symbols-outlined text-sm"
+                  >volunteer_activism</span
+                >
+                我可以帮
+              </button>
+            </div>
+            <!-- Help Plaza Item 2 -->
+            <div
+              class="flex flex-col gap-4 rounded-2xl bg-surface-container-lowest p-6 shadow-sm transition-all hover:shadow-md"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <img
+                    class="h-10 w-10 rounded-full object-cover"
+                    data-alt="An engineering student debugging hardware circuits with an oscilloscope."
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBx51BqcQO-XLKiXYMjfWEhtT2NAseGH-AFe2MKfKW8MGbEHuonSwvJUOusczzkIuqKTNp1e3EZdu0ulQrInHhtbP17anvnIwT7rzxS47mrQZYw-MgvA8aVN6yHIYlO-MbVCo4gOTAKJ0k4tXjJxVGXXpnLMao4FGRJw7RRzZz4lvR0c1X5PjMEGKxKEIZPgHhvTg_ysqE5BDvNprKDqx2XMb_SUm_RG8vTzREftTW4rmGidqbNbJl2rg"
+                  />
+                  <div>
+                    <h5 class="text-label-md font-semibold text-on-surface">
+                      @电路人
+                    </h5>
+                    <p class="text-body-sm text-outline">5小时前发布</p>
+                  </div>
+                </div>
+                <span
+                  class="rounded-lg bg-surface-container px-2.5 py-1 text-label-sm font-medium text-on-surface-variant"
+                  >技术探讨</span
+                >
+              </div>
+              <h4 class="font-headline-sm text-headline-sm text-on-surface">
+                STM32 串口通信调不通
+              </h4>
+              <p class="text-body-md text-on-surface-variant">
+                课程项目卡在传感器数据读取，希望找熟悉 STM32 的同学一起 Debug。
+              </p>
+              <div
+                class="flex flex-wrap gap-1.5 text-label-sm font-medium text-secondary"
+              >
+                <span>#STM32</span>
+                <span>#嵌入式</span>
+                <span>#Debug</span>
+              </div>
+              <button
+                class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-surface-container py-2.5 text-label-md font-semibold text-primary transition-all hover:bg-surface-container-high"
+                onclick="alert('您已接受求助，快去私信联系对方吧！')"
+              >
+                <span class="material-symbols-outlined text-sm"
+                  >volunteer_activism</span
+                >
+                我可以帮
+              </button>
+            </div>
+            <!-- Quick Stats Card -->
+            <div
+              class="flex flex-col gap-4 rounded-2xl bg-primary p-6 text-on-primary shadow-sm"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-label-md text-primary-fixed-dim"
+                  >互助社区统计</span
+                >
+                <span class="material-symbols-outlined text-primary-fixed-dim"
+                  >analytics</span
+                >
+              </div>
+              <div class="grid grid-cols-2 gap-4 pt-2">
+                <div>
+                  <div
+                    class="font-headline-lg text-headline-lg text-primary-fixed"
+                  >
+                    128
+                  </div>
+                  <div class="text-body-sm text-primary-fixed-dim">
+                    本月成功配对
+                  </div>
+                </div>
+                <div>
+                  <div
+                    class="font-headline-lg text-headline-lg text-primary-fixed"
+                  >
+                    94%
+                  </div>
+                  <div class="text-body-sm text-primary-fixed-dim">
+                    求助解决率
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Publish Modal (Hidden by default) -->
+        <div
+          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 backdrop-blur-sm"
+          id="publish-modal"
+        >
+          <div
+            class="relative flex w-full max-w-lg flex-col gap-6 rounded-2xl bg-surface-container-lowest p-8 shadow-xl"
+          >
+            <div class="flex items-center justify-between">
+              <h3 class="font-headline-md text-headline-md text-primary">
+                发布技能或求助
+              </h3>
+              <button
+                class="text-outline hover:text-on-surface"
+                onclick="
+                  document
+                    .getElementById('publish-modal')
+                    .classList.add('hidden')
+                "
+              >
+                <span class="material-symbols-outlined">close</span>
+              </button>
+            </div>
+            <div class="flex flex-col gap-4">
+              <div class="flex flex-col gap-1.5">
+                <label class="text-label-md font-medium text-on-surface"
+                  >发布类型</label
+                >
+                <div class="grid grid-cols-2 gap-3">
+                  <button
+                    class="rounded-xl border border-primary bg-primary py-2.5 text-label-md font-medium text-on-primary"
+                  >
+                    提供技能共享
+                  </button>
+                  <button
+                    class="rounded-xl border border-outline-variant py-2.5 text-label-md font-medium text-on-surface"
+                  >
+                    发起求助广场
+                  </button>
+                </div>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-label-md font-medium text-on-surface"
+                  >标题</label
+                >
+                <input
+                  class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="例如：擅长 Python 数据分析 / 求助 FPGA 仿真"
+                  type="text"
+                />
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-label-md font-medium text-on-surface"
+                  >详细描述</label
+                >
+                <textarea
+                  class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="请描述您的技能细节或求助问题背景..."
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label class="text-label-md font-medium text-on-surface"
+                  >标签 (以空格分隔)</label
+                >
+                <input
+                  class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="#R #生物信息学 #STM32"
+                  type="text"
+                />
+              </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-2">
+              <button
+                class="rounded-xl px-5 py-2.5 text-label-md text-on-surface-variant transition-all hover:bg-surface-container"
+                onclick="
+                  document
+                    .getElementById('publish-modal')
+                    .classList.add('hidden')
+                "
+              >
+                取消
+              </button>
+              <button
+                class="rounded-xl bg-primary px-6 py-2.5 text-label-md font-semibold text-on-primary transition-all hover:bg-secondary"
+                onclick="
+                  alert('发布成功！已提交审核。');
+                  document
+                    .getElementById('publish-modal')
+                    .classList.add('hidden');
+                "
+              >
+                确认发布
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div data-layout="footer"></div>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Deep Forest Emerald mark for 深小狸校园 -->
+  <rect width="64" height="64" rx="14" fill="#1b4332" />
+  <!-- Stylized leaf pair -->
+  <path
+    d="M32 14c8 6 14 14 14 24 0 7-6 12-14 12s-14-5-14-12c0-10 6-18 14-24Z"
+    fill="#a5d0b9"
+  />
+  <path
+    d="M32 16v32M22 28c4 2 8 2 10 0M32 36c4-2 8-2 10 0"
+    stroke="#012d1d"
+    stroke-width="2"
+    stroke-linecap="round"
+    fill="none"
+  />
+</svg>
