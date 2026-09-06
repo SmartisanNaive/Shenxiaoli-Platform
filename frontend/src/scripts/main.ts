@@ -6,8 +6,7 @@
  * so this script only handles runtime interactivity:
  *
  *   - Search input → Enter logs the query (placeholder for the real
- *     search backend; the placeholder divs in `layout.ts` stay in the
- *     DOM so a real client-side router can hook into them later).
+ *     search backend).
  */
 
 const enhanceSearchInputs = (): void => {
@@ -26,7 +25,17 @@ const enhanceSearchInputs = (): void => {
   });
 };
 
+const updateFooterYear = (): void => {
+  const currentYear = String(new Date().getFullYear());
+  document
+    .querySelectorAll<HTMLElement>('[data-current-year]')
+    .forEach((el) => {
+      el.textContent = currentYear;
+    });
+};
+
 const init = (): void => {
+  updateFooterYear();
   enhanceSearchInputs();
 };
 

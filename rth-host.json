@@ -1,0 +1,5 @@
+{
+	"outdir": "frontend/dist",
+	"site": "shenxiaoli-demo",
+	"build": "build"
+}

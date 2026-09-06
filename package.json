@@ -2,17 +2,14 @@
   "name": "shenxiaoli-platform",
   "version": "0.1.0",
   "private": true,
-  "description": "深小狸校园 — A modern campus platform for SUAT (Shenzhen University of Advanced Technology). 评课 · 集市 · 技能互助 · 树洞.",
+  "description": "深小狸校园 — A student-run campus community for SUAT (Shenzhen University of Advanced Technology). 评课 · 集市 · 技能互助 · 树洞.",
   "type": "module",
   "keywords": [
     "campus",
     "suat",
     "深小狸",
     "shenxiaoli",
-    "tailwind",
-    "vite",
-    "bun",
-    "frontend"
+    "monorepo"
   ],
   "license": "MIT",
   "homepage": "https://github.com/shenxiaoli/shenxiaoli-platform#readme",
@@ -23,32 +20,15 @@
     "bun": ">=1.1.0",
     "node": ">=18.18.0"
   },
+  "comment": "Thin delegating root. Each workspace owns its own dependencies — run bun install inside frontend/ or backend/, not here.",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist node_modules .vite bun.lockb"
-  },
-  "devDependencies": {
-    "@eslint/js": "^9.17.0",
-    "@types/bun": "latest",
-    "@typescript-eslint/eslint-plugin": "^8.18.0",
-    "@typescript-eslint/parser": "^8.18.0",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^9.17.0",
-    "eslint-config-prettier": "^9.1.0",
-    "globals": "^15.14.0",
-    "postcss": "^8.4.49",
-    "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.6.9",
-    "tailwindcss": "^3.4.17",
-    "typescript": "^5.7.2",
-    "typescript-eslint": "^8.18.0",
-    "vite": "^6.0.5"
+    "dev": "cd frontend && bun run dev",
+    "build": "cd frontend && bun install --frozen-lockfile && bun run build",
+    "preview": "cd frontend && bun run preview",
+    "lint": "cd frontend && bun run lint",
+    "format:check": "cd frontend && bun run format:check",
+    "typecheck": "cd frontend && bun run typecheck",
+    "setup": "cd frontend && bun install",
+    "deploy": "deno -Ar https://host.retiehe.com/cli deploy"
   }
 }

@@ -17,8 +17,6 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
       rel="stylesheet"
     />
-    <!-- Render-blocking: prevents a first-paint flash of unstyled HTML. -->
-    <link rel="stylesheet" href="./styles/main.css?direct" />
     <script type="module" src="./scripts/main.ts"></script>
   </head>
   <body class="bg-background font-body-md text-on-surface">
@@ -60,7 +58,7 @@
               <div class="flex flex-col">
                 <span class="text-label-sm text-outline">加密保护</span>
                 <span class="font-headline-md font-bold text-secondary"
-                  >100% 匿名</span
+                  >身份不公开</span
                 >
               </div>
             </div>
@@ -100,7 +98,9 @@
                 </div>
               </div>
               <textarea
+                aria-describedby="tree-hole-status"
                 class="w-full resize-none rounded-xl bg-surface-container-low p-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                id="tree-hole-input"
                 placeholder="有什么想说的？"
                 rows="4"
               ></textarea>
@@ -135,15 +135,22 @@
               <div class="flex items-center justify-between pt-2">
                 <div class="flex items-center gap-2 text-label-sm text-outline">
                   <span class="material-symbols-outlined text-sm">lock</span>
-                  服务器不记录IP
+                  发布页不展示身份信息
                 </div>
                 <button
                   class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2 text-label-md text-on-primary transition-colors hover:bg-secondary"
+                  onclick="publishTreeHole()"
+                  type="button"
                 >
                   <span class="material-symbols-outlined text-sm">send</span>
                   扔进树洞
                 </button>
               </div>
+              <p
+                aria-live="polite"
+                class="min-h-5 text-body-sm text-outline"
+                id="tree-hole-status"
+              ></p>
             </div>
             <!-- Categories Filter Card -->
             <div
@@ -217,7 +224,7 @@
             </div>
           </div>
           <!-- Right Column: Post Feed (8 Cols) -->
-          <div class="flex flex-col gap-6 lg:col-span-8">
+          <div class="flex flex-col gap-6 lg:col-span-8" id="tree-hole-feed">
             <!-- Feed Sorting Tabs -->
             <div
               class="flex items-center justify-between rounded-xl bg-surface px-6 py-3 shadow-sm"
@@ -349,6 +356,7 @@
                 </div>
                 <a
                   class="flex items-center gap-1 whitespace-nowrap text-label-md font-semibold text-secondary hover:text-primary"
+                  data-path="course-evaluation"
                   href="#"
                 >
                   查看课程
@@ -454,6 +462,10 @@
             <div class="flex justify-center pt-4">
               <button
                 class="rounded-xl bg-surface-container-low px-8 py-3 text-label-md text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                onclick="
+                  alert('演示：当前仅展示示例树洞内容，不会加载真实数据。')
+                "
+                type="button"
               >
                 加载更多树洞内容
               </button>
@@ -462,6 +474,54 @@
         </div>
       </div>
     </main>
+    <script>
+      function publishTreeHole() {
+        const input = document.getElementById('tree-hole-input');
+        const status = document.getElementById('tree-hole-status');
+        const content = input.value.trim();
+
+        if (!content) {
+          status.textContent = '请先写下想分享的内容。';
+          input.focus();
+          return;
+        }
+
+        const post = document.createElement('article');
+        post.className =
+          'flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm';
+
+        const header = document.createElement('div');
+        header.className = 'flex items-center gap-3';
+        const avatar = document.createElement('div');
+        avatar.className =
+          'flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container';
+        avatar.textContent = String(Math.floor(Math.random() * 900) + 100);
+        const metadata = document.createElement('div');
+        const author = document.createElement('span');
+        author.className = 'block font-label-md text-on-surface';
+        author.textContent = '匿名狸友';
+        const time = document.createElement('span');
+        time.className = 'text-body-sm text-outline';
+        time.textContent = '刚刚';
+        metadata.append(author, time);
+        header.append(avatar, metadata);
+
+        const body = document.createElement('p');
+        body.className = 'text-body-lg leading-relaxed text-on-surface';
+        body.textContent = content;
+        const tag = document.createElement('span');
+        tag.className = 'text-label-sm text-secondary';
+        tag.textContent = '#树洞';
+        post.append(header, body, tag);
+
+        const feed = document.getElementById('tree-hole-feed');
+        feed.firstElementChild.insertAdjacentElement('afterend', post);
+        input.value = '';
+        status.textContent =
+          '演示：已在当前页面展示匿名帖子；刷新后会恢复示例内容。';
+        post.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    </script>
     <div data-layout="footer"></div>
   </body>
 </html>

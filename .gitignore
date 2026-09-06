@@ -31,6 +31,9 @@ Thumbs.db
 .env.local
 .env.*.local
 
+# Claude Code temporary agent worktrees
+.claude/worktrees/
+
 # Test / coverage
 coverage/
 .nyc_output/

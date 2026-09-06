@@ -25,7 +25,7 @@ assignees: []
 
 ## Design impact
 
-<!-- Will this require changes to docs/DESIGN.md or tailwind.config.ts? -->
+<!-- Will this require changes to docs/DESIGN.md or frontend/tailwind.config.ts? -->
 
 ## Alternatives considered
 

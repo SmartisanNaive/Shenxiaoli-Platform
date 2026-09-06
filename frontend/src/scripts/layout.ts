@@ -1,10 +1,9 @@
 /**
  * Layout module — shared site chrome.
  *
- * Defines the header navigation and footer markup used across
- * every page. Pages inject these via `data-layout="header"` and
- * `data-layout="footer"` placeholders, which `main.ts` resolves
- * at runtime.
+ * Defines the header navigation and footer markup used across every page.
+ * The Vite document plugin replaces `data-layout="header"` and
+ * `data-layout="footer"` placeholders before the page reaches the browser.
  *
  * Each page sets the active nav item by adding `data-active="<key>"`
  * to its header placeholder; the matching nav link receives the
@@ -48,7 +47,7 @@ const escapeHtml = (s: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const renderNavItem = (item: NavItem, activeKey: NavKey): string => {
+const renderNavItem = (item: NavItem, activeKey?: NavKey): string => {
   const isActive = item.key === activeKey;
   const className = isActive
     ? 'transition-colors text-primary font-semibold'
@@ -59,24 +58,24 @@ const renderNavItem = (item: NavItem, activeKey: NavKey): string => {
   return `<a ${attrs} href="${escapeHtml(item.href)}">${escapeHtml(item.label)}</a>`;
 };
 
-export const renderHeader = (activeKey: NavKey): string => {
+export const renderHeader = (activeKey?: NavKey): string => {
   const navLinks = NAV_ITEMS.map((item) => renderNavItem(item, activeKey)).join(
     '',
   );
 
   return `
-  <header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-card-soft">
-    <div class="h-20 max-w-[1200px] mx-auto px-[32px] flex items-center justify-between gap-6">
-      <div class="flex items-center gap-8">
-        <a class="flex items-center gap-3" data-path="home" href="./index.html">
-          <img alt="深小狸校园 logo" class="w-8 h-8 rounded-full object-cover" src="${LOGO_AVATAR}" />
-          <span class="font-headline-sm text-primary font-bold">深小狸校园</span>
+  <header class="fixed top-0 z-50 w-full bg-surface/90 shadow-card-soft backdrop-blur-xl">
+    <div class="mx-auto flex h-20 max-w-[1200px] items-center justify-between gap-3 px-4 sm:gap-6 sm:px-6 lg:px-8">
+      <div class="flex min-w-0 items-center gap-3 sm:gap-8">
+        <a class="flex min-w-0 items-center gap-3" data-path="home" href="./index.html">
+          <img alt="深小狸校园 logo" class="h-8 w-8 shrink-0 rounded-full object-cover" src="${LOGO_AVATAR}" />
+          <span class="truncate font-headline-sm font-bold text-primary">深小狸校园</span>
         </a>
-        <nav class="hidden lg:flex items-center gap-6">
+        <nav class="hidden items-center gap-6 lg:flex">
           ${navLinks}
         </nav>
       </div>
-      <div class="flex-1 max-w-md hidden md:block">
+      <div class="hidden max-w-md flex-1 md:block">
         <div class="relative flex items-center">
           <span class="material-symbols-outlined absolute left-3 text-outline text-sm">search</span>
           <input
@@ -86,16 +85,31 @@ export const renderHeader = (activeKey: NavKey): string => {
           />
         </div>
       </div>
-      <div class="flex items-center gap-4">
+      <div class="flex shrink-0 items-center gap-2 sm:gap-4">
         <div class="relative">
-          <button class="bg-primary text-on-primary px-4 py-2 rounded-xl flex items-center gap-2 text-label-md hover:bg-secondary transition-colors">
-            <span class="material-symbols-outlined text-sm">add</span>发布
+          <button
+            class="flex items-center gap-2 rounded-xl bg-primary px-3 py-2 text-label-md text-on-primary transition-colors hover:bg-secondary sm:px-4"
+            onclick="alert('演示模式：请进入具体板块体验发布流程，当前不会提交数据。')"
+            type="button"
+          >
+            <span class="material-symbols-outlined text-sm">add</span>
+            <span class="hidden sm:inline">发布</span>
           </button>
         </div>
-        <a class="relative p-2 text-on-surface-variant hover:text-primary transition-colors" data-path="messages" href="#">
+        <a
+          class="relative hidden p-2 text-on-surface-variant transition-colors hover:text-primary sm:block"
+          data-path="messages"
+          href="#"
+          onclick="event.preventDefault(); alert('演示模式：通知中心暂未接入，不会产生真实消息。')"
+        >
           <span class="material-symbols-outlined">notifications</span>
         </a>
-        <a class="flex items-center" data-path="profile" href="#">
+        <a
+          class="flex items-center"
+          data-path="profile"
+          href="#"
+          onclick="event.preventDefault(); alert('演示模式：个人主页暂未接入，不会读取账户信息。')"
+        >
           <img alt="用户头像" class="w-8 h-8 rounded-full object-cover" src="${PROFILE_AVATAR}" />
         </a>
       </div>
@@ -136,7 +150,7 @@ export const renderFooter = (): string => `
     </div>
     <div class="border-t border-surface-variant">
       <div class="max-w-[1200px] mx-auto px-gutter py-4 flex flex-col md:flex-row items-center justify-between gap-2 text-body-sm text-outline">
-        <span>© ${new Date().getFullYear()} 深小狸校园 · Shenxiaoli Platform</span>
+        <span>© <span data-current-year>${new Date().getFullYear()}</span> 深小狸校园 · Shenxiaoli Platform</span>
         <span>Built with Bun · Vite · Tailwind CSS</span>
       </div>
     </div>
