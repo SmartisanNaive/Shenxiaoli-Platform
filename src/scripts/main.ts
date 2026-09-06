@@ -1,37 +1,18 @@
 /**
- * Entry script — resolves shared layout placeholders, wires up
- * simple interactivity (search focus, nav highlighting, smooth
- * scroll), and provides a small DOM-ready helper used by pages.
+ * Entry script — page wiring for the multi-page frontend.
+ *
+ * Layout (header / footer / active nav state) is pre-rendered into
+ * each HTML entry by `vite.config.ts → shenxiaoli:inject-layout`,
+ * so this script only handles runtime interactivity:
+ *
+ *   - Search input → Enter logs the query (placeholder for the real
+ *     search backend; the placeholder divs in `layout.ts` stay in the
+ *     DOM so a real client-side router can hook into them later).
  */
 
-import { renderFooter, renderHeader, type NavKey } from './layout';
 import '../styles/main.css';
 
-const isNavKey = (v: string | null): v is NavKey => {
-  if (v === null) return false;
-  return (
-    v === 'home' ||
-    v === 'course-evaluation' ||
-    v === 'market' ||
-    v === 'skill-mutual-aid' ||
-    v === 'tree-hole'
-  );
-};
-
-const mountLayout = (): void => {
-  document.querySelectorAll<HTMLElement>('[data-layout]').forEach((el) => {
-    const slot = el.dataset.layout;
-    if (slot === 'header') {
-      const activeAttr = el.dataset.active ?? null;
-      const active = isNavKey(activeAttr) ? activeAttr : 'home';
-      el.outerHTML = renderHeader(active);
-    } else if (slot === 'footer') {
-      el.outerHTML = renderFooter();
-    }
-  });
-};
-
-const enhanceSearch = (): void => {
+const enhanceSearchInputs = (): void => {
   const searchInputs = document.querySelectorAll<HTMLInputElement>(
     'input[type="text"][placeholder^="搜索"]',
   );
@@ -48,8 +29,7 @@ const enhanceSearch = (): void => {
 };
 
 const init = (): void => {
-  mountLayout();
-  enhanceSearch();
+  enhanceSearchInputs();
 };
 
 if (document.readyState === 'loading') {
