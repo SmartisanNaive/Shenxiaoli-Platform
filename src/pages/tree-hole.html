@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="深小狸树洞 · 不署名的心声" />
+    <meta name="theme-color" content="#1b4332" />
+    <title>树洞 | 深小狸校园</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Source+Serif+4:wght@500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
+      rel="stylesheet"
+    />
+    <script type="module" src="../scripts/main.ts"></script>
+  </head>
+  <body class="bg-background font-body-md text-on-surface">
+    <div data-layout="header" data-active="tree-hole"></div>
+    <main class="min-h-screen w-full bg-background pt-20">
+      <div class="flex w-full flex-col">
+        <!-- Hero / Header Section -->
+        <section class="w-full bg-surface-container-low px-gutter py-16">
+          <div
+            class="mx-auto flex max-w-[1200px] flex-col justify-between gap-8 md:flex-row md:items-end"
+          >
+            <div>
+              <div
+                class="mb-4 inline-flex items-center gap-2 rounded-full bg-secondary-container px-3 py-1 text-label-sm text-on-secondary-container"
+              >
+                <span class="material-symbols-outlined text-sm"
+                  >nest_cam_wired_stand</span
+                >
+                <span>SUAT 匿名交流空间</span>
+              </div>
+              <h1 class="font-headline-xl font-bold text-primary">
+                深小狸树洞
+              </h1>
+              <p class="mt-2 text-body-lg text-on-surface-variant">
+                说点平时不太方便说的话。
+              </p>
+            </div>
+            <!-- Quick Stats / Trust Badge -->
+            <div
+              class="flex items-center gap-6 rounded-xl bg-surface p-4 shadow-sm"
+            >
+              <div class="flex flex-col">
+                <span class="text-label-sm text-outline">今日树洞</span>
+                <span class="font-headline-md font-bold text-primary"
+                  >128 篇</span
+                >
+              </div>
+              <div class="h-8 w-[1px] bg-surface-variant"></div>
+              <div class="flex flex-col">
+                <span class="text-label-sm text-outline">加密保护</span>
+                <span class="font-headline-md font-bold text-secondary"
+                  >100% 匿名</span
+                >
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- Main Content Layout: Two Columns (Publish/Sidebar + Feed) -->
+        <div
+          class="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-8 px-gutter py-12 lg:grid-cols-12"
+        >
+          <!-- Left Column: Publish Box & Categories (4 Cols) -->
+          <div class="flex flex-col gap-8 lg:col-span-4">
+            <!-- Publish Box Card -->
+            <div
+              class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm"
+            >
+              <div class="flex items-center justify-between">
+                <h3
+                  class="flex items-center gap-2 font-headline-sm font-semibold text-primary"
+                >
+                  <span class="material-symbols-outlined text-secondary"
+                    >edit_note</span
+                  >
+                  写树洞
+                </h3>
+                <!-- Anonymous Toggle -->
+                <div
+                  class="flex items-center gap-2 rounded-full bg-surface-container-low px-3 py-1"
+                >
+                  <span class="text-label-sm text-on-surface-variant"
+                    >匿名</span
+                  >
+                  <input
+                    checked=""
+                    class="h-4 w-4 cursor-pointer accent-primary"
+                    type="checkbox"
+                  />
+                </div>
+              </div>
+              <textarea
+                class="w-full resize-none rounded-xl bg-surface-container-low p-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                placeholder="有什么想说的？"
+                rows="4"
+              ></textarea>
+              <!-- Tag Selector -->
+              <div class="flex flex-wrap gap-2">
+                <button
+                  class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant transition-colors hover:bg-secondary-container hover:text-on-secondary-container"
+                >
+                  #科研
+                </button>
+                <button
+                  class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant transition-colors hover:bg-secondary-container hover:text-on-secondary-container"
+                >
+                  #选课
+                </button>
+                <button
+                  class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant transition-colors hover:bg-secondary-container hover:text-on-secondary-container"
+                >
+                  #求助
+                </button>
+                <button
+                  class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant transition-colors hover:bg-secondary-container hover:text-on-secondary-container"
+                >
+                  #情绪
+                </button>
+                <button
+                  class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-on-surface-variant transition-colors hover:bg-secondary-container hover:text-on-secondary-container"
+                >
+                  #搭子
+                </button>
+              </div>
+              <div class="flex items-center justify-between pt-2">
+                <div class="flex items-center gap-2 text-label-sm text-outline">
+                  <span class="material-symbols-outlined text-sm">lock</span>
+                  服务器不记录IP
+                </div>
+                <button
+                  class="flex items-center gap-2 rounded-xl bg-primary px-6 py-2 text-label-md text-on-primary transition-colors hover:bg-secondary"
+                >
+                  <span class="material-symbols-outlined text-sm">send</span>
+                  扔进树洞
+                </button>
+              </div>
+            </div>
+            <!-- Categories Filter Card -->
+            <div
+              class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm"
+            >
+              <h4
+                class="flex items-center gap-2 font-headline-sm font-medium text-primary"
+              >
+                <span class="material-symbols-outlined text-secondary"
+                  >filter_list</span
+                >
+                话题分类
+              </h4>
+              <div class="flex flex-wrap gap-2">
+                <a
+                  class="rounded-full bg-primary px-3 py-1.5 text-label-sm text-on-primary transition-colors"
+                  href="#"
+                  >全部</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >校园生活</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >学习</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >科研</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >选课</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >求助</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >生存</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >情绪</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >吐槽</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >搭子</a
+                >
+                <a
+                  class="rounded-full bg-surface-container-low px-3 py-1.5 text-label-sm text-on-surface-variant transition-colors hover:bg-surface-container-high"
+                  href="#"
+                  >失物招领</a
+                >
+              </div>
+            </div>
+          </div>
+          <!-- Right Column: Post Feed (8 Cols) -->
+          <div class="flex flex-col gap-6 lg:col-span-8">
+            <!-- Feed Sorting Tabs -->
+            <div
+              class="flex items-center justify-between rounded-xl bg-surface px-6 py-3 shadow-sm"
+            >
+              <div class="flex items-center gap-6">
+                <button
+                  class="relative pb-1 text-label-md font-bold text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary"
+                >
+                  最新发布
+                </button>
+                <button
+                  class="text-label-md text-on-surface-variant transition-colors hover:text-primary"
+                >
+                  最多同感
+                </button>
+                <button
+                  class="text-label-md text-on-surface-variant transition-colors hover:text-primary"
+                >
+                  热门讨论
+                </button>
+              </div>
+              <span class="text-body-sm text-outline">共 1,482 条树洞</span>
+            </div>
+            <!-- Post 1 -->
+            <div
+              class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container"
+                  >
+                    038
+                  </div>
+                  <div>
+                    <span class="block font-label-md text-on-surface"
+                      >匿名狸友 038</span
+                    >
+                    <span class="text-body-sm text-outline">10分钟前</span>
+                  </div>
+                </div>
+                <button
+                  class="text-outline transition-colors hover:text-primary"
+                >
+                  <span class="material-symbols-outlined">more_horiz</span>
+                </button>
+              </div>
+              <p class="text-body-lg leading-relaxed text-on-surface">
+                最近刚开始做科研，发现实验进度比想象中慢很多，大家刚进实验室的时候也这样吗？
+              </p>
+              <div class="flex items-center gap-2">
+                <span class="text-label-sm text-secondary">#科研</span>
+                <span class="text-label-sm text-secondary">#研究生生活</span>
+              </div>
+              <div
+                class="flex items-center justify-between border-t border-surface-container pt-4"
+              >
+                <div class="flex items-center gap-6">
+                  <button
+                    class="flex items-center gap-1.5 text-label-md text-on-surface-variant transition-colors hover:text-primary"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >favorite</span
+                    >
+                    同感 <span class="font-bold">18</span>
+                  </button>
+                  <button
+                    class="flex items-center gap-1.5 text-label-md text-on-surface-variant transition-colors hover:text-primary"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >chat_bubble</span
+                    >
+                    评论 <span class="font-bold">7</span>
+                  </button>
+                </div>
+                <button
+                  class="flex items-center gap-1 text-label-sm text-outline transition-colors hover:text-primary"
+                >
+                  <span class="material-symbols-outlined text-sm">share</span>
+                  分享
+                </button>
+              </div>
+            </div>
+            <!-- Post 2 (with Linked Course Card) -->
+            <div
+              class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container"
+                  >
+                    051
+                  </div>
+                  <div>
+                    <span class="block font-label-md text-on-surface"
+                      >匿名狸友 051</span
+                    >
+                    <span class="text-body-sm text-outline">35分钟前</span>
+                  </div>
+                </div>
+                <button
+                  class="text-outline transition-colors hover:text-primary"
+                >
+                  <span class="material-symbols-outlined">more_horiz</span>
+                </button>
+              </div>
+              <p class="text-body-lg leading-relaxed text-on-surface">
+                有人上过 ICGA503 组学数据分析吗？想知道实验部分多不多。
+              </p>
+              <!-- Linked Course Card -->
+              <div
+                class="flex items-center justify-between gap-4 rounded-xl bg-surface-container-low p-4"
+              >
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex h-12 w-12 items-center justify-center rounded-lg bg-primary-container font-headline-md font-bold text-on-primary-container"
+                  >
+                    9.1
+                  </div>
+                  <div>
+                    <h5 class="font-label-md font-semibold text-primary">
+                      FSBB503 计算生物与模拟 / ICGA503 组学数据分析
+                    </h5>
+                    <p class="text-body-sm text-on-surface-variant">
+                      综合评分 9.1 · 考核方式：期末项目+实验报告
+                    </p>
+                  </div>
+                </div>
+                <a
+                  class="flex items-center gap-1 whitespace-nowrap text-label-md font-semibold text-secondary hover:text-primary"
+                  href="#"
+                >
+                  查看课程
+                  <span class="material-symbols-outlined text-sm"
+                    >arrow_forward</span
+                  >
+                </a>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-label-sm text-secondary">#选课</span>
+                <span class="text-label-sm text-secondary">#求助</span>
+              </div>
+              <div
+                class="flex items-center justify-between border-t border-surface-container pt-4"
+              >
+                <div class="flex items-center gap-6">
+                  <button
+                    class="flex items-center gap-1.5 text-label-md text-on-surface-variant transition-colors hover:text-primary"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >favorite</span
+                    >
+                    同感 <span class="font-bold">24</span>
+                  </button>
+                  <button
+                    class="flex items-center gap-1.5 text-label-md text-on-surface-variant transition-colors hover:text-primary"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >chat_bubble</span
+                    >
+                    评论 <span class="font-bold">12</span>
+                  </button>
+                </div>
+                <button
+                  class="flex items-center gap-1 text-label-sm text-outline transition-colors hover:text-primary"
+                >
+                  <span class="material-symbols-outlined text-sm">share</span>
+                  分享
+                </button>
+              </div>
+            </div>
+            <!-- Post 3 -->
+            <div
+              class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div
+                    class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container"
+                  >
+                    102
+                  </div>
+                  <div>
+                    <span class="block font-label-md text-on-surface"
+                      >匿名狸友 102</span
+                    >
+                    <span class="text-body-sm text-outline">2小时前</span>
+                  </div>
+                </div>
+                <button
+                  class="text-outline transition-colors hover:text-primary"
+                >
+                  <span class="material-symbols-outlined">more_horiz</span>
+                </button>
+              </div>
+              <p class="text-body-lg leading-relaxed text-on-surface">
+                图书馆三楼靠窗位置的同学，谢谢你的热心橡皮擦！
+              </p>
+              <div class="flex items-center gap-2">
+                <span class="text-label-sm text-secondary">#校园生活</span>
+                <span class="text-label-sm text-secondary">#温暖</span>
+              </div>
+              <div
+                class="flex items-center justify-between border-t border-surface-container pt-4"
+              >
+                <div class="flex items-center gap-6">
+                  <button
+                    class="flex items-center gap-1.5 text-label-md text-on-surface-variant transition-colors hover:text-primary"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >favorite</span
+                    >
+                    同感 <span class="font-bold">45</span>
+                  </button>
+                  <button
+                    class="flex items-center gap-1.5 text-label-md text-on-surface-variant transition-colors hover:text-primary"
+                  >
+                    <span class="material-symbols-outlined text-sm"
+                      >chat_bubble</span
+                    >
+                    评论 <span class="font-bold">3</span>
+                  </button>
+                </div>
+                <button
+                  class="flex items-center gap-1 text-label-sm text-outline transition-colors hover:text-primary"
+                >
+                  <span class="material-symbols-outlined text-sm">share</span>
+                  分享
+                </button>
+              </div>
+            </div>
+            <!-- Load More Button -->
+            <div class="flex justify-center pt-4">
+              <button
+                class="rounded-xl bg-surface-container-low px-8 py-3 text-label-md text-on-surface-variant transition-colors hover:bg-surface-container-high"
+              >
+                加载更多树洞内容
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <div data-layout="footer"></div>
+  </body>
+</html>
