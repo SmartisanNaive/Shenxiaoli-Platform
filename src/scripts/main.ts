@@ -10,8 +10,6 @@
  *     DOM so a real client-side router can hook into them later).
  */
 
-import '../styles/main.css';
-
 const enhanceSearchInputs = (): void => {
   const searchInputs = document.querySelectorAll<HTMLInputElement>(
     'input[type="text"][placeholder^="搜索"]',
