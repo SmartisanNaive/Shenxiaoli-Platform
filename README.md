@@ -65,12 +65,11 @@ shared layout script and stylesheet.
 ├── public/
 │   └── favicon.svg            # Site favicon
 ├── src/
-│   ├── pages/                 # One HTML file per route (Vite entries)
-│   │   ├── index.html                  # 首页   / Home
-│   │   ├── course-evaluation.html      # 评课   / Course Evaluation
-│   │   ├── market.html                 # 集市   / Market
-│   │   ├── skill-mutual-aid.html       # 技能互助 / Skill Mutual Aid
-│   │   └── tree-hole.html              # 树洞   / Tree Hole
+│   ├── index.html              # 首页   / Home (Vite entry)
+│   ├── course-evaluation.html  # 评课   / Course Evaluation (Vite entry)
+│   ├── market.html             # 集市   / Market (Vite entry)
+│   ├── skill-mutual-aid.html   # 技能互助 / Skill Mutual Aid (Vite entry)
+│   ├── tree-hole.html          # 树洞   / Tree Hole (Vite entry)
 │   ├── scripts/
 │   │   ├── main.ts            # Entry script — mounts shared layout
 │   │   └── layout.ts          # Header/footer template functions
@@ -146,7 +145,7 @@ bun run typecheck      # tsc --noEmit
 
 ## 🧱 Adding a page
 
-1. Drop a new HTML file into `src/pages/`, e.g. `lost-and-found.html`.
+1. Drop a new HTML file into `src/`, e.g. `lost-and-found.html`.
 2. Inside `<body>` place a `<div data-layout="header" data-active="lost-and-found"></div>`,
    then `<main>`, then `<div data-layout="footer"></div>`.
 3. Register the entry in `vite.config.ts` under `build.rollupOptions.input`.

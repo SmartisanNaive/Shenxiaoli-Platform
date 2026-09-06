@@ -6,7 +6,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  root: 'src',
+  root: resolve(__dirname, 'src'),
   publicDir: resolve(__dirname, 'public'),
   base: './',
 
@@ -18,17 +18,11 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: {
-        index: resolve(__dirname, 'src/pages/index.html'),
-        'course-evaluation': resolve(
-          __dirname,
-          'src/pages/course-evaluation.html',
-        ),
-        market: resolve(__dirname, 'src/pages/market.html'),
-        'skill-mutual-aid': resolve(
-          __dirname,
-          'src/pages/skill-mutual-aid.html',
-        ),
-        'tree-hole': resolve(__dirname, 'src/pages/tree-hole.html'),
+        index: resolve(__dirname, 'src/index.html'),
+        'course-evaluation': resolve(__dirname, 'src/course-evaluation.html'),
+        market: resolve(__dirname, 'src/market.html'),
+        'skill-mutual-aid': resolve(__dirname, 'src/skill-mutual-aid.html'),
+        'tree-hole': resolve(__dirname, 'src/tree-hole.html'),
       },
     },
   },
