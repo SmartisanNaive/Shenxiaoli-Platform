@@ -1,6 +1,6 @@
 # 深小狸校园 · Shenxiaoli Platform
 
-> A modern, opinionated campus platform for SUAT (深圳先进大学) —
+> 学生共建的非官方校园社区 — 服务于深圳先进大学（SUAT）的同学。
 > 评课 · 集市 · 技能互助 · 树洞, in one place.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-1b4332.svg)](LICENSE)
@@ -16,19 +16,23 @@
 
 ## ✨ About
 
-**深小狸校园 (Shenxiaoli Campus)** is a frontend-first campus platform built
-around the everyday needs of university students:
+**深小狸校园 (Shenxiaoli Campus)** 是一个 **学生共建** 的非官方校园社区,
+围绕深圳先进大学（SUAT）同学的日常需求设计:
 
-| Module                      | What it does                                         |
-| --------------------------- | ---------------------------------------------------- |
-| 评课 / Course Evaluation    | Read & write course reviews before you pick classes. |
-| 集市 / Market               | Buy & sell second-hand goods on campus.              |
-| 技能互助 / Skill Mutual Aid | Find study buddies & exchange skills.                |
-| 树洞 / Tree Hole            | Anonymous, moderated message wall.                   |
+| Module                      | What it does                |
+| --------------------------- | --------------------------- |
+| 评课 / Course Evaluation    | 选课之前,先看看大家怎么说。 |
+| 集市 / Market               | 校内闲置好物流转平台。      |
+| 技能互助 / Skill Mutual Aid | 找搭子,互帮互助,共享知识。  |
+| 树洞 / Tree Hole            | 匿名、克制、可控的心声墙。  |
 
-The current codebase is **the pure-frontend implementation** rendered
-against a static data layer; a real backend will be wired in later without
-breaking the existing UI contracts.
+> ⚠️ **非官方声明**: 本项目由学生自发维护,与深圳先进大学（SUAT）校方
+> 无隶属关系。"深小狸校园" 是这个开源社区项目的名称,不代表学校的官方
+> 立场。`SUAT` / `Shenzhen University of Advanced Technology` 在文案
+> 中仅作为校园场景的语境说明。
+
+当前仓库为 **纯前端实现**,数据来自静态占位;后续接入真实后端时,
+UI 契约保持不变。
 
 ### Design language
 
@@ -149,10 +153,14 @@ bun run typecheck      # tsc --noEmit
 2. Inside `<body>` place a `<div data-layout="header" data-active="lost-and-found"></div>`,
    then `<main>`, then `<div data-layout="footer"></div>`.
 3. Register the entry in `vite.config.ts` under `build.rollupOptions.input`.
-4. Add a `NavItem` to `NAV_ITEMS` in `src/scripts/layout.ts`.
+4. Add a `NavItem` to `NAV_ITEMS` and a mapping in
+   `filenameToNavKey` inside `src/scripts/layout.ts` / `vite.config.ts`.
 
-The shared header (with the active nav state) and footer are injected by
-`src/scripts/main.ts`.
+The shared header (with the active nav state) and footer are
+**pre-rendered into the HTML** by the `shenxiaoli:inject-layout`
+plugin defined in `vite.config.ts`, so there is no flash of
+unstyled chrome on first paint — the browser sees the full page
+immediately.
 
 ---
 
@@ -189,7 +197,7 @@ Vulnerabilities should **not** be filed as public issues. Please follow
 
 ## 🙏 Acknowledgements
 
-- Inspired by the campus culture of **SUAT — 深圳先进大学 / Shenzhen
-  University of Advanced Technology**.
+- 灵感来自 **SUAT — 深圳先进大学 / Shenzhen University of Advanced
+  Technology** 的校园文化。本项目由学生自发维护,与校方无关。
 - Design system adapted from the **Deep Forest Emerald Academic** palette.
 - Built with open-source tooling: Bun, Vite, Tailwind CSS, TypeScript.
