@@ -22,14 +22,19 @@ curl -fsSL https://bun.sh/install | bash
 git clone https://github.com/<you>/shenxiaoli-platform.git
 cd shenxiaoli-platform
 
-# 3. Install dependencies
-bun install
+# 3. Install dependencies (this repo is a monorepo — deps live in frontend/)
+bun run setup
 
 # 4. Run the dev server
 bun run dev
 ```
 
 The dev server runs at <http://127.0.0.1:5173> and live-reloads on save.
+
+The root `package.json` has no dependencies of its own; it forwards `dev`,
+`build`, `preview`, `lint`, `format:check`, and `typecheck` into `frontend/`.
+Most day-to-day work happens inside `frontend/`, so feel free to `cd frontend`
+and run the scripts there directly.
 
 ---
 
@@ -42,6 +47,7 @@ The dev server runs at <http://127.0.0.1:5173> and live-reloads on save.
    mood (`Add`, `Fix`, `Refactor`).
 3. **Run the checks before pushing:**
    ```bash
+   cd frontend
    bun run typecheck
    bun run lint
    bun run format:check
@@ -57,8 +63,8 @@ UI changes are governed by [`docs/DESIGN.md`](docs/DESIGN.md). Before
 tweaking styles, read it (or skim the relevant section). New colors,
 typography, or spacing **must** be added there **and** mirrored in:
 
-- `tailwind.config.ts` (Tailwind theme.extend)
-- `src/styles/tokens.css` (CSS custom properties)
+- `frontend/tailwind.config.ts` (Tailwind theme.extend)
+- `frontend/src/styles/tokens.css` (CSS custom properties)
 
 Keep the two files in lockstep — the README + DESIGN.md are the source
 of truth for the brand.
@@ -106,16 +112,22 @@ Use the provided templates in
 
 ## 🧭 Project structure cheatsheet
 
-| Path                    | Purpose                                     |
-| ----------------------- | ------------------------------------------- |
-| `src/*.html`            | One HTML entry per route (Vite multi-page). |
-| `src/scripts/layout.ts` | Shared header/footer templates.             |
-| `src/scripts/main.ts`   | Mounts shared layout + page wiring.         |
-| `src/styles/main.css`   | Tailwind entry & global resets.             |
-| `src/styles/tokens.css` | Design tokens as CSS custom properties.     |
-| `tailwind.config.ts`    | Tailwind theme (mirrors `tokens.css`).      |
-| `vite.config.ts`        | Multi-page build config.                    |
-| `docs/DESIGN.md`        | Design system source of truth.              |
+The repo is a monorepo: `frontend/` holds the implemented client, `backend/`
+is a reserved placeholder, and shared project docs live at the root.
+
+| Path                             | Purpose                                                    |
+| -------------------------------- | ---------------------------------------------------------- |
+| `frontend/src/*.html`            | One HTML entry per route (Vite multi-page).                |
+| `frontend/src/scripts/layout.ts` | Shared header/footer templates.                            |
+| `frontend/src/scripts/main.ts`   | Runtime page wiring (for example, search input behaviour). |
+| `frontend/src/styles/main.css`   | Tailwind entry & global resets.                            |
+| `frontend/src/styles/tokens.css` | Design tokens as CSS custom properties.                    |
+| `frontend/tailwind.config.ts`    | Tailwind theme (mirrors `tokens.css`).                     |
+| `frontend/vite.config.ts`        | Multi-page build config.                                   |
+| `backend/`                       | 🚧 Reserved for the API — not implemented yet.             |
+| `docs/DESIGN.md`                 | Design system source of truth.                             |
+| `docs/ARCHITECTURE.md`           | Runtime model and extension guide.                         |
+| `package.json` (root)            | Delegating scripts only — no dependencies.                 |
 
 ---
 

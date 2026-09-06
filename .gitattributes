@@ -1,0 +1,15 @@
+# Normalize text files in the repository to LF regardless of platform.
+* text=auto eol=lf
+
+# Treat binary assets as binary; Git should not attempt text diffs.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.svg text eol=lf
+
+# Preserve the intended language classification for GitHub linguist.
+*.html linguist-language=HTML
+*.css linguist-language=CSS
+*.ts linguist-language=TypeScript

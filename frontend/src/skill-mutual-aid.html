@@ -17,8 +17,6 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
       rel="stylesheet"
     />
-    <!-- Render-blocking: prevents a first-paint flash of unstyled HTML. -->
-    <link rel="stylesheet" href="./styles/main.css?direct" />
     <script type="module" src="./scripts/main.ts"></script>
   </head>
   <body class="bg-background font-body-md text-on-surface">
@@ -60,7 +58,7 @@
         <!-- Categories Bar -->
         <section class="mx-auto mb-12 w-full max-w-[1200px] px-[32px]">
           <div
-            class="scrollbar-none flex items-center gap-3 overflow-x-auto pb-2"
+            class="scrollbar-hidden flex items-center gap-3 overflow-x-auto pb-2"
           >
             <button
               class="whitespace-nowrap rounded-xl bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary shadow-sm transition-all"
@@ -145,7 +143,7 @@
                 <div class="flex items-center gap-4">
                   <img
                     class="h-12 w-12 rounded-full object-cover"
-                    data-alt="A smiling East Asian university student portrait with neat short hair wearing casual smart attire against a soft blurred laboratory background with warm natural lighting."
+                    alt="A smiling East Asian university student portrait with neat short hair wearing casual smart attire against a soft blurred laboratory background with warm natural lighting."
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnN57gCzTyhUXR7zV9Dpw-SIcDCcxj7TzH80ETR1nGKp8wgf55FhYfDDwVN0ghkt2dIkKAq5bUWNjzoJYkbQxJWpQVYf5pf_4lITM6yDMw__TGrEDC0cNW8xn08QgFsDv-CV2_xKkPYxT8sf6eVJ8K-tvrIx3qDDPe5Jgs9BcGaXCBK3NLjrxxVPoNHQZpkrq74kycc03UfhZvVifBWjUolquA53W-BdRPh_ZSFm2a8fLOxDmBZ9Ohgg"
                   />
                   <div>
@@ -208,7 +206,7 @@
                 </div>
                 <button
                   class="rounded-xl bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary transition-all hover:bg-secondary"
-                  onclick="alert('已向 狸友021 发送联系请求！')"
+                  onclick="alert('演示：已模拟向 狸友021 发出联系请求。')"
                 >
                   联系 TA
                 </button>
@@ -222,7 +220,7 @@
                 <div class="flex items-center gap-4">
                   <img
                     class="h-12 w-12 rounded-full object-cover"
-                    data-alt="A focused student researcher with glasses examining circuit boards under a desk lamp in a modern SUAT engineering workshop."
+                    alt="A focused student researcher with glasses examining circuit boards under a desk lamp in a modern SUAT engineering workshop."
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuCb_UP_C4oCoWZ0Y5oDAIJ4NMCK4Nu-nVbie_YQnYUQnmeMNoobKK8prGYLlUdnjeE5WySvGCqSsu7HGHfznG3yMQJyv-DmfYEVVUu46rCs8LuyIoGK4kk_WDo-JYKSrujg1EyHicdGahMmBK0nqO2cF8190nsRPHzQS8gogsT3m9N-q7NmJYKcH9WDkBDcDdLnXxElVxAremHAZ8gWJMgz25Q4n-Cwue_Fi7ugXu_P0oCieCXfFNIFWA"
                   />
                   <div>
@@ -269,7 +267,7 @@
                 >
                 <button
                   class="rounded-xl bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary transition-all hover:bg-secondary"
-                  onclick="alert('已向 CodeAlchemist 发送联系请求！')"
+                  onclick="alert('演示：已模拟向 CodeAlchemist 发出联系请求。')"
                 >
                   联系 TA
                 </button>
@@ -297,7 +295,7 @@
                 <div class="flex items-center gap-3">
                   <img
                     class="h-10 w-10 rounded-full object-cover"
-                    data-alt="A graduate student studying in a quiet SUAT library corner with textbooks and laptop."
+                    alt="A graduate student studying in a quiet SUAT library corner with textbooks and laptop."
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0UgabILbmkaiPe7jY9uhgWiETmz7onPGN3rIloc9sXKY7ZpbVc8apPwzEzPpcI0QEDG_CBFOGUdFvOVXL16vP4UISjsT_up-DEtV904xUYHLh3xn2lgNKmzMPWWwvil35zBCd7hlecQuG3RFKNL_QQQDiBjncVqvfeEQGbsi3F1GcUy_V6eOjNDVmv6BBwxH8klXFfAz4p-QnLxG1Lf9RfJmYI9vDeo2JLrdGU46UFtVkM9hswr9HbQ"
                   />
                   <div>
@@ -327,7 +325,7 @@
               </div>
               <button
                 class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-surface-container py-2.5 text-label-md font-semibold text-primary transition-all hover:bg-surface-container-high"
-                onclick="alert('您已接受求助，快去私信联系对方吧！')"
+                onclick="alert('演示：已模拟接受求助，实际不会发送私信。')"
               >
                 <span class="material-symbols-outlined text-sm"
                   >volunteer_activism</span
@@ -343,7 +341,7 @@
                 <div class="flex items-center gap-3">
                   <img
                     class="h-10 w-10 rounded-full object-cover"
-                    data-alt="An engineering student debugging hardware circuits with an oscilloscope."
+                    alt="An engineering student debugging hardware circuits with an oscilloscope."
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBx51BqcQO-XLKiXYMjfWEhtT2NAseGH-AFe2MKfKW8MGbEHuonSwvJUOusczzkIuqKTNp1e3EZdu0ulQrInHhtbP17anvnIwT7rzxS47mrQZYw-MgvA8aVN6yHIYlO-MbVCo4gOTAKJ0k4tXjJxVGXXpnLMao4FGRJw7RRzZz4lvR0c1X5PjMEGKxKEIZPgHhvTg_ysqE5BDvNprKDqx2XMb_SUm_RG8vTzREftTW4rmGidqbNbJl2rg"
                   />
                   <div>
@@ -373,7 +371,7 @@
               </div>
               <button
                 class="mt-2 flex w-full items-center justify-center gap-2 rounded-xl bg-surface-container py-2.5 text-label-md font-semibold text-primary transition-all hover:bg-surface-container-high"
-                onclick="alert('您已接受求助，快去私信联系对方吧！')"
+                onclick="alert('演示：已模拟接受求助，实际不会发送私信。')"
               >
                 <span class="material-symbols-outlined text-sm"
                   >volunteer_activism</span
@@ -504,7 +502,7 @@
               <button
                 class="rounded-xl bg-primary px-6 py-2.5 text-label-md font-semibold text-on-primary transition-all hover:bg-secondary"
                 onclick="
-                  alert('发布成功！已提交审核。');
+                  alert('演示：已模拟提交发布内容，实际不会保存或进入审核。');
                   document
                     .getElementById('publish-modal')
                     .classList.add('hidden');

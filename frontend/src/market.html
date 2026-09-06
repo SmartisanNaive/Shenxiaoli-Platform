@@ -17,8 +17,6 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
       rel="stylesheet"
     />
-    <!-- Render-blocking: prevents a first-paint flash of unstyled HTML. -->
-    <link rel="stylesheet" href="./styles/main.css?direct" />
     <script type="module" src="./scripts/main.ts"></script>
   </head>
   <body class="bg-background font-body-md text-on-surface">
@@ -59,7 +57,7 @@
           </div>
           <!-- Category Filters -->
           <div
-            class="no-scrollbar mt-8 flex items-center gap-2 overflow-x-auto pb-2"
+            class="scrollbar-hidden mt-8 flex items-center gap-2 overflow-x-auto pb-2"
           >
             <button
               class="category-btn whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-label-md font-medium text-on-primary transition-all"
@@ -126,9 +124,11 @@
             <!-- Item Card 1 -->
             <div
               class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl"
+              role="button"
+              tabindex="0"
               data-category="数码电子"
               onclick="
-                openDetailModal({
+                openDetailModal(this, {
                   title: 'Keychron K2 机械键盘',
                   price: '¥220',
                   condition: '九成新',
@@ -147,7 +147,8 @@
               >
                 <div
                   class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  data-alt="Close up photograph of a mechanical keyboard Keychron K2 with warm wooden desk background, soft natural lighting, minimalist aesthetic, forest green tones."
+                  aria-hidden="true"
+                  data-product-image
                   style="
                     background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDa1zjJern60Yl61MVlUu6pBkaQzR83Bq69yhmEU7n5daBsF-Cr1M6Tj1kaVoK4JONfxvWsJb5qddV70dZEA2W6N4vwJU8hS6NMipPOS7wT5KXTRYcaQIn-R-uXf4MOHV7bsNpMUCAoH6Df7MlUmgmmAD9vytw4JrPatPX1saAKbsG57rbYaLsEu4DJXG3BtjV_lSHCqEdOF-1BMTSyy6Jrkf8Vy0DwWrk11T12C0lyaIzwPOA4q9q8EA');
                   "
@@ -184,7 +185,7 @@
                 <div class="flex items-center gap-2">
                   <img
                     class="h-6 w-6 rounded-full object-cover"
-                    data-alt="Portrait of college student smiling"
+                    alt="Portrait of college student smiling"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_2B7PmOn9HW9nhqlv_dL4VIj3pX--W9QawUnEqD_nPkvHkTO111EzOKHC_JXuwJq8E2dmcst9x92BwyzSa8DA_lEpM21EPBVMOfp7VWl2TebEY_AIr_If73AN-SSpdKZQpQcp1N-JyxAlAaiGk1xu8vFH5F4t1tsNGJa3VGTRp1fZnhLP48Fn4UHk8L5IHANUDLiPntwCz1y6XishD5H72nfJzqpICYYV_KLtbpHsnpQOPdqUA3ld-w"
                   />
                   <span class="text-body-sm text-on-surface-variant"
@@ -197,9 +198,11 @@
             <!-- Item Card 2 -->
             <div
               class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl"
+              role="button"
+              tabindex="0"
               data-category="教材书籍"
               onclick="
-                openDetailModal({
+                openDetailModal(this, {
                   title: 'Python编程与数据科学教材',
                   price: '¥45',
                   condition: '八成新',
@@ -218,7 +221,8 @@
               >
                 <div
                   class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  data-alt="A stack of academic textbooks about Python programming and data science resting on a clean wooden library table, soft diffused lighting."
+                  aria-hidden="true"
+                  data-product-image
                   style="
                     background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBUZzQx8juuUN7DXsCgMeQ9gu9zsEDsF-sHWTNGuqdp72ZWftKmnDuIyYYyrtNWzhPE8XSHj1y12sXDOM3kv3mChPTbvMHM6_yTIdkw0AxGNzbXZXJOqifEG68nCRTW26Fny69SKAkQMZIxMDFN-rl11LBm7zxrPhpx9ecj61UPPrcYjxaSW1R9i3pz0FJr2GLohImb3hXRYYZ5Jh-Lj2hhViqxna5_31ZgVk1Kk6ijNazrLNxreEJ2rA');
                   "
@@ -255,7 +259,7 @@
                 <div class="flex items-center gap-2">
                   <img
                     class="h-6 w-6 rounded-full object-cover"
-                    data-alt="Portrait of student"
+                    alt="Portrait of student"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuBllldqasCdqrAugp8avPNEattmQM2RWHaC7SDpE720JeNgqoqr6QGmsFq-RG55PsDeL5Kjotjc9Ebd3YS0vJPvtZnxWWBtxlTvvc_Gme9iEEOzdP8U6ObwxC8dyWIreNP-V9I7kWA7tSQA2NFp7L5yLJ0LICVIkAwGa8XbCh_uXfkIpUc0okjTVhGFWjuYIa-_74prEyP9QzEppixXInuf-NBxg7CqBYTiOGcTsfx2iZgKaSf_q9hDeA"
                   />
                   <span class="text-body-sm text-on-surface-variant"
@@ -268,9 +272,11 @@
             <!-- Item Card 3 -->
             <div
               class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl"
+              role="button"
+              tabindex="0"
               data-category="自行车"
               onclick="
-                openDetailModal({
+                openDetailModal(this, {
                   title: '捷安特山地自行车',
                   price: '¥350',
                   condition: '七成新',
@@ -289,7 +295,8 @@
               >
                 <div
                   class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  data-alt="Giant mountain bicycle parked against a brick wall on university campus during late afternoon golden hour light."
+                  aria-hidden="true"
+                  data-product-image
                   style="
                     background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAZM5-26ux6m0TJ6KDYCe6AsUikJcAY1bXJl7ah-slJNTAGFC604_SwAnWAGgHyGw1e5ZwiVzwMqrcrqqSnpj5NIxehVHrcqpZWsfNN6DcLR_ASCaSWtc4kOfb7EQestB6eZsEVjYmwLue0huuAvd9tIOsZZi9E-XrT0wciMDAU3YcPfDuPMbMPAfxIk3_GGqAc2b4-nKAGKDmaw8eCgr_L_KQQcaUPUt2ez-JgVji-GCmEWfvw6gxmgQ');
                   "
@@ -326,7 +333,7 @@
                 <div class="flex items-center gap-2">
                   <img
                     class="h-6 w-6 rounded-full object-cover"
-                    data-alt="Portrait of senior student"
+                    alt="Portrait of senior student"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdPumkt5dj7ijj1AUBF_5c48Ygk2qx7VZcEbT3CHO3vlXGCjHn4ud3n3ls9XreM_mkhJp0QppxPiyzlOBBriKqRUABQbVkU0W5fTLT5tdq5AzdySw82ICB3eLvbcR7MscuOjIhyGqGbQAQmJd8lUcgN8wc5iqzuG0h9fGMcnlsM4aGafjBK1FqriJJjyRAAMiPU7qgHvTIaDr2BsFAfDpU-kG8zADvPM38ceRX1D-821-gbwHdYLjKAA"
                   />
                   <span class="text-body-sm text-on-surface-variant"
@@ -339,9 +346,11 @@
             <!-- Item Card 4 -->
             <div
               class="group relative flex cursor-pointer flex-col justify-between rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl"
+              role="button"
+              tabindex="0"
               data-category="数码电子"
               onclick="
-                openDetailModal({
+                openDetailModal(this, {
                   title: 'Sony WH-1000XM4 头戴耳机',
                   price: '¥680',
                   condition: '九成新',
@@ -360,7 +369,8 @@
               >
                 <div
                   class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105"
-                  data-alt="Sony WH-1000XM4 over-ear headphones neatly placed on a minimalist study desk with academic books in background."
+                  aria-hidden="true"
+                  data-product-image
                   style="
                     background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDJ-6x8Ef8ATG23zEBPX94U3bifuLWJmpLt5Lr6aWazyF4ynhwyXqmSeka0_v0RgRYk48bluR-RktrIkyrC6ztnx3Go_hMzgRUIexpKlWz73QLolsXkkuD8DKdnuKa30-SQo9NHDLi7QoJoMgBOKTMi2IDp3FG1NIFDgChPOv9bACRKD766VEx5rzW-VCzQllJHI31rQ6Wez7tuGMiM_jS9vUrXTDPoF4W-zxSmPhw0uc-vqcNFHl97Mw');
                   "
@@ -397,7 +407,7 @@
                 <div class="flex items-center gap-2">
                   <img
                     class="h-6 w-6 rounded-full object-cover"
-                    data-alt="Portrait of female student"
+                    alt="Portrait of female student"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFFVkaRRKuvSmVBaTXKqvANzcvPm_BGd5eGLSPmal0Mz4DsY3RATUmBTuLyd7ZIvW-_o7ZCNH627lOFlM1ssrhSMIjpHwnHQwvFv7wtzpEGYz1WAu1HNNDTEaMmddlx3N74eF0PS4Ur3zsHA_aVh1nIT0KFJWMPaBSy2_fh6c5f3qiUF6B5Ib35CpF7IQXlQgzC5ihgCYbpqoa4MAJ74JgHyHATgKJ0-2h92fBYxQvkBjL0TiWtahphg"
                   />
                   <span class="text-body-sm text-on-surface-variant"
@@ -413,14 +423,20 @@
         <div
           class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 opacity-0 backdrop-blur-sm transition-opacity duration-300"
           id="detail-modal"
+          aria-describedby="modal-desc"
+          aria-labelledby="modal-title"
+          aria-modal="true"
+          role="dialog"
         >
           <div
             class="relative m-4 max-h-[90vh] w-full max-w-2xl scale-95 transform overflow-y-auto rounded-3xl bg-surface-container-lowest p-8 shadow-2xl transition-transform duration-300"
             id="detail-modal-content"
           >
             <button
+              aria-label="关闭商品详情"
               class="absolute right-6 top-6 rounded-full bg-surface-container p-2 transition-colors hover:bg-surface-container-high"
               onclick="closeDetailModal()"
+              type="button"
             >
               <span class="material-symbols-outlined text-on-surface"
                 >close</span
@@ -440,8 +456,10 @@
             </div>
             <div class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
               <div
+                aria-label="商品图片"
                 class="h-64 w-full rounded-2xl bg-surface-container bg-cover bg-center"
-                data-alt="Product detail view"
+                id="modal-image"
+                role="img"
                 style="
                   background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuClAY9vTQezOIIVnaPUGrquia2bcjwQSQr22WS7XfrM3qxDI7G9CdNtwknmKwKn0bolPuRWLMIiqei69DcDsG5ro-eN5qwolrOnU1tm9SKrlNZpvShX2vjqaQtR3YqUCEk8SaLN7nKaYPak_yyJS1QMwngHZ33CJaoyZRLQtZ69peT5JwOE5AI5cPjIqo2URiD-1VHjurQODzQxuRjqEHxwKVSadt1hA-rJTohinh7ZA5Xj1C5Lb1D8YQ');
                 "
@@ -508,8 +526,9 @@
                   class="flex items-center gap-3 border-t border-surface-container pt-4"
                 >
                   <img
+                    alt="Seller avatar"
                     class="h-10 w-10 rounded-full object-cover"
-                    data-alt="Seller avatar"
+                    id="modal-avatar"
                     src="https://lh3.googleusercontent.com/aida-public/AB6AXuAKRBV6Rff8xPACQzOK7s73-B-Nv_4FBXUapE9InazkL9eYlibRCq0e6MmQBcxwnq3GO2wRBV7WOAK_-TYUS9_ZemNGtcAvAl5_EuVajrOPkXS8DoYdXvvWRigwNcnEQJE0DKzBk82rsm50p4BXR3RYT8YrKhgi_jKMLM5D4APMUxK14oTQmdf1vOzJ8m-ZfaHNtQbpqhN27v_sakHzMzWZRF4V5qov8cWZG-cWv_4MZOP1UQcT-aKAdw"
                   />
                   <div>
@@ -561,8 +580,10 @@
                 关闭
               </button>
               <button
-                class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-secondary"
+                class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:bg-surface-variant disabled:text-on-surface-variant"
+                id="contact-seller"
                 onclick="contactSeller()"
+                type="button"
               >
                 <span class="material-symbols-outlined text-sm">chat</span
                 >联系卖家
@@ -574,20 +595,28 @@
         <div
           class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 opacity-0 backdrop-blur-sm transition-opacity duration-300"
           id="publish-modal"
+          aria-labelledby="publish-modal-title"
+          aria-modal="true"
+          role="dialog"
         >
           <div
             class="relative m-4 max-h-[90vh] w-full max-w-xl scale-95 transform overflow-y-auto rounded-3xl bg-surface-container-lowest p-8 shadow-2xl transition-transform duration-300"
             id="publish-modal-content"
           >
             <button
+              aria-label="关闭发布闲置"
               class="absolute right-6 top-6 rounded-full bg-surface-container p-2 transition-colors hover:bg-surface-container-high"
               onclick="closePublishModal()"
+              type="button"
             >
               <span class="material-symbols-outlined text-on-surface"
                 >close</span
               >
             </button>
-            <h2 class="mb-2 font-headline-lg font-bold text-primary">
+            <h2
+              class="mb-2 font-headline-lg font-bold text-primary"
+              id="publish-modal-title"
+            >
               发布校园闲置
             </h2>
             <p class="mb-6 text-body-md text-on-surface-variant">
@@ -632,8 +661,10 @@
                   >
                   <input
                     class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                    min="0"
                     placeholder="0.00"
                     required=""
+                    step="0.01"
                     type="number"
                   />
                 </div>
@@ -681,21 +712,37 @@
                 ></textarea>
               </div>
               <div>
-                <label
+                <span
                   class="mb-1 block text-label-md font-semibold text-primary"
-                  >上传图片</label
+                  >上传图片</span
                 >
-                <div
-                  class="cursor-pointer rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-low p-6 text-center transition-colors hover:bg-surface-container"
+                <label
+                  class="block cursor-pointer rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-low p-6 text-center transition-colors hover:bg-surface-container"
+                  for="listing-images"
                 >
+                  <input
+                    accept="image/png,image/jpeg,image/webp"
+                    class="sr-only"
+                    id="listing-images"
+                    multiple
+                    type="file"
+                    onchange="updateImageSelection(this)"
+                  />
                   <span
                     class="material-symbols-outlined mb-1 text-3xl text-primary"
                     >add_a_photo</span
                   >
-                  <p class="text-body-sm text-on-surface-variant">
-                    点击或拖拽上传实物照片（最多4张）
+                  <p
+                    class="text-body-sm text-on-surface-variant"
+                    id="image-selection-status"
+                  >
+                    点击上传实物照片（最多4张）
                   </p>
-                </div>
+                </label>
+                <div
+                  class="mt-3 grid grid-cols-4 gap-3 empty:hidden"
+                  id="image-preview-grid"
+                ></div>
               </div>
               <div class="flex items-center justify-end gap-4 pt-4">
                 <button
@@ -717,6 +764,22 @@
         </div>
         <!-- Script for interactions -->
         <script>
+          const TRANSITION_DURATION = 300;
+          let activeListingStatus = '';
+          let detailCloseTimer;
+          let publishCloseTimer;
+          let lastFocusedElement;
+          let previewUrls = [];
+
+          const focusableSelector = [
+            'a[href]',
+            'button:not([disabled])',
+            'input:not([disabled])',
+            'select:not([disabled])',
+            'textarea:not([disabled])',
+            '[tabindex]:not([tabindex="-1"])',
+          ].join(',');
+
           function filterCategory(category, btn) {
             document.querySelectorAll('.category-btn').forEach((b) => {
               b.classList.remove('bg-primary', 'text-on-primary');
@@ -727,18 +790,54 @@
 
             const cards = document.querySelectorAll('#items-grid > div');
             cards.forEach((card) => {
-              if (
+              card.style.display =
                 category === 'all' ||
                 card.getAttribute('data-category') === category
-              ) {
-                card.style.display = 'flex';
-              } else {
-                card.style.display = 'none';
-              }
+                  ? 'flex'
+                  : 'none';
             });
           }
 
-          function openDetailModal(data) {
+          function handleListingKeydown(event, listing) {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              listing.click();
+            }
+          }
+
+          function showModal(modal, contentId) {
+            const content = modal.querySelector(`#${contentId}`);
+            modal.classList.remove('hidden', 'opacity-0');
+            content.classList.remove('scale-95');
+            content.classList.add('scale-100');
+          }
+
+          function hideModal(modal, contentId, closeTimerName) {
+            const content = modal.querySelector(`#${contentId}`);
+            modal.classList.add('opacity-0');
+            content.classList.remove('scale-100');
+            content.classList.add('scale-95');
+            clearTimeout(
+              closeTimerName === 'detail'
+                ? detailCloseTimer
+                : publishCloseTimer,
+            );
+            const closeTimer = setTimeout(() => {
+              if (modal.classList.contains('opacity-0')) {
+                modal.classList.add('hidden');
+              }
+            }, TRANSITION_DURATION);
+            if (closeTimerName === 'detail') {
+              detailCloseTimer = closeTimer;
+            } else {
+              publishCloseTimer = closeTimer;
+            }
+          }
+
+          function openDetailModal(listing, data) {
+            clearTimeout(detailCloseTimer);
+            lastFocusedElement = document.activeElement;
+            activeListingStatus = data.status;
             document.getElementById('modal-title').innerText = data.title;
             document.getElementById('modal-price').innerText = data.price;
             document.getElementById('modal-condition').innerText =
@@ -750,73 +849,154 @@
             document.getElementById('modal-desc').innerText = data.desc;
             document.getElementById('modal-seller').innerText = data.seller;
 
+            const productImage = listing.querySelector('[data-product-image]');
+            const modalImage = document.getElementById('modal-image');
+            modalImage.style.backgroundImage =
+              productImage.style.backgroundImage;
+            modalImage.setAttribute('aria-label', `${data.title} 商品图片`);
+
+            const listingAvatar = listing.querySelector('img');
+            const modalAvatar = document.getElementById('modal-avatar');
+            modalAvatar.src = listingAvatar.src;
+            modalAvatar.alt = `${data.seller}的头像`;
+
+            const contactButton = document.getElementById('contact-seller');
+            const isAvailable = data.status === '在售';
+            contactButton.disabled = !isAvailable;
+            contactButton.setAttribute('aria-disabled', String(!isAvailable));
+            contactButton.innerHTML = isAvailable
+              ? '<span class="material-symbols-outlined text-sm">chat</span>联系卖家'
+              : '<span class="material-symbols-outlined text-sm">event_busy</span>商品已预订';
+
             const modal = document.getElementById('detail-modal');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-              modal.classList.remove('opacity-0');
-              modal
-                .querySelector('#detail-modal-content')
-                .classList.remove('scale-95');
-              modal
-                .querySelector('#detail-modal-content')
-                .classList.add('scale-100');
-            }, 10);
+            showModal(modal, 'detail-modal-content');
+            modal.querySelector('button').focus();
           }
 
           function closeDetailModal() {
             const modal = document.getElementById('detail-modal');
-            modal.classList.add('opacity-0');
-            modal
-              .querySelector('#detail-modal-content')
-              .classList.remove('scale-100');
-            modal
-              .querySelector('#detail-modal-content')
-              .classList.add('scale-95');
-            setTimeout(() => {
-              modal.classList.add('hidden');
-            }, 300);
+            hideModal(modal, 'detail-modal-content', 'detail');
+            if (lastFocusedElement instanceof HTMLElement) {
+              lastFocusedElement.focus();
+            }
           }
 
           function openPublishModal() {
+            clearTimeout(publishCloseTimer);
+            lastFocusedElement = document.activeElement;
             const modal = document.getElementById('publish-modal');
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-              modal.classList.remove('opacity-0');
-              modal
-                .querySelector('#publish-modal-content')
-                .classList.remove('scale-95');
-              modal
-                .querySelector('#publish-modal-content')
-                .classList.add('scale-100');
-            }, 10);
+            showModal(modal, 'publish-modal-content');
+            modal.querySelector('button').focus();
           }
 
           function closePublishModal() {
             const modal = document.getElementById('publish-modal');
-            modal.classList.add('opacity-0');
-            modal
-              .querySelector('#publish-modal-content')
-              .classList.remove('scale-100');
-            modal
-              .querySelector('#publish-modal-content')
-              .classList.add('scale-95');
-            setTimeout(() => {
-              modal.classList.add('hidden');
-            }, 300);
+            hideModal(modal, 'publish-modal-content', 'publish');
+            if (lastFocusedElement instanceof HTMLElement) {
+              lastFocusedElement.focus();
+            }
           }
 
           function contactSeller() {
-            alert(
-              '已向卖家发送私信通知，请在消息页面查看回复并约定校内面交时间。',
-            );
+            if (activeListingStatus !== '在售') {
+              alert('该商品已预订，暂时不能联系卖家。');
+              return;
+            }
+            alert('演示：已模拟向卖家发送私信。实际消息不会发送。');
             closeDetailModal();
           }
 
-          function handlePublish(e) {
-            e.preventDefault();
-            alert('发布成功！您的闲置物品已上架至校园集市。');
+          function updateImageSelection(input) {
+            const files = Array.from(input.files || []).slice(0, 4);
+            const selectedCount = input.files ? input.files.length : 0;
+            previewUrls.forEach((url) => URL.revokeObjectURL(url));
+            previewUrls = files.map((file) => URL.createObjectURL(file));
+
+            const status = document.getElementById('image-selection-status');
+            status.textContent =
+              selectedCount > 4
+                ? '最多展示前 4 张图片'
+                : files.length
+                  ? `已选择 ${files.length} 张图片`
+                  : '点击上传实物照片（最多4张）';
+
+            const grid = document.getElementById('image-preview-grid');
+            grid.replaceChildren(
+              ...previewUrls.map((url, index) => {
+                const image = document.createElement('img');
+                image.alt = `待发布商品图片 ${index + 1}`;
+                image.className =
+                  'aspect-square w-full rounded-lg object-cover';
+                image.src = url;
+                return image;
+              }),
+            );
+          }
+
+          function handlePublish(event) {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const imageCount = Math.min(
+              document.getElementById('listing-images').files.length,
+              4,
+            );
+            alert(
+              `演示：已模拟发布闲置。${imageCount ? `已在当前页面读取 ${imageCount} 张图片。` : ''}`,
+            );
+            form.reset();
+            previewUrls.forEach((url) => URL.revokeObjectURL(url));
+            previewUrls = [];
+            document.getElementById('image-preview-grid').replaceChildren();
+            document.getElementById('image-selection-status').textContent =
+              '点击上传实物照片（最多4张）';
             closePublishModal();
           }
+
+          document
+            .querySelectorAll('#items-grid > [role="button"]')
+            .forEach((listing) => {
+              listing.addEventListener('keydown', (event) =>
+                handleListingKeydown(event, listing),
+              );
+            });
+
+          document.addEventListener('keydown', (event) => {
+            const detailModal = document.getElementById('detail-modal');
+            const publishModal = document.getElementById('publish-modal');
+            const modal = !detailModal.classList.contains('hidden')
+              ? detailModal
+              : !publishModal.classList.contains('hidden')
+                ? publishModal
+                : null;
+
+            if (modal === null) return;
+            if (event.key === 'Escape') {
+              event.preventDefault();
+              if (modal === detailModal) closeDetailModal();
+              else closePublishModal();
+              return;
+            }
+            if (event.key !== 'Tab') return;
+
+            const focusable = Array.from(
+              modal.querySelectorAll(focusableSelector),
+            ).filter((element) => !element.hidden);
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (
+              !(first instanceof HTMLElement) ||
+              !(last instanceof HTMLElement)
+            ) {
+              return;
+            }
+            if (event.shiftKey && document.activeElement === first) {
+              event.preventDefault();
+              last.focus();
+            } else if (!event.shiftKey && document.activeElement === last) {
+              event.preventDefault();
+              first.focus();
+            }
+          });
         </script>
       </div>
     </main>

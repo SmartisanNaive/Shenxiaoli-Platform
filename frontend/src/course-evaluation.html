@@ -17,8 +17,6 @@
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
       rel="stylesheet"
     />
-    <!-- Render-blocking: prevents a first-paint flash of unstyled HTML. -->
-    <link rel="stylesheet" href="./styles/main.css?direct" />
     <script type="module" src="./scripts/main.ts"></script>
   </head>
   <body class="bg-background font-body-md text-on-surface">
@@ -45,6 +43,10 @@
             <div class="flex items-center gap-3">
               <button
                 class="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-label-md text-on-primary shadow-sm transition-colors hover:bg-secondary"
+                onclick="
+                  alert('演示：评价编辑器将在后续版本开放；当前不会提交数据。')
+                "
+                type="button"
               >
                 <span class="material-symbols-outlined text-sm"
                   >rate_review</span
@@ -514,8 +516,10 @@
               </div>
               <!-- Teacher Tabs -->
               <div class="pt-6">
-                <div class="mb-4 flex items-center justify-between">
-                  <div class="flex items-center gap-2">
+                <div
+                  class="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div class="flex flex-wrap items-center gap-2">
                     <button
                       class="rounded-lg bg-primary px-4 py-1.5 text-label-md text-on-primary transition-colors"
                     >
@@ -549,7 +553,7 @@
                     <div class="flex items-center gap-3">
                       <img
                         class="h-10 w-10 rounded-full bg-surface-variant object-cover"
-                        data-alt="Avatar of student reviewer in campus style"
+                        alt="Avatar of student reviewer in campus style"
                         src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXGQW-iSxWKfOn1BG-rWX16DayoTENCinaNyIMV718RoS1J6gZSod8ia7h50o_HTtWXET5rM2nHlx1Rb_vuxeE_Ttcs9JXHqjoBv9H-BXOeQhEVR8nBUO13Xz1axCGRsO8-0YOvIGBf2XaPtuvBvJrj9nvaXTsbM9Q8P3uitG-VsYTvXSQT-yThgcJ6rpTpVWProJGjhemub2IIGnmIXKgcTOG03jkOKqrLEKIkfdqeoFKKBOZ2ow-lg"
                       />
                       <div>
