@@ -106,16 +106,16 @@ Use the provided templates in
 
 ## 🧭 Project structure cheatsheet
 
-| Path                    | Purpose                                 |
-| ----------------------- | --------------------------------------- |
-| `src/pages/*.html`      | One HTML entry per route.               |
-| `src/scripts/layout.ts` | Shared header/footer templates.         |
-| `src/scripts/main.ts`   | Mounts shared layout + page wiring.     |
-| `src/styles/main.css`   | Tailwind entry & global resets.         |
-| `src/styles/tokens.css` | Design tokens as CSS custom properties. |
-| `tailwind.config.ts`    | Tailwind theme (mirrors `tokens.css`).  |
-| `vite.config.ts`        | Multi-page build config.                |
-| `docs/DESIGN.md`        | Design system source of truth.          |
+| Path                    | Purpose                                     |
+| ----------------------- | ------------------------------------------- |
+| `src/*.html`            | One HTML entry per route (Vite multi-page). |
+| `src/scripts/layout.ts` | Shared header/footer templates.             |
+| `src/scripts/main.ts`   | Mounts shared layout + page wiring.         |
+| `src/styles/main.css`   | Tailwind entry & global resets.             |
+| `src/styles/tokens.css` | Design tokens as CSS custom properties.     |
+| `tailwind.config.ts`    | Tailwind theme (mirrors `tokens.css`).      |
+| `vite.config.ts`        | Multi-page build config.                    |
+| `docs/DESIGN.md`        | Design system source of truth.              |
 
 ---
 
