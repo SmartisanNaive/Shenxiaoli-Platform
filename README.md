@@ -1,6 +1,6 @@
 # 深小狸校园 · Shenxiaoli Platform
 
-> 学生共建的非官方校园社区 — 服务于深圳先进大学（SUAT）的同学。
+> 学生共建的非官方校园社区 — 服务于深圳理工大学（SUAT）的同学。
 > 评课 · 集市 · 技能互助 · 树洞, in one place.
 
 [![MIT License](https://img.shields.io/badge/License-MIT-1b4332.svg)](LICENSE)
@@ -17,7 +17,7 @@
 ## ✨ About
 
 **深小狸校园 (Shenxiaoli Campus)** 是一个 **学生共建** 的非官方校园社区,
-围绕深圳先进大学（SUAT）同学的日常需求设计:
+围绕深圳理工大学（SUAT）同学的日常需求设计:
 
 | Module                      | What it does                |
 | --------------------------- | --------------------------- |
@@ -26,7 +26,7 @@
 | 技能互助 / Skill Mutual Aid | 找搭子,互帮互助,共享知识。  |
 | 树洞 / Tree Hole            | 匿名、克制、可控的心声墙。  |
 
-> ⚠️ **非官方声明**: 本项目由学生自发维护,与深圳先进大学（SUAT）校方
+> ⚠️ **非官方声明**: 本项目由学生自发维护,与深圳理工大学（SUAT）校方
 > 无隶属关系。"深小狸校园" 是这个开源社区项目的名称,不代表学校的官方
 > 立场。`SUAT` / `Shenzhen University of Advanced Technology` 在文案
 > 中仅作为校园场景的语境说明。
@@ -228,7 +228,7 @@ Vulnerabilities should **not** be filed as public issues. Please follow
 
 ## 🙏 Acknowledgements
 
-- 灵感来自 **SUAT — 深圳先进大学 / Shenzhen University of Advanced
+- 灵感来自 **SUAT — 深圳理工大学 / Shenzhen University of Advanced
   Technology** 的校园文化。本项目由学生自发维护,与校方无关。
 - Design system adapted from the **Deep Forest Emerald Academic** palette.
 - Built with open-source tooling: Bun, Vite, Tailwind CSS, TypeScript.
