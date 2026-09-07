@@ -126,7 +126,7 @@ export const renderFooter = (): string => `
           <span class="font-headline-sm text-primary font-bold">深小狸校园</span>
         </div>
         <p class="text-body-md text-on-surface-variant max-w-md">
-          服务于深圳先进大学（SUAT）同学的校园平台 — 评课、闲置、技能互助与树洞，一站式连接校园生活。
+          服务于深圳理工大学（SUAT）同学的校园平台 — 评课、闲置、技能互助与树洞，一站式连接校园生活。
         </p>
       </div>
       <div>
