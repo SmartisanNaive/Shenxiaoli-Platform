@@ -230,5 +230,11 @@ Vulnerabilities should **not** be filed as public issues. Please follow
 
 - 灵感来自 **SUAT — 深圳理工大学 / Shenzhen University of Advanced
   Technology** 的校园文化。本项目由学生自发维护,与校方无关。
+- 同类项目参考 / Inspired by other student-run 评课 & 校园社区:
+  - [USTC iCourse](https://github.com/USTC-iCourse/ustc-course) — 中科大评课平台
+  - [NWU.ICU](https://github.com/NWUCA/NWU.ICU) — 西北大学课程评价
+  - [YourTJ](https://github.com/YourTongji/YourTJCourse-Serverless) — 同济选课社区
+  - [jCourse](https://github.com/SJTU-jCourse/next) — 上交选课社区
+  - [CourseBench](https://github.com/ShanghaitechGeekPie/coursebench-next) — 上科大 CourseBench
 - Design system adapted from the **Deep Forest Emerald Academic** palette.
 - Built with open-source tooling: Bun, Vite, Tailwind CSS, TypeScript.
