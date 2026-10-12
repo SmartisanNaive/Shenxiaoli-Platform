@@ -43,6 +43,8 @@
           </div>
           <div class="flex items-center gap-3">
             <button
+              type="button"
+              id="skill-publish-open"
               class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-label-md font-semibold text-on-primary shadow-sm transition-all hover:bg-secondary"
               onclick="
                 document
@@ -61,31 +63,43 @@
             class="scrollbar-hidden flex items-center gap-3 overflow-x-auto pb-2"
           >
             <button
+              type="button"
+              data-skill-category="all"
               class="whitespace-nowrap rounded-xl bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary shadow-sm transition-all"
             >
               全部领域
             </button>
             <button
+              type="button"
+              data-skill-category="数据与科研"
               class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
             >
               数据与科研
             </button>
             <button
+              type="button"
+              data-skill-category="生物实验"
               class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
             >
               生物实验
             </button>
             <button
+              type="button"
+              data-skill-category="工程开发"
               class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
             >
               工程开发
             </button>
             <button
+              type="button"
+              data-skill-category="AI与计算"
               class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
             >
               AI与计算
             </button>
             <button
+              type="button"
+              data-skill-category="设计创作"
               class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
             >
               设计创作
@@ -121,7 +135,7 @@
           class="mx-auto mb-24 grid w-full max-w-[1200px] grid-cols-1 gap-8 px-[32px] lg:grid-cols-12"
         >
           <!-- Left Column: Skill Exchange Cards (8 cols) -->
-          <div class="flex flex-col gap-6 lg:col-span-8">
+          <div class="flex flex-col gap-6 lg:col-span-8" id="skill-offers">
             <div class="flex items-center justify-between">
               <h2
                 class="flex items-center gap-2 font-headline-md text-headline-md text-primary"
@@ -275,7 +289,7 @@
             </div>
           </div>
           <!-- Right Column: Help Plaza (4 cols) -->
-          <div class="flex flex-col gap-6 lg:col-span-4">
+          <div class="flex flex-col gap-6 lg:col-span-4" id="skill-requests">
             <div class="flex items-center justify-between">
               <h2
                 class="flex items-center gap-2 font-headline-md text-headline-md text-primary"
@@ -396,7 +410,7 @@
                   <div
                     class="font-headline-lg text-headline-lg text-primary-fixed"
                   >
-                    128
+                    <span data-skill-active-count>0</span>
                   </div>
                   <div class="text-body-sm text-primary-fixed-dim">
                     本月成功配对
@@ -406,7 +420,7 @@
                   <div
                     class="font-headline-lg text-headline-lg text-primary-fixed"
                   >
-                    94%
+                    <span data-skill-offer-count>0</span>
                   </div>
                   <div class="text-body-sm text-primary-fixed-dim">
                     求助解决率
@@ -423,12 +437,15 @@
         >
           <div
             class="relative flex w-full max-w-lg flex-col gap-6 rounded-2xl bg-surface-container-lowest p-8 shadow-xl"
+            id="skill-form"
+            role="form"
           >
             <div class="flex items-center justify-between">
               <h3 class="font-headline-md text-headline-md text-primary">
                 发布技能或求助
               </h3>
               <button
+                type="button"
                 class="text-outline hover:text-on-surface"
                 onclick="
                   document
@@ -446,11 +463,15 @@
                 >
                 <div class="grid grid-cols-2 gap-3">
                   <button
+                    type="button"
+                    data-skill-kind="offer"
                     class="rounded-xl border border-primary bg-primary py-2.5 text-label-md font-medium text-on-primary"
                   >
                     提供技能共享
                   </button>
                   <button
+                    type="button"
+                    data-skill-kind="request"
                     class="rounded-xl border border-outline-variant py-2.5 text-label-md font-medium text-on-surface"
                   >
                     发起求助广场
@@ -458,30 +479,84 @@
                 </div>
               </div>
               <div class="flex flex-col gap-1.5">
-                <label class="text-label-md font-medium text-on-surface"
+                <label
+                  for="skill-title"
+                  class="text-label-md font-medium text-on-surface"
                   >标题</label
                 >
                 <input
+                  id="skill-title"
+                  name="title"
+                  required
+                  minlength="3"
+                  maxlength="100"
                   class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="例如：擅长 Python 数据分析 / 求助 FPGA 仿真"
                   type="text"
                 />
               </div>
               <div class="flex flex-col gap-1.5">
-                <label class="text-label-md font-medium text-on-surface"
+                <label
+                  for="skill-description"
+                  class="text-label-md font-medium text-on-surface"
                   >详细描述</label
                 >
                 <textarea
+                  id="skill-description"
+                  name="description"
+                  required
+                  minlength="10"
+                  maxlength="1000"
                   class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="请描述您的技能细节或求助问题背景..."
                   rows="3"
                 ></textarea>
+              </div>
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <label
+                  class="flex flex-col gap-1.5 text-label-md text-on-surface"
+                  >我能提供<input
+                    name="canOffer"
+                    maxlength="200"
+                    class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    placeholder="例如：R 语言入门辅导"
+                /></label>
+                <label
+                  class="flex flex-col gap-1.5 text-label-md text-on-surface"
+                  >我想交流<input
+                    name="wants"
+                    maxlength="200"
+                    class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    placeholder="例如：嵌入式开发"
+                /></label>
+              </div>
+              <div class="flex flex-col gap-1.5">
+                <label
+                  class="text-label-md font-medium text-on-surface"
+                  for="skill-category"
+                  >领域</label
+                >
+                <select
+                  id="skill-category"
+                  name="category"
+                  required
+                  class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  <option value="数据与科研">数据与科研</option>
+                  <option value="生物实验">生物实验</option>
+                  <option value="工程开发">工程开发</option>
+                  <option value="AI与计算">AI与计算</option>
+                  <option value="设计创作">设计创作</option>
+                  <option value="其他">其他</option>
+                </select>
               </div>
               <div class="flex flex-col gap-1.5">
                 <label class="text-label-md font-medium text-on-surface"
                   >标签 (以空格分隔)</label
                 >
                 <input
+                  id="skill-tags"
+                  name="tags"
                   class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="#R #生物信息学 #STM32"
                   type="text"
@@ -490,6 +565,7 @@
             </div>
             <div class="flex items-center justify-end gap-3 pt-2">
               <button
+                type="button"
                 class="rounded-xl px-5 py-2.5 text-label-md text-on-surface-variant transition-all hover:bg-surface-container"
                 onclick="
                   document
@@ -500,13 +576,9 @@
                 取消
               </button>
               <button
+                id="skill-submit"
+                type="button"
                 class="rounded-xl bg-primary px-6 py-2.5 text-label-md font-semibold text-on-primary transition-all hover:bg-secondary"
-                onclick="
-                  alert('演示：已模拟提交发布内容，实际不会保存或进入审核。');
-                  document
-                    .getElementById('publish-modal')
-                    .classList.add('hidden');
-                "
               >
                 确认发布
               </button>

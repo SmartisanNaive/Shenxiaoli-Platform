@@ -22,13 +22,16 @@
   },
   "comment": "Thin delegating root. Each workspace owns its own dependencies — run bun install inside frontend/ or backend/, not here.",
   "scripts": {
-    "dev": "cd frontend && bun run dev",
-    "build": "cd frontend && bun install --frozen-lockfile && bun run build",
+    "dev": "bun run scripts/dev.ts",
+    "dev:web": "cd frontend && bun run dev",
+    "dev:api": "cd backend && bun run dev",
+    "build": "cd backend && bun install --frozen-lockfile && bun run build && cd ../frontend && bun install --frozen-lockfile && bun run build",
     "preview": "cd frontend && bun run preview",
-    "lint": "cd frontend && bun run lint",
-    "format:check": "cd frontend && bun run format:check",
-    "typecheck": "cd frontend && bun run typecheck",
-    "setup": "cd frontend && bun install",
+    "lint": "cd backend && bun run lint && cd ../frontend && bun run lint",
+    "format:check": "cd backend && bun run format:check && cd ../frontend && bun run format:check",
+    "typecheck": "cd backend && bun run typecheck && cd ../frontend && bun run typecheck",
+    "test": "cd backend && bun run test",
+    "setup": "cd frontend && bun install && cd ../backend && bun install",
     "deploy": "deno -Ar https://host.retiehe.com/cli deploy"
   }
 }

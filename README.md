@@ -31,8 +31,10 @@
 > 立场。`SUAT` / `Shenzhen University of Advanced Technology` 在文案
 > 中仅作为校园场景的语境说明。
 
-当前仓库为 **前后端分离的 monorepo**: `frontend/` 已实现(数据来自静态
-占位), `backend/` 为预留目录。后续接入真实后端时, UI 契约保持不变。
+当前仓库为 **前后端分离的 monorepo**：前端保留多页 HTML + TypeScript +
+Tailwind 的设计体系，后端提供 Bun + Hono + SQLite API。课程评价、集市、技能互助、
+匿名树洞、跨模块搜索和内容审核已接入本地持久化。初始数据是显式标注的本地演示数据，
+登录也仅提供开发演示身份；上线前仍需接入学校认可的身份验证与持久化托管。
 
 ### Design language
 
@@ -47,6 +49,8 @@ greens, off-white surfaces, serif headlines, and zero blue.
 ## 🚀 Tech stack
 
 - **[Bun](https://bun.sh)** — package manager & script runner
+- **[Hono](https://hono.dev)** — lightweight TypeScript API
+- **SQLite** — local persistence for the MVP
 - **[Vite](https://vitejs.dev)** — multi-page dev server & bundler
 - **[Tailwind CSS](https://tailwindcss.com)** — utility-first styling with
   design tokens
@@ -58,8 +62,8 @@ No framework lock-in. Each page is a plain HTML entry with shared chrome
 pre-rendered by Vite before the first browser paint; see
 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the runtime model.
 
-The backend is not implemented yet — see [`backend/README.md`](backend/README.md)
-for the intended scope.
+The API contract and deployment boundaries are documented in
+[`backend/README.md`](backend/README.md) and [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ---
 
@@ -72,7 +76,7 @@ there is no shared root `node_modules`.
 .
 ├── .github/
 │   ├── ISSUE_TEMPLATE/          # Issue templates
-│   ├── workflows/ci.yml         # Quality checks on push and pull request
+│   ├── workflows/ci.yml         # Frontend and backend quality checks
 │   ├── workflows/deploy.yml     # Static deploy
 │   ├── dependabot.yml           # Monthly dependency update checks
 │   └── PULL_REQUEST_TEMPLATE.md # Pull request checklist
@@ -89,8 +93,10 @@ there is no shared root `node_modules`.
 │   │   ├── market.html             # 集市     / Market (Vite entry)
 │   │   ├── skill-mutual-aid.html   # 技能互助 / Skill Mutual Aid (Vite entry)
 │   │   ├── tree-hole.html          # 树洞     / Tree Hole (Vite entry)
+│   │   ├── moderation.html         # 内容审核 / Moderation (Vite entry)
 │   │   ├── scripts/
-│   │   │   ├── main.ts          # Client-only interaction wiring
+│   │   │   ├── main.ts          # Shared auth, search, and page dispatch
+│   │   │   ├── api.ts           # Typed API client and shared helpers
 │   │   │   └── layout.ts        # Header/footer template functions
 │   │   └── styles/
 │   │       ├── main.css         # Tailwind entry + project resets
@@ -104,8 +110,11 @@ there is no shared root `node_modules`.
 │   ├── tsconfig.json
 │   ├── vite.config.ts
 │   └── package.json             # @shenxiaoli/frontend
-├── backend/                     # 🚧 Reserved — not implemented yet
-│   └── README.md                # Intended scope and conventions
+├── backend/                     # Bun + Hono API and SQLite persistence
+│   ├── src/app.ts               # API routes, auth, moderation and rate limits
+│   ├── src/db.ts                # SQLite schema and demo seed data
+│   ├── test/                    # API integration tests
+│   └── README.md                # API, setup and production boundaries
 ├── .editorconfig
 ├── .gitattributes
 ├── .gitignore
@@ -131,20 +140,18 @@ there is no shared root `node_modules`.
 ### Install
 
 ```bash
-bun run setup          # from the repo root — installs frontend/ deps
-# or equivalently:
-cd frontend && bun install
+bun run setup          # from the repo root — installs both packages
 ```
 
 ### Develop
 
 ```bash
-bun run dev            # from the repo root, delegates into frontend/
+bun run dev            # from the repo root — starts API and Vite together
 ```
 
-The root `package.json` carries no dependencies — it only forwards `dev`,
-`build`, `preview`, `lint`, `format:check`, and `typecheck` into `frontend/`.
-Run them there directly if you prefer.
+The root `package.json` has no runtime dependencies. Each package owns its own
+lockfile and dependencies; use `bun run dev:api` / `bun run dev:web` to start
+only one service.
 
 The dev server starts on <http://127.0.0.1:5173> and opens the Home page
 automatically. Each page lives at:
@@ -154,25 +161,32 @@ automatically. Each page lives at:
 - `/market.html` — 集市
 - `/skill-mutual-aid.html` — 技能互助
 - `/tree-hole.html` — 树洞
+- `/moderation.html` — 内容审核（开发环境使用演示审核员登录）
+
+Vite proxies `/api/*` and `/uploads/*` to the API on port `8787`. The first
+local run enables development-only student and moderator demo accounts; select
+one from the account menu in the header. **These accounts do not verify SUAT
+enrollment and are disabled automatically in production.** Demo data is stored
+in `backend/data/shenxiaoli.sqlite`; uploaded images are stored in
+`backend/uploads/`. Both runtime directories are ignored by Git.
 
 ### Build for production
 
 ```bash
-bun run build          # type-check + emit frontend/dist/
-bun run preview        # serve the built output
+bun run build          # type-check and build both API and frontend
+bun run test           # run backend API integration tests
+bun run preview        # preview the static frontend only
 ```
 
 ### Lint / format / type-check
 
-Run these from `frontend/` (the full set, including the `:fix` variants):
+Run the root checks across both packages:
 
 ```bash
-cd frontend
-bun run lint           # ESLint
-bun run lint:fix       # ESLint --fix
-bun run format         # Prettier --write
-bun run format:check   # Prettier --check (CI-friendly)
-bun run typecheck      # tsc --noEmit
+bun run lint
+bun run format:check
+bun run typecheck
+bun run test
 ```
 
 ---

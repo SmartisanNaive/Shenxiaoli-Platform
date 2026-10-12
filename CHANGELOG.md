@@ -14,7 +14,12 @@ and this project adheres to [Semantic Versioning 2.0](https://semver.org/).
 
 - Project scaffolded as a Bun + Vite + Tailwind CSS + TypeScript
   multi-page application.
-- Five page entries: Home (`/`), 评课, 集市, 技能互助, 树洞.
+- Hono + SQLite API for course reviews, marketplace listings, skill mutual aid,
+  anonymous tree-hole posts, cross-module search, reports and moderation.
+- Development-only demo student/moderator sessions, opaque cookie handling,
+  input validation, per-account rate limits, and validated image uploads.
+- A moderation workspace and API integration tests using in-memory SQLite.
+- Home, course, market, skills, tree-hole, and moderation page entries.
 - Shared header & footer template rendered from
   `frontend/src/scripts/layout.ts`.
 - Design tokens (`frontend/src/styles/tokens.css`) and Tailwind theme
@@ -26,8 +31,7 @@ and this project adheres to [Semantic Versioning 2.0](https://semver.org/).
   `bun run build` on every push and PR.
 - `docs/ARCHITECTURE.md`, `.gitattributes`, and Dependabot configuration
   for a more maintainable GitHub project baseline.
-- Reserved `backend/` package with a README describing its intended scope,
-  ahead of the API implementation.
+- Root development command that starts the API and frontend together.
 - Root `package.json` with delegating `dev` / `build` / `preview` / `lint` /
   `format:check` / `typecheck` / `setup` scripts. It declares no
   dependencies of its own.
@@ -56,6 +60,11 @@ and this project adheres to [Semantic Versioning 2.0](https://semver.org/).
   screenshots live in `docs/screenshots/`.
 - Shared chrome and the main stylesheet are injected during Vite's HTML
   transform, preventing an unstyled first paint when navigating between pages.
+- The frontend's static feature samples are now replaced by API-backed data and
+  working filters, publishing, contact requests, reactions, and review forms.
+- Local development demo sign-in is explicit and disabled in production; the
+  README documents remaining school identity, durable hosting, and moderation
+  governance requirements.
 - Student-run, non-official project wording and tree-hole privacy wording were
   clarified to avoid unsupported claims.
 

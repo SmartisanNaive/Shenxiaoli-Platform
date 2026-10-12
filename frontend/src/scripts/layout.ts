@@ -35,9 +35,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: 'tree-hole', label: '树洞', href: './tree-hole.html' },
 ];
 
-const PROFILE_AVATAR =
-  'https://lh3.googleusercontent.com/aida/AEtjO1UDmyqYuHr3A5mKiLnsGr0ahhVQn9xPIKdrc7P8FJ0tVaWlL1f0FTpqK8QuXUtd7t2gwU_hRMjZIW5PcbthXyoOtt4T-6PzmGlcDBN3sok_gliYbla7J0iNy2egLeScw-e7zhwTkdbfxu6rLyfWn2jxPb3sbcYJeWPkF5cCh8xR9QeqFhTRxaR1E0ul-pEqrdIGGW91rJ1EsZRzoOM8IgndIsq4uq-2P05c3sfAeWpH1ZV1fOaBzGANHxyeYF6DmInLfNdOjvUZLw';
-const LOGO_AVATAR = PROFILE_AVATAR;
+const PROFILE_AVATAR = './favicon.svg';
+const LOGO_AVATAR = './favicon.svg';
 
 const escapeHtml = (s: string): string =>
   s
@@ -89,29 +88,44 @@ export const renderHeader = (activeKey?: NavKey): string => {
         <div class="relative">
           <button
             class="flex items-center gap-2 rounded-xl bg-primary px-3 py-2 text-label-md text-on-primary transition-colors hover:bg-secondary sm:px-4"
-            onclick="alert('演示模式：请进入具体板块体验发布流程，当前不会提交数据。')"
+            data-publish-shortcut
             type="button"
           >
             <span class="material-symbols-outlined text-sm">add</span>
             <span class="hidden sm:inline">发布</span>
           </button>
         </div>
-        <a
+        <button
           class="relative hidden p-2 text-on-surface-variant transition-colors hover:text-primary sm:block"
-          data-path="messages"
-          href="#"
-          onclick="event.preventDefault(); alert('演示模式：通知中心暂未接入，不会产生真实消息。')"
+          data-notifications-open
+          type="button"
+          aria-label="联系请求"
         >
           <span class="material-symbols-outlined">notifications</span>
-        </a>
-        <a
-          class="flex items-center"
-          data-path="profile"
-          href="#"
-          onclick="event.preventDefault(); alert('演示模式：个人主页暂未接入，不会读取账户信息。')"
-        >
-          <img alt="用户头像" class="w-8 h-8 rounded-full object-cover" src="${PROFILE_AVATAR}" />
-        </a>
+        </button>
+        <div class="relative" data-auth-widget>
+          <button
+            class="flex items-center gap-2 rounded-xl p-1.5 text-on-surface-variant transition-colors hover:bg-surface-container-low hover:text-primary"
+            data-auth-toggle
+            type="button"
+            aria-expanded="false"
+            aria-label="账户与登录选项"
+          >
+            <img alt="" class="h-8 w-8 rounded-full object-cover" src="${PROFILE_AVATAR}" />
+            <span class="hidden max-w-28 truncate text-label-sm sm:block" data-auth-label>未登录</span>
+            <span class="material-symbols-outlined text-sm" aria-hidden="true">expand_more</span>
+          </button>
+          <div class="absolute right-0 top-full z-50 mt-2 hidden w-64 rounded-xl border border-surface-variant bg-surface p-4 shadow-lg" data-auth-panel>
+            <p class="mb-3 text-body-sm text-on-surface-variant" data-auth-message>正在检查登录状态…</p>
+            <div class="flex flex-col gap-2" data-demo-login-options hidden>
+              <button class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary" data-demo-login="student" type="button">以演示同学身份登录</button>
+              <button class="rounded-lg border border-outline-variant px-3 py-2 text-label-sm text-primary hover:bg-surface-container-low" data-demo-login="moderator" type="button">以演示审核员身份登录</button>
+              <p class="text-body-sm text-outline">仅供本地开发演示，不代表学校认证。</p>
+            </div>
+            <a class="mb-2 hidden rounded-lg bg-surface-container-low px-3 py-2 text-label-sm text-primary hover:bg-surface-container" data-admin-link href="./moderation.html">打开内容审核台</a>
+            <button class="hidden w-full rounded-lg px-3 py-2 text-left text-label-sm text-on-surface-variant hover:bg-surface-container-low" data-auth-logout type="button">退出演示登录</button>
+          </div>
+        </div>
       </div>
     </div>
   </header>`;

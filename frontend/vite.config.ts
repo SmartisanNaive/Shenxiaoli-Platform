@@ -111,6 +111,7 @@ export default defineConfig({
         market: resolve(__dirname, 'src/market.html'),
         'skill-mutual-aid': resolve(__dirname, 'src/skill-mutual-aid.html'),
         'tree-hole': resolve(__dirname, 'src/tree-hole.html'),
+        moderation: resolve(__dirname, 'src/moderation.html'),
       },
     },
   },
@@ -126,6 +127,10 @@ export default defineConfig({
     strictPort: false,
     open: true,
     host: '127.0.0.1',
+    proxy: {
+      '/api': { target: 'http://127.0.0.1:8787', changeOrigin: false },
+      '/uploads': { target: 'http://127.0.0.1:8787', changeOrigin: false },
+    },
   },
 
   preview: {

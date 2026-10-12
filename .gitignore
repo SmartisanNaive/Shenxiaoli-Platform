@@ -26,6 +26,10 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Backend runtime data
+backend/data/
+backend/uploads/
+
 # Environment files
 .env
 .env.local

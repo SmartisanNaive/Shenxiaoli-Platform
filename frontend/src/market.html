@@ -622,13 +622,19 @@
             <p class="mb-6 text-body-md text-on-surface-variant">
               快速发布你的闲置好物，让它在深小狸校园继续发挥价值。
             </p>
-            <form class="space-y-4" onsubmit="handlePublish(event)">
+            <form
+              class="space-y-4"
+              id="listing-form"
+              onsubmit="handlePublish(event)"
+            >
               <div>
                 <label
                   class="mb-1 block text-label-md font-semibold text-primary"
                   >商品标题</label
                 >
                 <input
+                  id="listing-title"
+                  name="title"
                   class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="例如：九成新机械键盘、考研英语高分笔记…"
                   required=""
@@ -642,6 +648,8 @@
                     >分类</label
                   >
                   <select
+                    id="listing-category"
+                    name="category"
                     class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option>数码电子</option>
@@ -660,6 +668,8 @@
                     >价格 (¥)</label
                   >
                   <input
+                    id="listing-price"
+                    name="price"
                     class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
                     min="0"
                     placeholder="0.00"
@@ -676,6 +686,8 @@
                     >成色</label
                   >
                   <select
+                    id="listing-condition"
+                    name="condition"
                     class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option>全新</option>
@@ -690,6 +702,8 @@
                     >面交地点推荐</label
                   >
                   <select
+                    id="listing-location"
+                    name="location"
                     class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option>图书馆门前</option>
@@ -705,6 +719,8 @@
                   >详细描述</label
                 >
                 <textarea
+                  id="listing-description"
+                  name="description"
                   class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="描述一下物品的来源、使用感受、转手原因等…"
                   required=""
