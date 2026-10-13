@@ -1,67 +1,50 @@
-# Code of Conduct
+# 行为准则
 
-## Our Pledge
+## 我们的承诺
 
-We as members, contributors, and leaders pledge to make participation in
-our community a welcoming and inclusive experience for everyone —
-regardless of age, body size, disability, ethnicity, sex characteristics,
-gender identity and expression, level of experience, education,
-socio-economic status, nationality, personal appearance, race, religion,
-or sexual identity and orientation.
+我们希望成员、贡献者与维护者都能在社区中获得友好、包容的参与体验，不因年龄、
+体型、残障、族裔、性别特征、性别认同与表达、经验、教育、社会经济状况、国籍、
+外貌、种族、宗教或性取向受到歧视。
 
-We pledge to act and interact in ways that contribute to an open,
-welcoming, diverse, inclusive, and healthy community.
+参与者应共同维护开放、多元、尊重与健康的协作环境。
 
-## Our Standards
+## 行为标准
 
-Examples of behavior that contributes to a positive environment:
+欢迎的行为包括：
 
-- 💬 Using welcoming and inclusive language
-- 🤝 Being respectful of differing viewpoints and experiences
-- 🧡 Giving and gracefully accepting constructive feedback
-- 🌱 Accepting responsibility and apologizing for mistakes
-- 🎯 Focusing on what is best for the community
+- 使用友好、包容的语言，尊重不同观点与经历。
+- 提出并接受建设性反馈，讨论具体问题而非攻击个人。
+- 为自身行为负责，承认并纠正错误。
+- 尊重他人隐私，关注社区整体利益。
 
-Examples of unacceptable behavior:
+不可接受的行为包括：
 
-- ❌ The use of sexualized language or imagery
-- ❌ Trolling, insulting or derogatory comments, personal attacks
-- ❌ Public or private harassment
-- ❌ Publishing others' private information without permission
-- ❌ Other conduct that could reasonably be considered inappropriate
+- 性化语言或图像，以及不受欢迎的性关注。
+- 挑衅、侮辱、贬损、人身攻击或持续骚扰。
+- 未经许可公开他人的个人信息、私信或树洞账号关联。
+- 其他不适合专业协作环境的行为。
 
-## Enforcement Responsibilities
+## 维护者责任与适用范围
 
-Project maintainers are responsible for clarifying and enforcing our
-standards of acceptable behavior and will take appropriate and fair
-corrective action in response to any behavior they deem inappropriate,
-threatening, offensive, or harmful.
+维护者负责解释并执行准则，对不恰当、威胁、冒犯或有害行为采取公平、适当的处理。
+维护者可移除、修改或拒绝违背准则的评论、提交、代码、Issue、文档及其他贡献，并在
+适当情况下说明处理原因。
 
-Maintainers have the right and responsibility to remove, edit, or reject
-comments, commits, code, wiki edits, issues, and other contributions
-that are not aligned to this Code of Conduct, and will communicate
-reasons for moderation decisions when appropriate.
+准则适用于仓库、Issue、PR、讨论和项目社区等协作空间，以及成员代表本项目参与的
+公共活动。深小狸校园为学生维护的非官方项目，此处的项目代表身份不代表学校身份。
+站内内容治理和申诉流程另见社区规则及[后端说明](backend/README.md)。
 
-## Scope
+## 报告与处理
 
-This Code of Conduct applies within all project spaces — the repository,
-issues, pull requests, discussions, and any other official channels —
-as well as when an individual is officially representing the project in
-public spaces.
+骚扰、滥用或其他违反准则的行为可私密报告至
+[jianghanchn@vip.qq.com](mailto:jianghanchn@vip.qq.com)。请说明时间、涉及场景、
+经过和必要的脱敏证据，不在公共讨论中披露举报人或无关参与者的信息。
 
-## Enforcement
+维护者应公平核查，尊重报告者隐私，并通过邮件沟通处理进度。安全漏洞请参照
+[安全政策](SECURITY.md)。
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may
-be reported to the project team at **[conduct@shenxiaoli.example]**.
+## 来源
 
-All complaints will be reviewed and investigated promptly and fairly.
-The project team is obligated to respect the privacy and security of the
-reporter.
-
-## Attribution
-
-This Code of Conduct is adapted from the
-[Contributor Covenant, version 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html).
-
-For answers to common questions about this code of conduct, see the
-[FAQ](https://www.contributor-covenant.org/faq).
+本准则改编自
+[Contributor Covenant 2.1](https://www.contributor-covenant.org/version/2/1/code_of_conduct.html)。
+相关常见问题见其 [FAQ](https://www.contributor-covenant.org/faq)。

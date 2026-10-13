@@ -1,52 +1,48 @@
-# Security Policy
+# 安全政策
 
-## Supported versions
+## 支持范围
 
-The latest minor release receives security updates. Older minors are
-not patched once a newer minor ships.
+当前维护对象为 `main` 分支的最新代码，旧发布版本不保证获得安全更新。
+仓库包含前端、API、认证、SQLite、上传、邮件 worker 和部署/恢复工具，均属于报告范围。
 
-| Version                | Supported |
-| ---------------------- | --------- |
-| `main` branch (latest) | ✅        |
-| Older releases         | ❌        |
+## 私密报告
 
-## Reporting a vulnerability
+安全问题请发送至 [jianghanchn@vip.qq.com](mailto:jianghanchn@vip.qq.com)，
+不要通过公共 Issue、PR、评论或普通公开讨论披露漏洞细节。
 
-**Please do not file public GitHub issues for security problems.**
+报告请包含：
 
-Send a private report to **[security@shenxiaoli.example]** with:
+1. 问题与影响范围，以及复现时的提交或部署版本。
+2. 最小复现步骤、相关路径和经过脱敏的请求/响应。
+3. 测试环境与已知临时缓解方法。
+4. 是否希望在修复说明中署名。
 
-1. A clear description of the issue and the impact you observed.
-2. Steps to reproduce (URL, browser, request/response if applicable).
-3. Any known workarounds.
-4. Whether you'd like to be credited in the fix.
+不要提供真实验证码、会话、API 密钥、私信正文、树洞账号关联或其他用户的隐私数据。
+优先在本地合成数据环境复现。收到报告后维护者通过邮件沟通核验、修复与披露进度；
+响应时效由实际维护安排决定，本文不设未经确认的固定 SLA。
 
-We acknowledge reports within **3 business days** and aim to ship a fix
-within **30 days**, depending on severity.
+## 关注的安全边界
 
-## Disclosure policy
+- Better Auth 与开发演示会话、校园邮箱域校验、验证码尝试和冷却、会话撤销。
+- 业务角色、账号限制、内容归属、私信参与者授权、屏蔽与申诉复核权限。
+- 用户输入、SQL 参数化、上传大小与文件签名、图片读取和请求来源检查。
+- 树洞普通展示匿名、举报证据和审计的访问控制，以及日志中的敏感信息。
+- Resend 签名回执、通知邮件、周期清理、持久卷、备份与恢复。
 
-We follow **coordinated disclosure**:
+邮箱验证不等同于学校身份或学籍认证。树洞对普通用户隐藏账号标识，但服务器仍有
+内部账号关联。注销立即停用和隐藏内容，30 天后的身份与部分内容清理由 worker 执行；
+私信历史、物理上传和备份不是全部即时删除。具体数据边界见
+[架构](docs/ARCHITECTURE.md)与[运维文档](docs/OPERATIONS.md)。
 
-- We will work with you to understand the issue and prepare a fix.
-- Once a fix is ready, we publish a release and a CVE (if applicable)
-  simultaneously.
-- Reporters are credited in the release notes unless they ask to remain
-  anonymous.
+当前 `/uploads/*` 未覆盖业务会话解析，导致有效登录请求仍返回 401；这是已记录的
+功能限制，详见[后端说明](backend/README.md#数据保留检查与上线边界)。若发现能绕过
+鉴权或访问他人受限数据，仍请私密报告，不因既有已知限制排除安全问题。
 
-## Scope
+## 协调披露与第三方依赖
 
-This repository currently contains **only the frontend**. Reports about
-server-side behavior cannot be evaluated here — please verify the
-report against the deployed frontend before sending.
+维护者与报告者共同确认影响和修复后，再安排公开修复说明；按报告者意愿署名。
+涉及第三方依赖的问题由项目评估自身影响，并协调上游处理，不承诺自动发布 CVE。
 
-## Out of scope
-
-The following are generally not security issues:
-
-- Vulnerabilities in third-party CDNs we link to (e.g. Google Fonts,
-  Material Symbols).
-- Clickjacking against the static demo pages (they have no auth).
-- Lack of rate limiting on a frontend-only demo.
-
-If you're unsure, send the report — we'll triage.
+纯粹发生在外部服务且不影响本项目的漏洞应向相应服务报告；由本项目集成、配置或
+依赖版本引起的风险仍欢迎提交。静态预览只包含前端，不应据此排除 API、限流、cookie
+或生产配置问题。

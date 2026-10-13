@@ -1,72 +1,52 @@
-# Changelog
+# 变更记录
 
-All notable changes to **深小狸校园 (Shenxiaoli Platform)** are documented
-in this file. Dates are in `YYYY-MM-DD` and follow ISO 8601.
-
-The format is based on [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.0/),
-and this project adheres to [Semantic Versioning 2.0](https://semver.org/).
-
----
+记录深小狸校园（Shenxiaoli Platform）的功能与行为变化。未正式发布的改动归入
+`Unreleased`，实际发布时再确定版本和 `YYYY-MM-DD` 日期。
+结构参考 [Keep a Changelog 1.1](https://keepachangelog.com/en/1.1.0/)，
+版本约定参考 [Semantic Versioning 2.0](https://semver.org/)。
 
 ## [Unreleased]
 
 ### Added
 
-- Project scaffolded as a Bun + Vite + Tailwind CSS + TypeScript
-  multi-page application.
-- Hono + SQLite API for course reviews, marketplace listings, skill mutual aid,
-  anonymous tree-hole posts, cross-module search, reports and moderation.
-- Development-only demo student/moderator sessions, opaque cookie handling,
-  input validation, per-account rate limits, and validated image uploads.
-- A moderation workspace and API integration tests using in-memory SQLite.
-- Home, course, market, skills, tree-hole, and moderation page entries.
-- Shared header & footer template rendered from
-  `frontend/src/scripts/layout.ts`.
-- Design tokens (`frontend/src/styles/tokens.css`) and Tailwind theme
-  (`frontend/tailwind.config.ts`) extracted from `docs/DESIGN.md`.
-- GitHub-standard open-source docs: `README`, `LICENSE` (MIT),
-  `CONTRIBUTING`, `CODE_OF_CONDUCT`, `SECURITY`.
-- CI workflow (`.github/workflows/ci.yml`) running
-  `bun run lint`, `bun run format:check`, `bun run typecheck`,
-  `bun run build` on every push and PR.
-- `docs/ARCHITECTURE.md`, `.gitattributes`, and Dependabot configuration
-  for a more maintainable GitHub project baseline.
-- Root development command that starts the API and frontend together.
-- Root `package.json` with delegating `dev` / `build` / `preview` / `lint` /
-  `format:check` / `typecheck` / `setup` scripts. It declares no
-  dependencies of its own.
+- Bun + Vite + Tailwind CSS + TypeScript 多页前端，以及 Bun + Hono + SQLite 后端。
+- 课程评价、集市、技能分享/求助、树洞、跨模块搜索、评论、收藏、发布维护和修改快照。
+- Better Auth 校园邮箱验证码登录，允许精确的 `@stu.suat-sz.edu.cn` 与
+  `@suat-sz.edu.cn` 域；Resend 验证码发送、发送冷却及验证码校验限制。
+- 个人中心、独立搜索和项目说明页面；昵称/邮箱管理、全部会话撤销、验证码确认注销，
+  以及由独立 worker 执行的 30 天身份与部分内容清理。
+- 联系请求接受后创建或复用会话、站内私信、消息去重与游标分页、已读状态、屏蔽和消息举报。
+- 互助推荐、申请、接受/取消、双方确认完成、反馈、真实统计、争议处置与恢复后重新确认。
+- 举报处置、警告/禁言/封禁、作者申诉、不同审核人员复核、审计及有限消息举报证据。
+- 站内通知、社交邮件偏好、通知邮件 outbox、独立消费与退避重试、Resend 签名回执与事件去重。
+- 课程、开课和教师关联，管理员邮箱授权命令，CSV 模板、预览校验与确认导入，目录和教师维护。
+- 开发演示学生/审核员账号、合成数据、会话令牌摘要、输入校验、业务限流和图片上传校验。
+- SQLite 版本迁移与显式迁移命令、健康/就绪接口、Docker 多阶段构建、Caddy 同源入口、
+  Compose 数据卷及独立 API/worker/migrate 服务。
+- 一致数据库快照、图片归档、Restic 异地加密备份与保留、恢复校验及恢复前副本。
+- 使用内存 SQLite 和邮件替身的 API 集成测试，覆盖账号、内容、沟通、互助、治理、CSV 和迁移。
+- 根目录双服务开发与协调检查命令，双包 CI 和前端构建产物上传；开源协作文档与 MIT 许可证。
 
 ### Changed
 
-- **Restructured the repository into a frontend/backend monorepo.** All
-  application code and its tooling moved from the repo root into
-  `frontend/` (`src/`, `public/`, `vite.config.ts`, `tailwind.config.ts`,
-  `postcss.config.js`, `tsconfig.json`, `eslint.config.js`, `bunfig.toml`,
-  `.prettierrc.json`, `.prettierignore`, `package.json`, `bun.lock`).
-  Project meta — `README`, `LICENSE`, `CONTRIBUTING`, `CODE_OF_CONDUCT`,
-  `SECURITY`, `CHANGELOG`, `docs/`, `.github/`, `.editorconfig`,
-  `.gitattributes`, `.gitignore` — stays at the root. Each package owns its
-  own dependencies; there is no shared root `node_modules`.
-- The frontend package is now named `@shenxiaoli/frontend`;
-  `shenxiaoli-platform` names the repo root.
-- Build output moved from `dist/` to `frontend/dist/`. The `rth-host.json`
-  deploy target and the CI artifact path were updated to match, and the
-  `deploy` script moved to the root `package.json` alongside it.
-- CI runs with `working-directory: frontend`; its cache key and uploaded
-  artifact now point at `frontend/`. Dependabot's npm ecosystem tracks
-  `/frontend`.
-- Original `_1`–`_5/code.html` design files were consolidated into a
-  unified project layout. The original visual direction is preserved; reference
-  screenshots live in `docs/screenshots/`.
-- Shared chrome and the main stylesheet are injected during Vite's HTML
-  transform, preventing an unstyled first paint when navigating between pages.
-- The frontend's static feature samples are now replaced by API-backed data and
-  working filters, publishing, contact requests, reactions, and review forms.
-- Local development demo sign-in is explicit and disabled in production; the
-  README documents remaining school identity, durable hosting, and moderation
-  governance requirements.
-- Student-run, non-official project wording and tree-hole privacy wording were
-  clarified to avoid unsupported claims.
+- 仓库整理为独立前后端包，各自维护依赖与锁文件，根目录只提供协调脚本；后端已实现，不再作为占位目录。
+- 前端构建产物位于 `frontend/dist/`，静态托管目标相应更新；静态部署工作流明确为前端预览。
+- CI 分前后端任务运行 lint、格式、类型和构建检查，后端另运行 API 测试；
+  Dependabot 当前配置跟踪前端 npm 依赖与 GitHub Actions。
+- 五个早期页面设计整合为九个 HTML 入口；公共布局、导航与样式在 Vite HTML 转换阶段注入，
+  业务展示改为 API 数据。`docs/screenshots/` 保留早期设计参考。
+- 新评价和树洞提交后直接发布，后续通过举报和治理处理；内容业务状态与治理状态分离。
+- 正式账号由校园邮箱 OTP 管理，演示登录在生产禁用；校园邮箱验证只证明邮箱控制权，
+  不描述为实名或学籍认证。
+- 树洞普通展示及评论隐藏账号标识，明确服务内部仍保留关联；账号清理、举报证据和备份有各自保留边界。
+- README、后端 API、架构、运维、贡献、安全和设计说明同步近期功能；安全与行为投诉邮箱统一为
+  `jianghanchn@vip.qq.com`，移除占位联系方式和未经确认的固定响应承诺。
+
+### Known limitations
+
+- 图片读取 `/uploads/*` 尚未覆盖会话解析，有效登录请求仍返回 401；上传已实现，读取闭环须修复后验收。
+- 根目录开发命令不自动启动 worker，备份脚本不内置调度；邮件与清理任务、异地备份须配置并运行。
+- 生产收信、HTTPS、恢复与回滚仍需真实环境验收；学校 SSO、学籍核验及教务自动同步未实现。
 
 ---
 

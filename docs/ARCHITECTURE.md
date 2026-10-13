@@ -1,119 +1,167 @@
-# Project Architecture
+# 项目架构
 
-## Purpose
+## 系统组成与数据流
 
-深小狸校园 is a multi-page campus community MVP. It keeps the existing
-Bun + Vite + Tailwind + TypeScript frontend and adds a Bun + Hono API backed by
-SQLite. The frontend is still framework-free: existing HTML entries share a
-pre-rendered header/footer and small TypeScript feature modules.
+深小狸校园采用前后端分离的 monorepo：前端为无框架的 Vite 多页 HTML + TypeScript +
+Tailwind 客户端；后端为 Bun + Hono API，使用 SQLite 持久化。正式邮箱登录使用
+Better Auth email OTP，Resend 承担验证码和通知邮件投递。
 
-## Packages and runtime
+| 子系统           | 职责                                                         |
+| ---------------- | ------------------------------------------------------------ |
+| `frontend/`      | 九个页面入口、公共布局、认证客户端、页面交互与 API 调用      |
+| `backend/`       | 认证、业务权限、内容与互动、私信、互助、治理、迁移及数据维护 |
+| `worker`         | 消费通知邮件队列，清理到期注销账号和举报证据                 |
+| Caddy            | 静态文件、HTTPS、同源 API 与图片反向代理                     |
+| `ops/`           | 数据库快照、上传归档、Restic 加密备份与恢复                  |
+| 根目录与 `docs/` | 双包协调脚本、CI、项目说明、设计和运维规范                   |
 
-| Path | Responsibility |
-| --- | --- |
-| `frontend/` | Vite multi-page client, HTML, Tailwind styling, API integration |
-| `backend/` | Hono API, SQLite schema/seed, opaque cookie sessions, moderation and upload handling |
-| `docs/` | Design rationale, screenshots and this architecture reference |
-| root | CI, project metadata, and scripts that coordinate the packages |
-
-Each package owns its dependencies and lockfile. There is no shared root
-`node_modules`. `bun run dev` starts both services; `bun run dev:web` and
-`bun run dev:api` start them separately. The Vite development server proxies
-`/api/*` and `/uploads/*` to `127.0.0.1:8787`, so browser requests use a
-same-origin URL.
+两包独立安装依赖并维护锁文件，根目录没有共享 `node_modules`。开发流：
 
 ```text
-Browser
-  ├─ Vite multi-page client :5173
-  │    ├─ pre-rendered shared layout
-  │    └─ page feature modules ── /api/*, /uploads/*
-  └─ Hono API :8787
-       ├─ session cookies + write-origin checks
-       ├─ input validation + per-account rate limits
-       └─ SQLite (`backend/data/shenxiaoli.sqlite`)
+浏览器 → Vite :5173
+           ├── HTML 转换：公共布局与样式
+           └── /api/*、/uploads/* 代理 → Hono :8787
+                                          ├── Better Auth / 业务会话
+                                          ├── 权限、校验、限流
+                                          └── SQLite + 上传目录
 ```
 
-Production needs a reverse proxy or equivalent same-origin routing for the
-static frontend and API. `frontend/dist/` alone is not a complete deployment.
-The repository's static deploy workflow does not deploy the backend or provide
-persistent storage.
+Compose 部署流：
 
-## Product/API contract
+```text
+浏览器 → Caddy :443
+           ├── frontend/dist 静态文件
+           └── /api/*、/uploads/* → API :8787
+                                      ├── SQLite 数据卷 ← worker
+                                      ├── 上传数据卷
+                                      └── 验证码 → Resend
+                           worker → 通知邮件 → Resend
+                           Resend → 签名 webhook → API → 回执状态
 
-| Surface | Client behavior | API responsibilities |
-| --- | --- | --- |
-| Home | Aggregate counts, featured courses, latest listings/tree posts | `GET /api/home` |
-| Search | Live cross-module suggestions | `GET /api/search?q=...` |
-| Course evaluation | Filter courses, view approved reviews, submit a review | `/api/courses*`; new reviews are pending moderation |
-| Market | Filter/list/detail, create listing with photos, status update, contact request | `/api/market/listings*`, `/api/uploads` |
-| Skill mutual aid | Filter offers/requests, publish, contact request | `/api/skills*` |
-| Tree hole | Topic/sort/pagination, anonymous feed, reaction, report, publish | `/api/tree-hole*`; new posts are pending moderation |
-| Moderation | Review pending course/tree content and triage reports | `/api/admin/queue`, `/api/admin/:type/:id` |
-
-Responses intentionally do not expose tree-post author/account IDs. The server
-retains an internal account association for rate limits and moderation; the
-product promise is public anonymity, not untraceability from the service.
-
-## Authentication and data
-
-The local app provides a development-only demo student and demo moderator. The
-opaque session token is sent as an `HttpOnly`, `SameSite=Lax` cookie; only its
-hash is stored in SQLite. Demo sign-in is disabled when `NODE_ENV=production`.
-No school identity provider, student verification, password reset, or production
-account lifecycle is implemented yet.
-
-SQLite schema is created idempotently on startup. Demo records are seeded only
-when their tables are empty; they are clearly labeled as local development data
-in the interface/docs. Runtime database files and image uploads are ignored by
-Git. Market uploads accept JPEG/PNG/WebP with size and magic-byte checks and use
-random filenames.
-
-## Frontend structure
-
-- `frontend/src/*.html`: Vite multi-page entries.
-- `frontend/src/scripts/layout.ts`: pre-rendered shared chrome and navigation.
-- `frontend/src/scripts/main.ts`: auth widget, search, notifications, page dispatch.
-- `frontend/src/scripts/api.ts`: typed fetch helper, escaping, common UI helpers.
-- `frontend/src/scripts/{home,courses,market,skills,tree-hole,moderation}.ts`: feature modules.
-- `frontend/src/styles/tokens.css` and `frontend/tailwind.config.ts`: mirrored design tokens.
-
-The Vite HTML transform still injects the shared header/footer and stylesheet
-before first paint. Feature modules enhance each page only after the document
-loads; they do not own first-paint layout.
-
-## Quality checks
-
-From the repository root:
-
-```bash
-bun run lint
-bun run format:check
-bun run typecheck
-bun run test
-bun run build
+发布步骤 → migrate → 同一 SQLite 数据卷
+备份脚本 → 一致数据库快照 + 图片归档 → Restic 异地加密仓库
 ```
 
-CI runs independent frontend and backend jobs. The API tests use an in-memory
-SQLite database and do not require a network service.
+`bun run dev` 只启动 API 和 Vite，worker 需另行启动。`frontend/dist/`、
+`bun run preview` 和 GitHub 静态部署均不包含后端、持久化数据或 worker。
+Compose 固定使用生产配置，即使变量来自 `.env.demo.example` 也不会开启演示登录。
+完整步骤见[运维文档](OPERATIONS.md)。
 
-## Production considerations
+## 前端组织与页面契约
 
-SQLite is appropriate for a single-instance MVP with a durable volume and
-backups. It is not configured for horizontally scaled instances. Public launch
-also requires school-approved identity verification, a durable storage/backup
-plan, HTTPS, a configured session secret and production origin allowlist,
-moderator governance, retention/deletion policies, and a real communication
-flow for contact requests. See [`../backend/README.md`](../backend/README.md).
+公共页眉、页脚、导航链接和阻塞首屏样式由 Vite 的 `shenxiaoli:inject-layout` HTML
+转换注入；页面模块在文档加载后绑定交互并读取 API，不负责公共布局的首屏生成。
+前端不会将早期静态示例卡片视为业务数据，`screenshots/` 仅保留历史设计参考。
 
-## Adding a page
+| 页面     | 主要模块与接口                                                  |
+| -------- | --------------------------------------------------------------- |
+| 首页     | `home.ts` → `/api/home`                                         |
+| 评课     | `courses.ts` → 课程、开课、教师、评价和评论                     |
+| 集市     | `market.ts` → 商品、上传、联系请求、评论与收藏                  |
+| 技能互助 | `skills.ts` → 分享/求助、统计、推荐和互助申请                   |
+| 树洞     | `tree-hole.ts` → 匿名内容、共鸣、评论和举报                     |
+| 搜索结果 | `search.ts` → 按类型分页搜索与内容定位                          |
+| 个人中心 | `account.ts` → 发布维护、会话、互助、通知、申诉、收藏与账号设置 |
+| 项目说明 | `information.ts` → 公开介绍、规则、隐私与反馈工单提交           |
+| 审核     | `moderation.ts` → 举报、申诉、互助争议；管理员可维护课程目录    |
 
-1. Add `frontend/src/<page>.html` with the shared layout placeholders.
-2. Register the entry in `frontend/vite.config.ts → build.rollupOptions.input`.
-3. Add a page module and dispatch it from `frontend/src/scripts/main.ts` if needed.
-4. Add a navigation item only if it should appear in global navigation.
-5. Run the root quality checks above.
+`main.ts` 负责共享登录部件、搜索建议、通知和按路径分发；`api.ts` 提供带 cookie 的
+fetch、HTML 转义和 UI 辅助函数；`auth-client.ts` 使用 Better Auth 客户端；
+`comments.ts` 提供通用评论挂载。精确方法、路径和权限见[后端 API](../backend/README.md)。
 
-## Design tokens
+新增页面时：
 
-`docs/DESIGN.md` remains the visual reference. When changing a token, update
-both `frontend/tailwind.config.ts` and `frontend/src/styles/tokens.css`.
+1. 在 `frontend/src/` 添加 HTML，包含 `data-layout="header"`、`data-layout="footer"` 占位符及 `./scripts/main.ts` 模块引用。
+2. 在 `frontend/vite.config.ts` 的 `build.rollupOptions.input` 注册入口。
+3. 按需新增页面模块，在 `main.ts` 的路径分发中调用初始化函数。
+4. 需要全局导航时，在 `layout.ts` 的 `NAV_ITEMS` 与 `NavKey` 中登记，页眉 `data-active` 必须使用有效导航 key；辅助页面可不设置该属性。
+5. 同步 README 页面表与接口说明，执行相关检查并验证桌面、移动和键盘交互。
+
+## 认证、角色与数据可见性
+
+Better Auth 的用户、会话、账号和验证数据使用 `auth_*` 表。正式请求验证认证会话后，
+只将已验证且属于允许校园邮箱域的用户同步到业务 `users`。业务角色、限制状态和内容
+关联由业务表管理；`is_admin` 映射成 API `admin` 角色，不由邮箱域推断。
+
+开发演示登录独立使用 `sessions` 表和 `shenxiaoli_session` cookie；cookie 为
+`HttpOnly`、`SameSite=Lax`，服务器保存令牌摘要。正式 cookie 由 Better Auth 管理，
+生产配置启用 Secure。演示登录在生产启动检查中被禁止，不能代替正式邮箱验证。
+
+普通读取要求用户会话，发布与主要互动要求账号活跃。封禁和注销中的账号不能通过
+普通业务权限检查；禁言账号可读取部分内容但不能进行主要互动。申诉接口使用会话
+检查保留申诉通道，仍校验内容归属。审核员可处理社区内容，课程管理员另有 CSV 和
+目录维护权限；管理员同样具备审核权限。
+
+公开入口包括健康/就绪检查、会话状态、认证流程及项目说明页面。匿名反馈须提供允许
+域的校园邮箱，但不验证该反馈邮箱控制权。写入接口对已提供的 `Origin` 检查同源或
+允许列表，Better Auth 还执行自身认证校验；服务按同源部署设计。
+
+树洞及其评论的普通展示不返回发布者账号 ID，评论以同帖匿名标识展示。平台数据库
+仍保留用户关联用于治理和限流，因此匿名承诺针对普通展示。普通私信接口只允许会话
+参与者访问；消息举报保存被举报内容和有限邻近上下文，审核队列访问被举报消息留有
+审计记录。系统没有审核员随意浏览所有会话的通用接口。
+
+**图片读取已知限制：** 目前会话中间件仅挂载到 `/api/*`，`/uploads/:filename`
+虽调用用户权限检查，但没有解析出用户上下文。有效登录请求仍返回 401，需修复后
+验证图片显示及访问限制。本架构中的代理连线表示既有路由配置，不代表该闭环已通过验收。
+
+## 内容、沟通与治理状态
+
+| 对象         | 状态与行为                                                                           |
+| ------------ | ------------------------------------------------------------------------------------ |
+| 评价、树洞   | 保留 `pending/approved/rejected` 兼容历史审核记录；当前新发布直接写入 `approved`     |
+| 商品         | `active/reserved/sold/removed` 表示商品业务状态                                      |
+| 技能帖       | `offer/request` 表示分享或求助，另有业务可用状态与开发记录标记                       |
+| 普通发布内容 | `moderation_status=visible/hidden/removed` 独立表示治理状态，`deleted_at` 表示软删除 |
+| 评论         | `visible/hidden/removed` 与软删除字段控制展示；树洞评论另做匿名映射                  |
+| 联系请求     | `pending` → 接收者接受/拒绝，或发起者撤回；接受后建立或复用会话                      |
+| 互助         | `proposed` → `active` → 双方确认 `completed`，也可取消或提出争议 `disputed`          |
+| 举报与申诉   | 举报处置产生治理案件与审计；作者可申诉，原处理人不可复核自己的案件                   |
+
+发布者编辑内容会保存修改前快照，删除以软删除为主。修改业务状态不会自动撤销治理
+处置；已下架的发布内容需申请复核。复核恢复受当前删除和隐藏状态约束，不承诺恢复
+所有已删除内容。私信通过发送者的 `clientId` 去重，读取使用消息 ID 游标，已读状态
+使用参与者读取时间。双方任一方向屏蔽后，接受联系和发消息受限。
+
+互助推荐按分类与标签重合计算，基于库内内容，并非机器学习服务。合作双方都确认
+才计为完成，完成后各自可反馈一次；争议由审核员恢复或取消，恢复后双方重新确认。
+
+## SQLite、迁移与邮件任务
+
+`db.ts` 管理基础 schema 与 `schema_migrations`。当前迁移版本为 9，API `/api/ready`
+和恢复校验要求至少该版本。开发默认执行迁移；Compose 中 API 和 worker 不执行版本
+迁移，发布先运行独立 `migrate`。基础表的幂等创建仍在数据库初始化中执行，因此不应
+将这些进程描述为只读数据库进程。
+
+开发数据仅在启用 demo seed 时种入，并按表是否为空处理。关闭演示登录或进入生产
+不会自动删除已有开发数据，上线需使用干净数据卷并导入审核过的真实课程数据。
+SQLite 使用 WAL；单实例 API 与 worker 共享数据库，worker 也会写入通知及清理状态，
+当前不支持直接将 API/worker 水平扩容。
+
+验证码发送在 API 请求内完成。站内通知随业务持久化，符合邮箱验证、账号状态和通知
+偏好要求时同时入 `email_outbox`。worker 每秒消费到期邮件，启动时重置未完成的
+`sending` 任务，使用 Resend 幂等键，失败退避重试，累计 8 次失败后标为 `failed`。
+社交提醒会延迟聚合，部分已读提醒可跳过；关闭社交邮件不等同于关闭验证码。
+签名 webhook 按事件 ID 去重并更新队列邮件回执状态，验证码没有相同的队列回执记录。
+
+注销确认立即撤销会话、删除认证账号并隐藏发布内容，业务邮箱保留 30 天防止期间
+重新注册。worker 启动及每 6 小时清理到期身份资料、部分内容正文与修订等数据。
+举报证据处置时设置 180 天后到期，未结证据没有到期时间；到期证据也由 worker 清理。
+业务历史、私信和上传物理文件并非全部自动清除；备份依照运维保留策略独立轮换。
+这些任务依赖 worker 正常运行，到期时间不是脱离运行条件的精确删除承诺。
+
+## 检查、扩展与上线边界
+
+根目录质量命令为 `lint`、`format:check`、`typecheck`、`test` 和 `build`。
+CI 分别运行前后端任务，Bun 版本为 1.3.14；后端运行 API 集成测试，前端产物作为
+`frontend-dist` 上传。测试使用内存 SQLite 和邮件发送替身，不依赖真实邮件服务。
+Dependabot 当前跟踪前端 npm 依赖和 GitHub Actions，后端依赖尚未纳入自动检查配置。
+
+变更应同步行为、API、迁移和文档；设计令牌修改同时更新
+`frontend/tailwind.config.ts`、`frontend/src/styles/tokens.css` 与[设计文档](DESIGN.md)。
+Markdown 根目录文档检查需单独执行，不能只依赖两包格式检查。
+
+正式开放仍需运营方提供服务器与域名、发件域与密钥、管理员及审核团队、真实课程、
+异地备份、收信验证与恢复演练，并处理已知图片访问限制。学校 SSO、学籍核验和教务
+自动同步需要正式接口，目前尚未实现。RPO/RTO 与响应流程见运维文档，均须实际演练
+或运营确认后才能作为服务承诺。
