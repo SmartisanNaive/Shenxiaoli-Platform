@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="搜索校园课程、集市、技能互助与树洞内容" />
+    <title>搜索校园内容 | 深小狸校园</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <script type="module" src="./scripts/main.ts"></script>
+  </head>
+  <body class="bg-background font-body-md text-on-surface">
+    <div data-layout="header"></div>
+    <main
+      data-requires-auth
+      hidden
+      class="mx-auto min-h-screen w-full max-w-[1100px] px-4 pb-20 pt-28 sm:px-6"
+    >
+      <header class="mb-7">
+        <p class="text-label-sm text-secondary">校园内容</p>
+        <h1 class="mt-2 font-headline-xl text-primary">搜索</h1>
+        <p class="mt-2 text-body-sm text-outline" data-search-term>正在加载…</p>
+      </header>
+      <nav class="mb-6 flex flex-wrap gap-2" aria-label="搜索类别">
+        <button
+          class="rounded-lg bg-primary px-4 py-2 text-label-sm text-on-primary"
+          data-search-type="all"
+        >
+          全部
+        </button>
+        <button
+          class="rounded-lg bg-surface-container px-4 py-2 text-label-sm text-primary"
+          data-search-type="course"
+        >
+          课程
+        </button>
+        <button
+          class="rounded-lg bg-surface-container px-4 py-2 text-label-sm text-primary"
+          data-search-type="listing"
+        >
+          集市
+        </button>
+        <button
+          class="rounded-lg bg-surface-container px-4 py-2 text-label-sm text-primary"
+          data-search-type="skill"
+        >
+          技能互助
+        </button>
+        <button
+          class="rounded-lg bg-surface-container px-4 py-2 text-label-sm text-primary"
+          data-search-type="tree-hole"
+        >
+          树洞
+        </button>
+      </nav>
+      <section
+        class="rounded-2xl bg-surface-container-lowest p-5 shadow-sm sm:p-7"
+        data-search-results
+        aria-live="polite"
+      >
+        <p class="text-body-sm text-outline">正在搜索…</p>
+      </section>
+    </main>
+    <div data-layout="footer"></div>
+  </body>
+</html>

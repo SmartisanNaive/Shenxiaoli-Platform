@@ -2,13 +2,16 @@ export interface User {
   id: string;
   displayName: string;
   department: string;
-  role: 'student' | 'moderator';
+  role: 'student' | 'moderator' | 'admin';
+  emailVerified?: boolean;
+  accountStatus?: 'active' | 'suspended' | 'banned' | 'deleting';
 }
 
 export interface SessionState {
   authenticated: boolean;
   user: User | null;
   demoAuthAvailable: boolean;
+  campusEmailVerified?: boolean;
 }
 
 export interface Course {

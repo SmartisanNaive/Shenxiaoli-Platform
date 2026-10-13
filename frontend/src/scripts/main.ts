@@ -12,6 +12,10 @@ import { initMarket } from './market';
 import { initSkills } from './skills';
 import { initTreeHole } from './tree-hole';
 import { initModeration } from './moderation';
+import { authClient } from './auth-client';
+import { initAccount } from './account';
+import { initInformation } from './information';
+import { initSearch } from './search';
 
 declare global {
   interface Window {
@@ -103,6 +107,17 @@ function authWidget(): void {
   );
   const adminLink = root.querySelector<HTMLAnchorElement>('[data-admin-link]');
   const logout = root.querySelector<HTMLButtonElement>('[data-auth-logout]');
+  const emailForm = root.querySelector<HTMLFormElement>('[data-email-login]');
+  const emailInput = root.querySelector<HTMLInputElement>('[data-login-email]');
+  const nameInput = root.querySelector<HTMLInputElement>('[data-login-name]');
+  const otpInput = root.querySelector<HTMLInputElement>('[data-login-otp]');
+  const nameField = root.querySelector<HTMLElement>('[data-login-name-field]');
+  const otpField = root.querySelector<HTMLElement>('[data-login-otp-field]');
+  const sendButton = root.querySelector<HTMLButtonElement>('[data-login-send]');
+  const verifyButton = root.querySelector<HTMLButtonElement>(
+    '[data-login-verify]',
+  );
+  let pendingEmail = '';
 
   const close = (): void => {
     panel?.classList.add('hidden');
@@ -112,17 +127,20 @@ function authWidget(): void {
     if (label) label.textContent = state.user?.displayName ?? '未登录';
     if (message) {
       message.textContent = state.user
-        ? `${state.user.displayName} · ${state.user.role === 'moderator' ? '审核员演示身份' : '学生演示身份'}`
+        ? `${state.user.displayName} · ${state.campusEmailVerified ? '校园邮箱已验证' : state.user.role === 'moderator' ? '本地审核员演示身份' : '本地演示身份'}`
         : state.demoAuthAvailable
-          ? '本地演示登录仅用于测试互动流程。'
-          : '真实校园统一认证尚未接入。';
+          ? '使用校园邮箱验证码登录；也可选择本地演示身份。'
+          : '使用 SUAT 校园邮箱验证码登录。';
     }
+    if (emailForm) emailForm.hidden = Boolean(state.authenticated);
     if (loginOptions)
       loginOptions.hidden =
         Boolean(state.authenticated) || !state.demoAuthAvailable;
     if (adminLink) {
-      adminLink.classList.toggle('hidden', state.user?.role !== 'moderator');
-      adminLink.classList.toggle('block', state.user?.role === 'moderator');
+      const canModerate =
+        state.user?.role === 'moderator' || state.user?.role === 'admin';
+      adminLink.classList.toggle('hidden', !canModerate);
+      adminLink.classList.toggle('block', canModerate);
     }
     logout?.classList.toggle('hidden', !state.authenticated);
   };
@@ -150,7 +168,7 @@ function authWidget(): void {
           const state = await api<SessionState>('/api/session');
           render(state);
           close();
-          showToast('演示身份已登录。正式校园认证尚未接入。', 'success');
+          showToast('本地演示身份已登录。', 'success');
           window.dispatchEvent(
             new CustomEvent('shenxiaoli:session-changed', { detail: state }),
           );
@@ -166,19 +184,74 @@ function authWidget(): void {
     });
   logout?.addEventListener('click', async () => {
     try {
-      await api('/api/auth/logout', { method: 'POST' });
+      await authClient.signOut();
+      await api('/api/auth/logout', { method: 'POST' }).catch(() => undefined);
       const state = await api<SessionState>('/api/session');
       render(state);
       close();
       window.dispatchEvent(
         new CustomEvent('shenxiaoli:session-changed', { detail: state }),
       );
-      showToast('已退出演示登录。', 'success');
+      showToast('已退出登录。', 'success');
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : '退出登录失败',
         'error',
       );
+    }
+  });
+  emailForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (!emailInput || !sendButton) return;
+    const email = emailInput.value.trim().toLowerCase();
+    pendingEmail = email;
+    sendButton.disabled = true;
+    try {
+      const result = await authClient.emailOtp.sendVerificationOtp({
+        email,
+        type: 'sign-in',
+      });
+      if (result.error)
+        throw new Error(result.error.message || '验证码发送失败');
+      nameField?.classList.remove('hidden');
+      otpField?.classList.remove('hidden');
+      verifyButton?.classList.remove('hidden');
+      sendButton.textContent = '重新发送验证码';
+      showToast('如果邮箱符合校园域名要求，验证码已发送。', 'success');
+      otpInput?.focus();
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : '验证码发送失败',
+        'error',
+      );
+    } finally {
+      sendButton.disabled = false;
+    }
+  });
+  verifyButton?.addEventListener('click', async () => {
+    if (!otpInput || !pendingEmail) return;
+    verifyButton.disabled = true;
+    try {
+      const result = await authClient.signIn.emailOtp({
+        email: pendingEmail,
+        otp: otpInput.value.trim(),
+        name:
+          nameInput?.value.trim() || pendingEmail.split('@')[0] || '校园同学',
+      });
+      if (result.error) throw new Error(result.error.message || '验证码无效');
+      const state = await api<SessionState>('/api/session');
+      if (!state.authenticated || !state.campusEmailVerified)
+        throw new Error('校园邮箱验证尚未完成，请重新登录。');
+      render(state);
+      close();
+      showToast('校园邮箱已验证，登录成功。', 'success');
+      window.dispatchEvent(
+        new CustomEvent('shenxiaoli:session-changed', { detail: state }),
+      );
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : '登录失败', 'error');
+    } finally {
+      verifyButton.disabled = false;
     }
   });
   api<SessionState>('/api/session')
@@ -236,6 +309,12 @@ function searchResults(): void {
             link.append(title, meta);
             dropdown.append(link);
           });
+          const allResults = document.createElement('a');
+          allResults.href = `./search.html?q=${encodeURIComponent(query)}`;
+          allResults.className =
+            'mt-1 block rounded-lg border-t border-surface-variant px-3 py-2 text-label-sm text-primary hover:bg-surface-container-low';
+          allResults.textContent = '查看完整搜索结果';
+          dropdown.append(allResults);
           dropdown.classList.remove('hidden');
         } catch {
           close();
@@ -244,12 +323,9 @@ function searchResults(): void {
     });
     input.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') close();
-      if (
-        event.key === 'Enter' &&
-        dropdown.firstElementChild instanceof HTMLAnchorElement
-      ) {
+      if (event.key === 'Enter' && input.value.trim().length >= 2) {
         event.preventDefault();
-        window.location.href = dropdown.firstElementChild.href;
+        window.location.href = `./search.html?q=${encodeURIComponent(input.value.trim())}`;
       }
     });
     document.addEventListener('click', (event) => {
@@ -265,76 +341,75 @@ function inboxDialog(): void {
   if (!button) return;
   const dialog = document.createElement('dialog');
   dialog.className =
-    'w-[min(92vw,34rem)] rounded-2xl border border-surface-variant bg-surface p-0 text-on-surface shadow-2xl backdrop:bg-primary/30';
-  dialog.innerHTML = `
-    <div class="flex items-center justify-between border-b border-surface-variant px-6 py-4">
-      <div><h2 class="font-headline-md text-primary">联系请求</h2><p class="mt-1 text-body-sm text-outline">当前版本仅支持请求与接受/拒绝，不包含站内私信。</p></div>
-      <button class="rounded-lg p-2 text-outline hover:bg-surface-container-low" data-close-inbox aria-label="关闭">关闭</button>
-    </div>
-    <div class="max-h-[60vh] overflow-auto p-6" data-inbox-content><p class="text-body-sm text-outline">正在加载…</p></div>`;
+    'w-[min(92vw,38rem)] rounded-2xl border border-surface-variant bg-surface p-0 text-on-surface shadow-2xl backdrop:bg-primary/30';
+  dialog.innerHTML = `<div class="flex items-center justify-between border-b border-surface-variant px-6 py-4"><div><h2 class="font-headline-md text-primary">社区消息</h2><p class="mt-1 text-body-sm text-outline">通知、联系请求和私信入口</p></div><button class="rounded-lg p-2 text-outline hover:bg-surface-container-low" data-close-inbox aria-label="关闭">关闭</button></div><div class="max-h-[65vh] overflow-auto p-6" data-inbox-content><p class="text-body-sm text-outline">正在加载…</p></div><div class="flex flex-wrap gap-2 border-t border-surface-variant px-6 py-4"><a class="rounded-lg bg-primary px-4 py-2 text-label-sm text-on-primary" href="./account.html#requests">查看联系请求</a><a class="rounded-lg border border-outline-variant px-4 py-2 text-label-sm text-primary" href="./account.html#messages">打开私信</a><a class="rounded-lg border border-outline-variant px-4 py-2 text-label-sm text-primary" href="./account.html#notifications">全部通知</a></div>`;
   document.body.append(dialog);
   const content = dialog.querySelector<HTMLElement>('[data-inbox-content]');
-  const close = (): void => dialog.close();
-  dialog.querySelector('[data-close-inbox]')?.addEventListener('click', close);
+  dialog
+    .querySelector('[data-close-inbox]')
+    ?.addEventListener('click', () => dialog.close());
   dialog.addEventListener('click', (event) => {
-    if (event.target === dialog) close();
+    if (event.target === dialog) dialog.close();
   });
   button.addEventListener('click', async () => {
     try {
-      const response = await api<{
-        items: {
-          id: string;
-          targetType: string;
-          message: string;
-          status: string;
-          direction: string;
-          createdAt: string;
-        }[];
-      }>('/api/me/contact-requests');
-      const pending = response.items.filter(
+      const [requests, notifications] = await Promise.all([
+        api<{
+          items: Array<{
+            id: string;
+            targetType: string;
+            message: string;
+            status: string;
+            direction: string;
+            otherName?: string;
+          }>;
+        }>('/api/me/contact-requests?pageSize=10'),
+        api<{
+          items: Array<{
+            id: string;
+            title: string;
+            detail: string;
+            href: string | null;
+            readAt: string | null;
+          }>;
+        }>('/api/notifications?pageSize=8'),
+      ]);
+      const pending = requests.items.filter(
         (item) => item.direction === 'received' && item.status === 'pending',
       );
-      const history = response.items.filter(
-        (item) => item.direction === 'sent' || item.status !== 'pending',
-      );
-      const renderItem = (
-        item: (typeof response.items)[number],
-        incoming: boolean,
-      ): string => `
-        <article class="border-b border-surface-variant py-4 last:border-0">
-          <div class="flex items-center justify-between gap-3"><strong class="text-label-md text-primary">${item.targetType === 'listing' ? '集市联系请求' : '技能互助请求'}</strong><span class="text-body-sm text-outline">${item.status === 'pending' ? '待处理' : item.status === 'accepted' ? '已接受' : item.status === 'declined' ? '已拒绝' : '已取消'}</span></div>
-          <p class="mt-2 text-body-md">${item.message ? escapeHtml(item.message) : '对方希望与你建立联系。'}</p>
-          ${incoming && item.status === 'pending' ? `<div class="mt-3 flex gap-2"><button class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary" data-contact-action="accepted" data-id="${item.id}">接受</button><button class="rounded-lg border border-outline-variant px-3 py-2 text-label-sm text-primary" data-contact-action="declined" data-id="${item.id}">拒绝</button></div>` : ''}
-        </article>`;
-      if (content) {
-        content.innerHTML =
-          pending.length || history.length
-            ? `${pending.map((item) => renderItem(item, true)).join('')}${
-                history.length
-                  ? `<h3 class="mb-2 mt-5 font-headline-sm text-primary">最近记录</h3>${history
-                      .slice(0, 12)
-                      .map((item) => renderItem(item, false))
-                      .join('')}`
-                  : ''
-              }`
-            : '<p class="py-8 text-center text-body-sm text-outline">暂时没有联系请求。</p>';
-      }
+      const unread = notifications.items.filter((item) => !item.readAt);
+      if (content)
+        content.innerHTML = `<section><h3 class="mb-2 font-label-md text-primary">待处理联系请求</h3>${pending.length ? pending.map((item) => `<article class="border-b border-surface-variant py-3"><strong>${escapeHtml(item.otherName ?? '校园同学')} · ${item.targetType === 'listing' ? '集市' : '技能互助'}</strong><p class="mt-1 text-body-sm">${escapeHtml(item.message || '对方希望与你建立联系。')}</p><div class="mt-2 flex gap-2"><button class="rounded-lg bg-primary px-3 py-1.5 text-xs text-on-primary" data-contact-action="accepted" data-id="${escapeHtml(item.id)}">接受并开启私信</button><button class="rounded-lg border border-outline-variant px-3 py-1.5 text-xs" data-contact-action="declined" data-id="${escapeHtml(item.id)}">拒绝</button></div></article>`).join('') : '<p class="py-3 text-body-sm text-outline">没有待处理请求。</p>'}</section><section class="mt-6"><h3 class="mb-2 font-label-md text-primary">未读通知</h3>${unread.length ? unread.map((item) => `<a class="block border-b border-surface-variant py-3" href="${escapeHtml(item.href ?? './account.html#notifications')}" data-read-notification="${escapeHtml(item.id)}"><strong class="text-label-sm text-primary">${escapeHtml(item.title)}</strong><span class="mt-1 block text-body-sm text-outline">${escapeHtml(item.detail)}</span></a>`).join('') : '<p class="py-3 text-body-sm text-outline">没有未读通知。</p>'}</section>`;
       content
         ?.querySelectorAll<HTMLButtonElement>('[data-contact-action]')
-        .forEach((action) => {
+        .forEach((action) =>
           action.addEventListener('click', async () => {
             await api(`/api/me/contact-requests/${action.dataset.id}`, {
               method: 'PATCH',
               body: jsonBody({ status: action.dataset.contactAction }),
             });
-            showToast('已更新联系请求状态。', 'success');
+            showToast(
+              action.dataset.contactAction === 'accepted'
+                ? '请求已接受，可以继续私信。'
+                : '请求已拒绝。',
+              'success',
+            );
             button.click();
-          });
-        });
+          }),
+        );
+      content
+        ?.querySelectorAll<HTMLAnchorElement>('[data-read-notification]')
+        .forEach((link) =>
+          link.addEventListener('click', () => {
+            void api(`/api/notifications/${link.dataset.readNotification}`, {
+              method: 'PATCH',
+            });
+          }),
+        );
       dialog.showModal();
     } catch (error) {
       showToast(
-        error instanceof Error ? error.message : '请先登录并启动 API',
+        error instanceof Error ? error.message : '请先登录后查看消息',
         'error',
       );
     }
@@ -359,6 +434,79 @@ function publishShortcut(): void {
     });
 }
 
+function initializePage(): void {
+  const path = window.location.pathname;
+  if (path.endsWith('course-evaluation.html')) initCourses();
+  else if (path.endsWith('market.html')) initMarket();
+  else if (path.endsWith('skill-mutual-aid.html')) initSkills();
+  else if (path.endsWith('tree-hole.html')) initTreeHole();
+  else if (path.endsWith('moderation.html')) initModeration();
+  else if (path.endsWith('account.html')) initAccount();
+  else if (path.endsWith('information.html')) initInformation();
+  else if (path.endsWith('search.html')) initSearch();
+  else initHome();
+}
+
+function enforcePageAccess(): void {
+  const main = document.querySelector<HTMLElement>('[data-requires-auth]');
+  if (!main) {
+    initializePage();
+    return;
+  }
+  const gate = document.createElement('main');
+  gate.className = 'min-h-[65vh] bg-background px-4 pb-16 pt-32 sm:px-6';
+  gate.innerHTML =
+    '<section class="mx-auto max-w-xl rounded-2xl bg-surface-container-lowest p-8 text-center shadow-sm"><span class="material-symbols-outlined text-4xl text-secondary" aria-hidden="true">lock</span><h1 class="mt-4 font-headline-lg text-primary">登录后查看校园内容</h1><p class="mt-3 text-body-md text-on-surface-variant" data-gate-message>正在检查登录状态…</p><button class="mt-5 rounded-lg bg-primary px-5 py-2.5 text-label-sm text-on-primary" data-open-login>校园邮箱登录</button><a class="mt-4 hidden text-label-sm text-primary underline" data-appeal-link href="./account.html#appeals">查看处置记录并提交申诉</a></section>';
+  main.before(gate);
+  gate.querySelector('[data-open-login]')?.addEventListener('click', () => {
+    document.querySelector<HTMLButtonElement>('[data-auth-toggle]')?.click();
+  });
+  let initialized = false;
+  const update = (state: SessionState): void => {
+    const isAccountPage = window.location.pathname.endsWith('account.html');
+    if (
+      state.authenticated &&
+      state.user?.accountStatus !== 'deleting' &&
+      (state.user?.accountStatus !== 'banned' || isAccountPage)
+    ) {
+      if (
+        state.user?.accountStatus === 'banned' &&
+        isAccountPage &&
+        !location.hash
+      )
+        location.hash = 'appeals';
+      gate.remove();
+      main.hidden = false;
+      if (!initialized) {
+        initialized = true;
+        initializePage();
+      }
+      return;
+    }
+    main.hidden = true;
+    gate.hidden = false;
+    const message = gate.querySelector<HTMLElement>('[data-gate-message]');
+    if (message)
+      message.textContent =
+        state.user?.accountStatus === 'banned' ||
+        state.user?.accountStatus === 'deleting'
+          ? '账号当前处于受限状态。如需查看处罚或申诉，请联系社区管理。'
+          : '课程、集市、技能互助和树洞仅向已登录的校园邮箱账号开放。';
+    gate
+      .querySelector<HTMLAnchorElement>('[data-appeal-link]')
+      ?.classList.toggle('hidden', state.user?.accountStatus !== 'banned');
+  };
+  api<SessionState>('/api/session')
+    .then(update)
+    .catch(() => {
+      const message = gate.querySelector<HTMLElement>('[data-gate-message]');
+      if (message) message.textContent = '暂时无法连接校园服务，请稍后重试。';
+    });
+  window.addEventListener('shenxiaoli:session-changed', (event) =>
+    update((event as CustomEvent<SessionState>).detail),
+  );
+}
+
 function init(): void {
   updateFooterYear();
   initToast();
@@ -366,13 +514,7 @@ function init(): void {
   searchResults();
   inboxDialog();
   publishShortcut();
-  const path = window.location.pathname;
-  if (path.endsWith('course-evaluation.html')) initCourses();
-  else if (path.endsWith('market.html')) initMarket();
-  else if (path.endsWith('skill-mutual-aid.html')) initSkills();
-  else if (path.endsWith('tree-hole.html')) initTreeHole();
-  else if (path.endsWith('moderation.html')) initModeration();
-  else initHome();
+  enforcePageAccess();
 }
 
 if (document.readyState === 'loading')

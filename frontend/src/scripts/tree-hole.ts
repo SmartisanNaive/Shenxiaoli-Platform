@@ -6,6 +6,7 @@ import {
   showToast,
   type TreePost,
 } from './api';
+import { bindCommentSlots, commentSlot } from './comments';
 
 interface TreeResponse {
   items: TreePost[];
@@ -25,7 +26,9 @@ export function initTreeHole(): void {
     ...document.querySelectorAll<HTMLButtonElement>('[data-tree-topic]'),
   ];
   const topicLinks = [
-    ...document.querySelectorAll<HTMLAnchorElement>('#tree-topic-filter a'),
+    ...document.querySelectorAll<HTMLButtonElement>(
+      '#tree-topic-filter button',
+    ),
   ];
   if (!feed || !textarea) return;
 
@@ -43,11 +46,12 @@ export function initTreeHole(): void {
       ? posts
           .map(
             (post) =>
-              `<article class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm" id="tree-${escapeHtml(post.id)}"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container">狸</div><div><strong class="block text-label-md text-on-surface">匿名狸友</strong><span class="text-body-sm text-outline">${escapeHtml(formatRelativeTime(post.createdAt))}</span></div></div><span class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-secondary">#${escapeHtml(post.topic)}</span></div><p class="whitespace-pre-line text-body-lg leading-relaxed text-on-surface">${escapeHtml(post.content)}</p><div class="flex items-center justify-between border-t border-surface-container pt-4"><div class="flex items-center gap-5"><button type="button" data-tree-feel="${escapeHtml(post.id)}" aria-pressed="${post.reacted}" class="flex items-center gap-1.5 text-label-md ${post.reacted ? 'text-secondary' : 'text-on-surface-variant'} hover:text-primary"><span class="material-symbols-outlined text-sm" aria-hidden="true">favorite</span>同感 <span class="font-bold">${post.reactions}</span></button><button type="button" data-tree-report="${escapeHtml(post.id)}" class="text-label-sm text-outline hover:text-primary">举报</button></div><button type="button" data-tree-share="${escapeHtml(post.id)}" class="flex items-center gap-1 text-label-sm text-outline hover:text-primary"><span class="material-symbols-outlined text-sm" aria-hidden="true">share</span>复制链接</button></div></article>`,
+              `<article class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm" id="tree-${escapeHtml(post.id)}"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container">狸</div><div><strong class="block text-label-md text-on-surface">匿名狸友</strong><span class="text-body-sm text-outline">${escapeHtml(formatRelativeTime(post.createdAt))}</span></div></div><span class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-secondary">#${escapeHtml(post.topic)}</span></div><p class="whitespace-pre-line text-body-lg leading-relaxed text-on-surface">${escapeHtml(post.content)}</p><div class="flex items-center justify-between border-t border-surface-container pt-4"><div class="flex items-center gap-5"><button type="button" data-tree-feel="${escapeHtml(post.id)}" aria-pressed="${post.reacted}" class="flex items-center gap-1.5 text-label-md ${post.reacted ? 'text-secondary' : 'text-on-surface-variant'} hover:text-primary"><span class="material-symbols-outlined text-sm" aria-hidden="true">favorite</span>同感 <span class="font-bold">${post.reactions}</span></button><button type="button" data-tree-report="${escapeHtml(post.id)}" class="text-label-sm text-outline hover:text-primary">举报</button></div><button type="button" data-tree-share="${escapeHtml(post.id)}" class="flex items-center gap-1 text-label-sm text-outline hover:text-primary"><span class="material-symbols-outlined text-sm" aria-hidden="true">share</span>复制链接</button></div>${commentSlot('tree-hole', post.id)}</article>`,
           )
           .join('')
-      : '<div class="rounded-xl border border-dashed border-outline-variant bg-surface p-10 text-center"><span class="material-symbols-outlined text-3xl text-outline" aria-hidden="true">spa</span><p class="mt-3 text-body-md text-on-surface-variant">这个话题暂时没有公开树洞。</p><p class="mt-1 text-body-sm text-outline">发布内容会先进入审核队列，通过后以匿名形式展示。</p></div>';
+      : '<div class="rounded-xl border border-dashed border-outline-variant bg-surface p-10 text-center"><span class="material-symbols-outlined text-3xl text-outline" aria-hidden="true">spa</span><p class="mt-3 text-body-md text-on-surface-variant">这个话题暂时没有公开树洞。</p><p class="mt-1 text-body-sm text-outline">树洞会即时公开并接受后续巡查；普通展示不包含发布者账号信息。</p></div>';
     feed.innerHTML = `<div class="flex items-center justify-between rounded-xl bg-surface px-6 py-3 shadow-sm"><div class="flex items-center gap-5"><button type="button" data-tree-sort="recent" class="pb-1 text-label-md ${sort === 'recent' ? 'font-bold text-primary' : 'text-on-surface-variant'}">最新发布</button><button type="button" data-tree-sort="popular" class="pb-1 text-label-md ${sort === 'popular' ? 'font-bold text-primary' : 'text-on-surface-variant'}">最多同感</button></div><span class="text-body-sm text-outline">${total} 篇公开内容</span></div>${content}${hasMore ? '<button type="button" data-tree-more class="w-full rounded-xl border border-outline-variant bg-surface px-4 py-3 text-label-sm text-primary hover:bg-surface-container-low">加载更多</button>' : ''}`;
+    bindCommentSlots(feed);
 
     feed
       .querySelectorAll<HTMLButtonElement>('[data-tree-sort]')
@@ -168,6 +172,7 @@ export function initTreeHole(): void {
       const active = (link.dataset.topic ?? 'all') === topic;
       link.classList.toggle('bg-primary', active);
       link.classList.toggle('text-on-primary', active);
+      link.classList.toggle('text-on-surface-variant', !active);
       link.classList.toggle('bg-surface-container-low', !active);
     });
     void load();
@@ -176,8 +181,7 @@ export function initTreeHole(): void {
     const label = link.textContent?.trim() ?? '';
     const value = label === '全部' ? 'all' : label;
     link.dataset.topic = value;
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
+    link.addEventListener('click', () => {
       setTopic(value);
     });
   });
@@ -193,7 +197,7 @@ export function initTreeHole(): void {
 
   textarea.addEventListener('input', () => {
     if (status)
-      status.textContent = `${textarea.value.length}/1000 字 · 公开匿名，提交后审核`;
+      status.textContent = `${textarea.value.length}/1000 字 · 即时公开，普通展示不包含账号信息`;
   });
   const submit = async (): Promise<void> => {
     const content = textarea.value.trim();
@@ -210,7 +214,7 @@ export function initTreeHole(): void {
       });
       textarea.value = '';
       if (status)
-        status.textContent = '已提交审核；审核通过后会以匿名方式公开。';
+        status.textContent = '树洞已公开；举报和治理流程仍可处理违规内容。';
       showToast(response.message, 'success');
     } catch (error) {
       const message =

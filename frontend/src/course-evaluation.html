@@ -21,7 +21,11 @@
   </head>
   <body class="bg-background font-body-md text-on-surface">
     <div data-layout="header" data-active="course-evaluation"></div>
-    <main class="min-h-screen w-full bg-background pt-20">
+    <main
+      data-requires-auth
+      hidden
+      class="min-h-screen w-full bg-background pt-20"
+    >
       <div class="flex w-full flex-col">
         <!-- Header / Intro banner without duplicating H1 -->
         <section class="w-full bg-surface-container-low px-gutter py-12">
@@ -119,37 +123,6 @@
                 </select>
               </div>
             </div>
-            <!-- Quick Tags -->
-            <div
-              class="mt-4 flex items-center gap-2 overflow-x-auto border-t border-surface-variant pb-1 pt-4"
-            >
-              <span class="shrink-0 text-label-sm text-outline">热门标签:</span>
-              <button
-                class="shrink-0 rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-on-surface-variant transition-colors hover:bg-secondary-container"
-              >
-                #内容很新
-              </button>
-              <button
-                class="shrink-0 rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-on-surface-variant transition-colors hover:bg-secondary-container"
-              >
-                #给分超好
-              </button>
-              <button
-                class="shrink-0 rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-on-surface-variant transition-colors hover:bg-secondary-container"
-              >
-                #作业偏多
-              </button>
-              <button
-                class="shrink-0 rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-on-surface-variant transition-colors hover:bg-secondary-container"
-              >
-                #实验有意思
-              </button>
-              <button
-                class="shrink-0 rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-on-surface-variant transition-colors hover:bg-secondary-container"
-              >
-                #不适合突击
-              </button>
-            </div>
           </div>
         </section>
         <!-- Main Content Layout: Split View / Course List + Detail Modal Container -->
@@ -158,479 +131,55 @@
         >
           <!-- Course Cards List (Left 7 Cols) -->
           <div class="flex flex-col gap-4 lg:col-span-5" id="course-list">
-            <div class="mb-2 flex items-center justify-between">
-              <h3 class="font-headline-sm text-primary">找到 4 门相关课程</h3>
-              <span class="text-body-sm text-outline">综合排序</span>
-            </div>
-            <!-- Course Card 1 -->
-            <div
-              class="group relative cursor-pointer overflow-hidden rounded-xl bg-surface p-5 shadow-sm transition-all hover:shadow-md"
+            <p
+              class="rounded-xl bg-surface p-8 text-center text-body-sm text-outline"
             >
-              <div class="mb-3 flex items-start justify-between gap-4">
-                <div>
-                  <span class="font-mono text-label-sm text-outline"
-                    >ICGA503</span
-                  >
-                  <h4
-                    class="font-headline-sm text-primary transition-colors group-hover:text-secondary"
-                  >
-                    组学数据分析
-                    <span class="text-body-sm font-normal text-outline"
-                      >Omics Data Analysis</span
-                    >
-                  </h4>
-                </div>
-                <div class="text-right">
-                  <span class="text-headline-sm font-bold text-primary"
-                    >9.1</span
-                  >
-                  <span class="block text-label-sm text-outline">/10 分</span>
-                </div>
-              </div>
-              <div class="mb-4 flex flex-wrap items-center gap-2">
-                <span
-                  class="rounded-md bg-secondary-container px-2.5 py-0.5 text-label-sm text-on-secondary-container"
-                  >专业选修课</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >2 学分</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >秋季</span
-                >
-                <span class="ml-auto text-body-sm text-outline"
-                  >难度 3.7/5</span
-                >
-              </div>
-              <div
-                class="flex items-center justify-between border-t border-surface-variant pt-3 text-body-sm text-on-surface-variant"
-              >
-                <span>细胞与基因技术研究院</span>
-                <span class="font-medium text-secondary">21 条评价</span>
-              </div>
-            </div>
-            <!-- Course Card 2 (Active/Selected: FBEE501) -->
-            <div
-              class="relative cursor-pointer overflow-hidden rounded-xl bg-surface p-5 shadow-md ring-2 ring-primary"
-            >
-              <div
-                class="absolute right-0 top-0 rounded-bl-xl bg-primary px-3 py-1 text-label-sm font-medium text-on-primary"
-              >
-                当前查看
-              </div>
-              <div class="mb-3 flex items-start justify-between gap-4">
-                <div>
-                  <span
-                    class="font-mono text-label-sm font-semibold text-primary"
-                    >FBEE501</span
-                  >
-                  <h4 class="font-headline-sm text-primary">
-                    人脑智能与机器智能
-                    <span class="text-body-sm font-normal text-outline"
-                      >Human Brain Intelligence</span
-                    >
-                  </h4>
-                </div>
-                <div class="text-right">
-                  <span class="text-headline-sm font-bold text-primary"
-                    >8.8</span
-                  >
-                  <span class="block text-label-sm text-outline">/10 分</span>
-                </div>
-              </div>
-              <div class="mb-4 flex flex-wrap items-center gap-2">
-                <span
-                  class="rounded-md bg-primary px-2.5 py-0.5 text-label-sm text-on-primary"
-                  >专业核心课</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >3 学分</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >秋季</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >考试</span
-                >
-                <span class="ml-auto text-body-sm text-outline"
-                  >难度 4.1/5</span
-                >
-              </div>
-              <div
-                class="flex items-center justify-between border-t border-surface-variant pt-3 text-body-sm text-on-surface-variant"
-              >
-                <span>生物医学工程学院</span>
-                <span class="font-medium text-secondary">36 条评价</span>
-              </div>
-            </div>
-            <!-- Course Card 3 -->
-            <div
-              class="group relative cursor-pointer overflow-hidden rounded-xl bg-surface p-5 shadow-sm transition-all hover:shadow-md"
-            >
-              <div class="mb-3 flex items-start justify-between gap-4">
-                <div>
-                  <span class="font-mono text-label-sm text-outline"
-                    >FPSB503</span
-                  >
-                  <h4
-                    class="font-headline-sm text-primary transition-colors group-hover:text-secondary"
-                  >
-                    R编程与转录组数据分析入门
-                  </h4>
-                </div>
-                <div class="text-right">
-                  <span class="text-headline-sm font-bold text-primary"
-                    >8.5</span
-                  >
-                  <span class="block text-label-sm text-outline">/10 分</span>
-                </div>
-              </div>
-              <div class="mb-4 flex flex-wrap items-center gap-2">
-                <span
-                  class="rounded-md bg-secondary-container px-2.5 py-0.5 text-label-sm text-on-secondary-container"
-                  >专业选修课</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >2 学分</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >春季</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >考查</span
-                >
-                <span class="ml-auto text-body-sm text-outline"
-                  >难度 3.2/5</span
-                >
-              </div>
-              <div
-                class="flex items-center justify-between border-t border-surface-variant pt-3 text-body-sm text-on-surface-variant"
-              >
-                <span>药学院</span>
-                <span class="font-medium text-secondary">18 条评价</span>
-              </div>
-            </div>
-            <!-- Course Card 4 -->
-            <div
-              class="group relative cursor-pointer overflow-hidden rounded-xl bg-surface p-5 shadow-sm transition-all hover:shadow-md"
-            >
-              <div class="mb-3 flex items-start justify-between gap-4">
-                <div>
-                  <span class="font-mono text-label-sm text-outline"
-                    >FSBB503</span
-                  >
-                  <h4
-                    class="font-headline-sm text-primary transition-colors group-hover:text-secondary"
-                  >
-                    计算生物与模拟
-                  </h4>
-                </div>
-                <div class="text-right">
-                  <span class="text-headline-sm font-bold text-primary"
-                    >9.3</span
-                  >
-                  <span class="block text-label-sm text-outline">/10 分</span>
-                </div>
-              </div>
-              <div class="mb-4 flex flex-wrap items-center gap-2">
-                <span
-                  class="rounded-md bg-secondary-container px-2.5 py-0.5 text-label-sm text-on-secondary-container"
-                  >专业选修课</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >3 学分</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >秋季</span
-                >
-                <span
-                  class="rounded-md bg-surface-container-high px-2.5 py-0.5 text-label-sm text-on-surface-variant"
-                  >考查</span
-                >
-                <span class="ml-auto text-body-sm text-outline"
-                  >难度 4.5/5</span
-                >
-              </div>
-              <div
-                class="flex items-center justify-between border-t border-surface-variant pt-3 text-body-sm text-on-surface-variant"
-              >
-                <span>合成生物学院</span>
-                <span class="font-medium text-secondary">29 条评价</span>
-              </div>
-            </div>
+              正在加载课程库…
+            </p>
           </div>
           <!-- Course Detailed View Section for FBEE501 (Right 7 Cols) -->
           <div class="flex flex-col gap-6 lg:col-span-7" id="course-detail">
-            <div class="rounded-xl bg-surface p-6 shadow-md">
-              <!-- Detail Header -->
-              <div
-                class="flex flex-col items-start justify-between gap-4 border-b border-surface-variant pb-6 sm:flex-row sm:items-center"
-              >
-                <div>
-                  <div class="mb-1 flex items-center gap-2">
-                    <span
-                      class="rounded bg-primary-fixed/30 px-2 py-0.5 font-mono text-label-sm font-bold text-primary"
-                      >FBEE501</span
-                    >
-                    <span class="text-body-sm text-on-surface-variant"
-                      >生物医学工程学院</span
-                    >
-                  </div>
-                  <h3 class="font-headline-lg text-primary">
-                    人脑智能与机器智能
-                  </h3>
-                  <p class="text-body-md text-outline">
-                    Human Brain Intelligence and Artificial Intelligence
-                  </p>
-                </div>
-                <div
-                  class="flex items-center gap-4 rounded-xl bg-surface-container-low px-4 py-3"
-                >
-                  <div class="text-center">
-                    <span class="font-headline-lg font-bold text-primary"
-                      >8.8</span
-                    >
-                    <span class="block text-label-sm text-outline"
-                      >综合评分</span
-                    >
-                  </div>
-                  <div class="h-8 w-px bg-surface-variant"></div>
-                  <div class="text-center">
-                    <span class="font-headline-md font-semibold text-on-surface"
-                      >36</span
-                    >
-                    <span class="block text-label-sm text-outline">条评价</span>
-                  </div>
-                </div>
+            <p
+              class="rounded-xl bg-surface p-8 text-center text-body-sm text-outline"
+            >
+              选择一门课程以查看真实评价。
+            </p>
+          </div>
+        </section>
+        <section
+          id="teacher-directory"
+          class="mx-auto w-full max-w-[1200px] px-gutter pb-14"
+        >
+          <div class="rounded-xl bg-surface p-6 shadow-sm">
+            <div
+              class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
+            >
+              <div>
+                <h2 class="font-headline-lg text-primary">教师与授课记录</h2>
+                <p class="mt-1 text-body-sm text-outline">
+                  教师信息按真实开课记录维护；历史评价没有教师关联时会继续标注待补充。
+                </p>
               </div>
-              <!-- Dimensions Progress Bars -->
-              <div
-                class="grid grid-cols-1 gap-x-8 gap-y-4 border-b border-surface-variant py-6 sm:grid-cols-2"
-              >
-                <div class="flex flex-col gap-1.5">
-                  <div class="flex justify-between text-body-sm">
-                    <span class="text-on-surface-variant">课程质量</span>
-                    <span class="font-semibold text-primary">4.6 / 5.0</span>
-                  </div>
-                  <div
-                    class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high"
-                  >
-                    <div
-                      class="h-full rounded-full bg-primary"
-                      style="width: 92%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <div class="flex justify-between text-body-sm">
-                    <span class="text-on-surface-variant">实用性</span>
-                    <span class="font-semibold text-primary">4.7 / 5.0</span>
-                  </div>
-                  <div
-                    class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high"
-                  >
-                    <div
-                      class="h-full rounded-full bg-primary"
-                      style="width: 94%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <div class="flex justify-between text-body-sm">
-                    <span class="text-on-surface-variant">难度系数</span>
-                    <span class="font-semibold text-primary">4.1 / 5.0</span>
-                  </div>
-                  <div
-                    class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high"
-                  >
-                    <div
-                      class="h-full rounded-full bg-secondary"
-                      style="width: 82%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="flex flex-col gap-1.5">
-                  <div class="flex justify-between text-body-sm">
-                    <span class="text-on-surface-variant">作业量</span>
-                    <span class="font-semibold text-primary">3.7 / 5.0</span>
-                  </div>
-                  <div
-                    class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high"
-                  >
-                    <div
-                      class="h-full rounded-full bg-secondary"
-                      style="width: 74%"
-                    ></div>
-                  </div>
-                </div>
-                <div class="flex flex-col gap-1.5 sm:col-span-2">
-                  <div class="flex justify-between text-body-sm">
-                    <span class="text-on-surface-variant">给分友好度</span>
-                    <span class="font-semibold text-primary">3.5 / 5.0</span>
-                  </div>
-                  <div
-                    class="h-2 w-full overflow-hidden rounded-full bg-surface-container-high"
-                  >
-                    <div
-                      class="h-full rounded-full bg-secondary"
-                      style="width: 70%"
-                    ></div>
-                  </div>
-                </div>
+              <label class="w-full md:max-w-sm"
+                ><span class="sr-only">搜索教师</span
+                ><input
+                  id="teacher-search"
+                  type="search"
+                  placeholder="搜索教师姓名、标识或院系"
+                  class="w-full rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+              /></label>
+            </div>
+            <div
+              class="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]"
+            >
+              <div id="teacher-results" class="space-y-2">
+                <p class="text-body-sm text-outline">正在读取教师名录…</p>
               </div>
-              <!-- Tags Cloud -->
               <div
-                class="flex flex-wrap items-center gap-2 border-b border-surface-variant py-4"
+                id="teacher-detail"
+                class="rounded-lg bg-surface-container-low p-5 text-body-sm text-outline"
               >
-                <span class="mr-2 text-label-sm text-outline">大家都在说:</span>
-                <span
-                  class="rounded-full bg-secondary-container px-3 py-1 text-body-sm text-on-secondary-container"
-                  >#内容很新</span
-                >
-                <span
-                  class="rounded-full bg-secondary-container px-3 py-1 text-body-sm text-on-secondary-container"
-                  >#需要一定基础</span
-                >
-                <span
-                  class="rounded-full bg-secondary-container px-3 py-1 text-body-sm text-on-secondary-container"
-                  >#适合科研</span
-                >
-                <span
-                  class="rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-on-surface-variant"
-                  >#作业偏多</span
-                >
-                <span
-                  class="rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-on-surface-variant"
-                  >#实验有意思</span
-                >
-                <span
-                  class="rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-on-surface-variant"
-                  >#不适合突击</span
-                >
-              </div>
-              <!-- Teacher Tabs -->
-              <div class="pt-6">
-                <div
-                  class="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div class="flex flex-wrap items-center gap-2">
-                    <button
-                      class="rounded-lg bg-primary px-4 py-1.5 text-label-md text-on-primary transition-colors"
-                    >
-                      全部教师 (36)
-                    </button>
-                    <button
-                      class="rounded-lg bg-surface-container-low px-4 py-1.5 text-label-md text-on-surface-variant transition-colors hover:bg-surface-container"
-                    >
-                      教师 A (推荐度 9.1)
-                    </button>
-                    <button
-                      class="rounded-lg bg-surface-container-low px-4 py-1.5 text-label-md text-on-surface-variant transition-colors hover:bg-surface-container"
-                    >
-                      教师 B (8.4)
-                    </button>
-                  </div>
-                  <button
-                    class="flex items-center gap-1 text-label-md text-secondary hover:underline"
-                  >
-                    <span class="material-symbols-outlined text-sm"
-                      >filter_list</span
-                    >
-                    筛选评价
-                  </button>
-                </div>
-                <!-- Evaluation Card Example -->
-                <div
-                  class="flex flex-col gap-3 rounded-xl bg-surface-container-low p-5"
-                >
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                      <img
-                        class="h-10 w-10 rounded-full bg-surface-variant object-cover"
-                        alt="Avatar of student reviewer in campus style"
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuCXGQW-iSxWKfOn1BG-rWX16DayoTENCinaNyIMV718RoS1J6gZSod8ia7h50o_HTtWXET5rM2nHlx1Rb_vuxeE_Ttcs9JXHqjoBv9H-BXOeQhEVR8nBUO13Xz1axCGRsO8-0YOvIGBf2XaPtuvBvJrj9nvaXTsbM9Q8P3uitG-VsYTvXSQT-yThgcJ6rpTpVWProJGjhemub2IIGnmIXKgcTOG03jkOKqrLEKIkfdqeoFKKBOZ2ow-lg"
-                      />
-                      <div>
-                        <div class="flex items-center gap-2">
-                          <span class="font-semibold text-on-surface"
-                            >匿名同学 (生物医学工程系)</span
-                          >
-                          <span
-                            class="rounded bg-primary-fixed/40 px-2 py-0.5 text-xs text-primary"
-                            >教师 A · 2026 秋</span
-                          >
-                        </div>
-                        <span class="text-label-sm text-outline"
-                          >修读成绩: A- · 考核方式: 期末论文+期中汇报</span
-                        >
-                      </div>
-                    </div>
-                    <div class="text-right">
-                      <span class="text-headline-sm font-bold text-primary"
-                        >9<span class="text-body-sm font-normal text-outline"
-                          >/10</span
-                        ></span
-                      >
-                    </div>
-                  </div>
-                  <!-- Tags in review -->
-                  <div class="flex items-center gap-2">
-                    <span
-                      class="rounded bg-secondary-container/60 px-2 py-0.5 text-label-sm text-on-secondary-container"
-                      >#老师认真</span
-                    >
-                    <span
-                      class="rounded bg-secondary-container/60 px-2 py-0.5 text-label-sm text-on-secondary-container"
-                      >#内容丰富</span
-                    >
-                  </div>
-                  <p
-                    class="text-body-md leading-relaxed text-on-surface-variant"
-                  >
-                    课程内容非常前沿，涵盖了神经科学与人工智能交叉领域的最新进展。老师上课很有激情，会带大家读顶会论文。虽然没有期末闭卷考试，但期末的小组科研项目和期中汇报工作量不小，需要花心思认真做。对未来想做脑机接口或类脑计算方向的同学非常有帮助，强烈推荐！
-                  </p>
-                  <div
-                    class="flex items-center justify-between pt-2 text-body-sm text-outline"
-                  >
-                    <span>发表于 2周前</span>
-                    <div class="flex items-center gap-4">
-                      <button
-                        class="flex items-center gap-1 transition-colors hover:text-primary"
-                      >
-                        <span class="material-symbols-outlined text-sm"
-                          >thumb_up</span
-                        >
-                        有用 (28)
-                      </button>
-                      <button
-                        class="flex items-center gap-1 transition-colors hover:text-primary"
-                      >
-                        <span class="material-symbols-outlined text-sm"
-                          >chat_bubble</span
-                        >
-                        评论 (4)
-                      </button>
-                      <button
-                        class="flex items-center gap-1 transition-colors hover:text-primary"
-                      >
-                        <span class="material-symbols-outlined text-sm"
-                          >bookmark</span
-                        >
-                        收藏
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                选择一位教师查看授课记录。
               </div>
             </div>
           </div>

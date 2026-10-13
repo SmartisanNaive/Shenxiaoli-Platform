@@ -15,6 +15,28 @@ if (production && !process.env.SESSION_SECRET) {
 if (production && demoAuthEnabled) {
   throw new Error("Demo authentication must not be enabled in production");
 }
+if (production) {
+  const requiredProductionSettings = [
+    "RESEND_API_KEY",
+    "RESEND_FROM",
+    "RESEND_WEBHOOK_SECRET",
+    "BETTER_AUTH_URL",
+    "ALLOWED_ORIGINS",
+    "DATABASE_PATH",
+    "UPLOADS_PATH",
+  ];
+  const missing = requiredProductionSettings.filter(
+    (name) => !process.env[name]?.trim(),
+  );
+  if (missing.length)
+    throw new Error(
+      `Missing required production settings: ${missing.join(", ")}`,
+    );
+  if ((process.env.SESSION_SECRET?.length ?? 0) < 32)
+    throw new Error(
+      "SESSION_SECRET must contain at least 32 characters in production",
+    );
+}
 
 const databasePath = process.env.DATABASE_PATH
   ? resolve(process.cwd(), process.env.DATABASE_PATH)
@@ -22,6 +44,7 @@ const databasePath = process.env.DATABASE_PATH
 const db = createDatabase({
   path: databasePath,
   seedDemoUsers: demoAuthEnabled,
+  migrate: process.env.RUN_MIGRATIONS !== "false",
 });
 const app = createApp({
   database: db,

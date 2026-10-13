@@ -1,4 +1,11 @@
-import { api, escapeHtml, imageUrl, type Listing, type SkillPost } from './api';
+import {
+  api,
+  escapeHtml,
+  imageUrl,
+  type Listing,
+  type SessionState,
+  type SkillPost,
+} from './api';
 
 interface HomeData {
   counts: {
@@ -51,6 +58,19 @@ export async function initHome(): Promise<void> {
   footer.before(section);
 
   try {
+    const session = await api<SessionState>('/api/session');
+    if (!session.authenticated) {
+      section.innerHTML =
+        '<div class="rounded-xl border border-outline-variant bg-surface p-8"><h2 class="font-headline-md text-primary">校园内容仅向已登录成员开放</h2><p class="mt-2 text-body-md text-on-surface-variant">请使用指定校园邮箱验证登录；邮箱验证不代表学籍认证。</p><button type="button" class="mt-4 rounded-lg bg-primary px-4 py-2 text-label-sm text-on-primary" data-home-login>校园邮箱登录</button></div>';
+      section
+        .querySelector('[data-home-login]')
+        ?.addEventListener('click', () =>
+          document
+            .querySelector<HTMLButtonElement>('[data-auth-toggle]')
+            ?.click(),
+        );
+      return;
+    }
     const data = await api<HomeData>('/api/home');
     const countLabels = [
       ['courses', '门课程'],

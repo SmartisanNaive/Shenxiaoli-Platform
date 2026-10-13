@@ -7,10 +7,12 @@ import {
   showToast,
   type Listing,
 } from './api';
+import { bindCommentSlots, commentSlot } from './comments';
 
 interface ListingResponse {
   items: Listing[];
   total: number;
+  page: number;
 }
 interface ListingDetailData extends Record<string, string> {
   title: string;
@@ -30,7 +32,10 @@ export function initMarket(): void {
   const modal = document.querySelector<HTMLElement>('#publish-modal');
   const input = document.querySelector<HTMLInputElement>('#listing-images');
   if (!grid || !form) return;
+  grid.hidden = true;
   let listings: Listing[] = [];
+  let listingPage = 1;
+  let listingTotal = 0;
   let activeListing: Listing | null = null;
   let selectedCategory = 'all';
 
@@ -69,6 +74,14 @@ export function initMarket(): void {
         seller: listing.sellerName,
       };
       window.openDetailModal?.(card, data);
+      document.querySelector('[data-comment-widget]')?.remove();
+      document
+        .querySelector('#modal-desc')
+        ?.insertAdjacentHTML('afterend', commentSlot('listing', listing.id));
+      const detailModal = document.querySelector<HTMLElement>(
+        '#detail-modal-content',
+      );
+      if (detailModal) bindCommentSlots(detailModal);
       const contact =
         document.querySelector<HTMLButtonElement>('#contact-seller');
       if (contact) {
@@ -119,6 +132,7 @@ export function initMarket(): void {
   };
 
   const render = (): void => {
+    grid.hidden = false;
     grid.replaceChildren();
     const visible = listings.filter(
       (listing) =>
@@ -133,18 +147,30 @@ export function initMarket(): void {
       return;
     }
     visible.forEach((listing) => grid.append(buildCard(listing)));
+    if (listings.length < listingTotal) {
+      const more = document.createElement('button');
+      more.type = 'button';
+      more.className =
+        'col-span-full rounded-xl border border-outline-variant bg-surface px-4 py-3 text-label-sm text-primary hover:bg-surface-container-low';
+      more.textContent = `加载更多（已显示 ${listings.length} / ${listingTotal}）`;
+      more.addEventListener('click', () => void loadListings(true));
+      grid.append(more);
+    }
   };
 
-  const loadListings = async (): Promise<void> => {
-    const category =
-      selectedCategory === 'all'
-        ? ''
-        : `?category=${encodeURIComponent(selectedCategory)}`;
+  const loadListings = async (append = false): Promise<void> => {
+    const params = new URLSearchParams({
+      page: String(append ? listingPage + 1 : 1),
+      pageSize: '20',
+    });
+    if (selectedCategory !== 'all') params.set('category', selectedCategory);
     try {
       const response = await api<ListingResponse>(
-        `/api/market/listings${category}`,
+        `/api/market/listings?${params}`,
       );
-      listings = response.items;
+      listings = append ? [...listings, ...response.items] : response.items;
+      listingPage = response.page;
+      listingTotal = response.total;
       render();
       const requestedId = new URLSearchParams(location.search).get('listing');
       const requested = requestedId
@@ -157,6 +183,7 @@ export function initMarket(): void {
           )
           ?.click();
     } catch (error) {
+      grid.hidden = false;
       grid.innerHTML = `<p class="col-span-full rounded-xl border border-error/20 bg-error-container p-8 text-body-sm text-on-error-container">${escapeHtml(error instanceof Error ? error.message : '集市数据加载失败')}。请启动 API 后重试。</p>`;
     }
   };

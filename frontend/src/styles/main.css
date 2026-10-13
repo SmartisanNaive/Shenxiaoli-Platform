@@ -12,6 +12,10 @@
 @tailwind components;
 @tailwind utilities;
 
+.account-tab {
+  @apply rounded-lg bg-surface-container px-4 py-2 text-label-sm text-primary transition-colors hover:bg-surface-container-high;
+}
+
 @layer base {
   html,
   body {

@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="深小狸校园的项目介绍、社区规范与隐私政策"
+    />
+    <title>项目说明与政策 | 深小狸校园</title>
+    <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+    <script type="module" src="./scripts/main.ts"></script>
+  </head>
+  <body class="bg-background font-body-md text-on-surface">
+    <div data-layout="header"></div>
+    <main class="min-h-screen bg-background px-4 pb-16 pt-28 sm:px-6">
+      <div class="mx-auto max-w-[900px]">
+        <header class="mb-10">
+          <p class="text-label-sm text-secondary">深小狸校园</p>
+          <h1 class="mt-2 font-headline-xl text-primary">项目说明与政策</h1>
+          <p class="mt-3 text-body-md text-on-surface-variant">
+            校园邮箱验证仅证明邮箱访问权，不代表学籍或身份认证。社区内容由用户发布并接受治理。
+          </p>
+        </header>
+        <section
+          id="project"
+          class="mb-8 scroll-mt-28 rounded-2xl bg-surface-container-lowest p-6 shadow-sm"
+        >
+          <h2 class="font-headline-md text-primary">项目主页</h2>
+          <p class="mt-3 leading-7">
+            深小狸校园为深圳理工大学校园社区提供课程评价、闲置集市、技能互助和树洞交流。项目代码与问题跟踪可在
+            <a
+              class="text-primary underline"
+              href="https://github.com/shenxiaoli/shenxiaoli-platform"
+              >GitHub 项目主页</a
+            >查看。
+          </p>
+        </section>
+        <section
+          id="design"
+          class="mb-8 scroll-mt-28 rounded-2xl bg-surface-container-lowest p-6 shadow-sm"
+        >
+          <h2 class="font-headline-md text-primary">设计规范</h2>
+          <p class="mt-3 leading-7">
+            界面遵循清晰、可读、可键盘操作的设计原则。页面沿用统一的颜色、间距、字体与交互状态；无障碍和组件说明随源代码维护。
+          </p>
+        </section>
+        <section
+          id="community"
+          class="mb-8 scroll-mt-28 rounded-2xl bg-surface-container-lowest p-6 shadow-sm"
+        >
+          <h2 class="font-headline-md text-primary">社区规则</h2>
+          <ul class="mt-3 list-disc space-y-2 pl-6 leading-7">
+            <li>尊重他人，不发布骚扰、歧视、违法或侵权内容。</li>
+            <li>
+              交易信息应真实；站内私信不支持支付或担保，线下交易请自行判断风险。
+            </li>
+            <li>
+              树洞仅对其他用户隐藏账号标识，平台在处理举报和依法响应时仍可进行必要审查。
+            </li>
+            <li>
+              可通过举报提交问题；治理结果和账号处罚可以在个人中心申请复核。
+            </li>
+          </ul>
+        </section>
+        <section
+          id="privacy"
+          class="mb-8 scroll-mt-28 rounded-2xl bg-surface-container-lowest p-6 shadow-sm"
+        >
+          <h2 class="font-headline-md text-primary">隐私政策</h2>
+          <div class="mt-3 space-y-3 leading-7">
+            <p>
+              平台仅接受 @stu.suat-sz.edu.cn 与 @suat-sz.edu.cn
+              邮箱，用于登录、账号通知和安全管理。邮箱验证不连接学校教务或学籍系统。
+            </p>
+            <p>
+              私信内容仅向会话参与者展示；用户举报私信时，审核人员可查看被举报消息及必要上下文。树洞内容在普通展示中不返回发布者账号资料，但不是对平台运营人员的绝对匿名。
+            </p>
+            <p>
+              验证码和重要通知通过 Resend
+              发送。邮件不包含私信正文、树洞正文或举报人身份。用户注销后发布内容会立即隐藏，身份资料按账号删除流程清理；未结举报证据限权保留，备份按运维保留策略轮换。
+            </p>
+            <p>
+              注销需通过邮箱验证码确认。确认后账号立即停用、会话撤销、发布内容隐藏；邮箱资料保留
+              30
+              天用于完成注销和防止流程期间重新注册，到期后清除。举报证据在案件结案后最多保留
+              180 天。加密异地备份每日生成并保留最近 30
+              天，因此已清理的数据可能继续留在备份中，直到对应快照轮换删除。
+            </p>
+          </div>
+        </section>
+        <section
+          id="contact"
+          class="scroll-mt-28 rounded-2xl bg-surface-container-lowest p-6 shadow-sm"
+        >
+          <h2 class="font-headline-md text-primary">联系我们</h2>
+          <p class="mt-2 text-body-sm text-on-surface-variant">
+            反馈会提交到社区工单。请勿在表单中填写密码、验证码或敏感个人信息。
+          </p>
+          <form class="mt-5 grid gap-4" data-feedback-form>
+            <label class="grid gap-1 text-label-sm"
+              >主题<input
+                name="subject"
+                required
+                minlength="3"
+                maxlength="120"
+                class="rounded-lg border border-outline-variant bg-surface px-3 py-2"
+            /></label>
+            <label class="grid gap-1 text-label-sm"
+              >反馈内容<textarea
+                name="message"
+                required
+                minlength="10"
+                maxlength="2000"
+                rows="5"
+                class="rounded-lg border border-outline-variant bg-surface px-3 py-2"
+              ></textarea>
+            </label>
+            <label class="grid gap-1 text-label-sm" data-feedback-email-wrap
+              >校园邮箱（未登录时填写）<input
+                name="email"
+                type="email"
+                autocomplete="email"
+                class="rounded-lg border border-outline-variant bg-surface px-3 py-2"
+                placeholder="name@stu.suat-sz.edu.cn"
+            /></label>
+            <button
+              class="w-fit rounded-lg bg-primary px-5 py-2.5 text-label-sm text-on-primary"
+              type="submit"
+            >
+              提交反馈
+            </button>
+            <p
+              class="text-body-sm text-outline"
+              data-feedback-status
+              aria-live="polite"
+            ></p>
+          </form>
+        </section>
+      </div>
+    </main>
+    <div data-layout="footer"></div>
+  </body>
+</html>

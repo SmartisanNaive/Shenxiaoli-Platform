@@ -99,7 +99,7 @@ export const renderHeader = (activeKey?: NavKey): string => {
           class="relative hidden p-2 text-on-surface-variant transition-colors hover:text-primary sm:block"
           data-notifications-open
           type="button"
-          aria-label="联系请求"
+            aria-label="通知、联系请求与私信"
         >
           <span class="material-symbols-outlined">notifications</span>
         </button>
@@ -117,13 +117,22 @@ export const renderHeader = (activeKey?: NavKey): string => {
           </button>
           <div class="absolute right-0 top-full z-50 mt-2 hidden w-64 rounded-xl border border-surface-variant bg-surface p-4 shadow-lg" data-auth-panel>
             <p class="mb-3 text-body-sm text-on-surface-variant" data-auth-message>正在检查登录状态…</p>
+            <form class="mb-3 flex flex-col gap-2" data-email-login>
+              <label class="text-label-sm text-on-surface-variant">校园邮箱<input data-login-email autocomplete="email" type="email" required placeholder="name@stu.suat-sz.edu.cn" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
+              <label data-login-name-field class="hidden text-label-sm text-on-surface-variant">昵称<input data-login-name autocomplete="nickname" maxlength="40" placeholder="社区昵称" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
+              <label data-login-otp-field class="hidden text-label-sm text-on-surface-variant">邮箱验证码<input data-login-otp inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6 位验证码" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
+              <button data-login-send type="submit" class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary">发送验证码</button>
+              <button data-login-verify type="button" class="hidden rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary">验证并登录</button>
+              <p class="text-xs leading-5 text-outline">仅接受 @stu.suat-sz.edu.cn 和 @suat-sz.edu.cn 邮箱。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。</p>
+            </form>
             <div class="flex flex-col gap-2" data-demo-login-options hidden>
               <button class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary" data-demo-login="student" type="button">以演示同学身份登录</button>
               <button class="rounded-lg border border-outline-variant px-3 py-2 text-label-sm text-primary hover:bg-surface-container-low" data-demo-login="moderator" type="button">以演示审核员身份登录</button>
               <p class="text-body-sm text-outline">仅供本地开发演示，不代表学校认证。</p>
             </div>
             <a class="mb-2 hidden rounded-lg bg-surface-container-low px-3 py-2 text-label-sm text-primary hover:bg-surface-container" data-admin-link href="./moderation.html">打开内容审核台</a>
-            <button class="hidden w-full rounded-lg px-3 py-2 text-left text-label-sm text-on-surface-variant hover:bg-surface-container-low" data-auth-logout type="button">退出演示登录</button>
+            <a class="mb-2 block rounded-lg bg-surface-container-low px-3 py-2 text-label-sm text-primary hover:bg-surface-container" href="./account.html">打开个人中心</a>
+          <button class="hidden w-full rounded-lg px-3 py-2 text-left text-label-sm text-on-surface-variant hover:bg-surface-container-low" data-auth-logout type="button">退出登录</button>
           </div>
         </div>
       </div>
@@ -155,10 +164,10 @@ export const renderFooter = (): string => `
       <div>
         <h5 class="font-label-md text-on-surface mb-3">关于</h5>
         <ul class="flex flex-col gap-2 text-body-md text-on-surface-variant">
-          <li><a class="hover:text-primary transition-colors" href="#">项目主页</a></li>
-          <li><a class="hover:text-primary transition-colors" href="#">设计规范</a></li>
-          <li><a class="hover:text-primary transition-colors" href="#">隐私政策</a></li>
-          <li><a class="hover:text-primary transition-colors" href="#">联系我们</a></li>
+          <li><a class="hover:text-primary transition-colors" href="./information.html#project">项目主页</a></li>
+          <li><a class="hover:text-primary transition-colors" href="./information.html#design">设计规范</a></li>
+          <li><a class="hover:text-primary transition-colors" href="./information.html#privacy">隐私政策</a></li>
+          <li><a class="hover:text-primary transition-colors" href="./information.html#contact">联系我们</a></li>
         </ul>
       </div>
     </div>
