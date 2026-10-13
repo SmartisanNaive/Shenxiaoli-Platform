@@ -1,0 +1,19 @@
+{$SITE_ADDRESS:localhost} {
+	encode zstd gzip
+	root * /srv
+
+	handle /api /api/* {
+		header Cache-Control "private, no-store"
+		reverse_proxy api:8787
+	}
+
+	handle /uploads/* {
+		header Cache-Control "private, no-store"
+		reverse_proxy api:8787
+	}
+
+	handle {
+		try_files {path} {path}/ /index.html
+		file_server
+	}
+}

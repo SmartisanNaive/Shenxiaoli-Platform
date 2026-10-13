@@ -1,6 +1,8 @@
-name: Deploy to Retinbox Web Hosting
+name: Deploy static demo preview
 
-on: push
+on:
+  push:
+    branches: [main]
 
 jobs:
   deploy:
@@ -9,7 +11,8 @@ jobs:
       image: shangzheny/rth-host-helper:latest
 
     steps:
-      - name: Deploy to Retinbox Web Hosting
+      # This publishes the static frontend preview only; it does not deploy the API.
+      - name: Deploy frontend demo preview to Retinbox
         uses: rthsoftware/host-auto-deploy@master
         env:
           RTH_API_KEY: ${{ secrets.RTH_API_KEY }}

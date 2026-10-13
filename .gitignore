@@ -29,6 +29,7 @@ Thumbs.db
 # Backend runtime data
 backend/data/
 backend/uploads/
+/backups/
 
 # Environment files
 .env
