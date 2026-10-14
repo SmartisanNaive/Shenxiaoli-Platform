@@ -26,6 +26,8 @@ Vite 代理 `/api/*` 和 `/uploads/*`。本地默认启用合成数据和学生/
 
 校园邮箱只接受精确的 `stu.suat-sz.edu.cn` 与 `suat-sz.edu.cn` 域名，输入会去除首尾空格
 并转成小写，子域名不在允许范围内。验证证明邮箱控制权，不证明学籍或实名身份。
+唯一的外部邮箱例外是 `ADMIN_EMAIL` 配置的精确地址；该邮箱完成验证码验证后自动
+获得管理员权限。示例配置为 `jianghanchn@vip.qq.com`，不会开放整个 QQ 邮箱域。
 密码登录关闭；登录验证码为 6 位、5 分钟有效、最多 5 次校验尝试，同一邮箱发送冷却
 60 秒。验证码由 API 直接调用 Resend 发送，不经过通知队列。
 
@@ -43,7 +45,7 @@ Vite 代理 `/api/*` 和 `/uploads/*`。本地默认启用合成数据和学生/
 | 用户     | 已登录，且账号不是 `banned` 或 `deleting`；`suspended` 可使用部分读取和自助接口 |
 | 活跃用户 | 用户权限且不处于 `suspended`，可发布与互动                                      |
 | 审核员   | 活跃用户，角色为 `moderator` 或 `admin`                                         |
-| 管理员   | 活跃用户，角色为 `admin`；由业务表 `is_admin` 映射，邮箱域不会自动授予          |
+| 管理员   | 活跃用户，角色为 `admin`；由业务表 `is_admin` 或已验证的 `ADMIN_EMAIL` 授予，邮箱域不会自动授予 |
 
 写入请求若带有 `Origin`，业务中间件接受请求同源地址或 `ALLOWED_ORIGINS` 列表中的地址；
 未携带 `Origin` 的请求不会被该检查拒绝，Better Auth 另执行其认证校验。API 没有通用
@@ -259,7 +261,11 @@ console.log(response.status, await response.json()); // 201、status: 'approved'
 
 ## 管理员与 CSV 导入
 
-先用校园邮箱验证并登录，再在 `backend/` 工作目录执行：
+设置 `ADMIN_EMAIL=jianghanchn@vip.qq.com` 后，该邮箱完成验证码登录即可使用管理员功能，
+无需手工授权。修改环境配置并重启或换绑邮箱后，自动权限随之失效；配置不会设置密码
+或预建已验证账号。外部管理员邮箱的 `user.emailVerified=true`，但 `campusEmailVerified=false`。
+
+为其他校园账号授予永久管理员权限时，先用校园邮箱验证并登录，再在 `backend/` 工作目录执行：
 
 ```bash
 bun run admin:grant name@suat-sz.edu.cn

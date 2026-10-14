@@ -18,6 +18,27 @@ export function normalizeCampusEmail(value: string): string | null {
     : null;
 }
 
+export function configuredAdminEmail(
+  value = process.env.ADMIN_EMAIL,
+): string | null {
+  const email = value?.trim().toLowerCase();
+  if (!email) return null;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error("ADMIN_EMAIL must be a single valid email address");
+  }
+  return email;
+}
+
+export function normalizeLoginEmail(
+  value: string,
+  adminEmail: string | null,
+): string | null {
+  const email = value.trim().toLowerCase();
+  return adminEmail && email === adminEmail
+    ? email
+    : normalizeCampusEmail(email);
+}
+
 export async function deliverCampusEmail(
   message: {
     to: string;
@@ -26,22 +47,28 @@ export async function deliverCampusEmail(
     idempotencyKey: string;
   },
   override?: AuthOptions["sendEmail"],
-): Promise<void> {
-  if (override) return override(message);
+): Promise<string | undefined> {
+  if (override) {
+    await override(message);
+    return;
+  }
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM;
   if (!apiKey || !from)
     throw new Error("邮件服务未配置 RESEND_API_KEY 和 RESEND_FROM");
   const resend = new Resend(apiKey);
-  const { error } = await resend.emails.send(
+  const { data, error } = await resend.emails.send(
     { from, to: [message.to], subject: message.subject, text: message.text },
     { idempotencyKey: message.idempotencyKey },
   );
-  if (error) throw new Error("邮件发送失败");
+  if (error) throw new Error(`邮件发送失败（${error.name}）：${error.message}`);
+  return data?.id;
 }
 
 interface AuthOptions {
   database: AppDatabase;
+  adminEmail?: string;
+  baseURL?: string;
   production?: boolean;
   secret?: string;
   trustedOrigins?: string[];
@@ -54,7 +81,10 @@ interface AuthOptions {
 }
 
 export function createAuth(options: AuthOptions) {
-  const origin = process.env.BETTER_AUTH_URL ?? "http://127.0.0.1:8787";
+  const adminEmail = configuredAdminEmail(options.adminEmail);
+  const origin =
+    options.baseURL ??
+    (process.env.BETTER_AUTH_URL?.trim() || "http://127.0.0.1:8787");
   return betterAuth({
     database: options.database,
     baseURL: origin,
@@ -82,8 +112,9 @@ export function createAuth(options: AuthOptions) {
       user: {
         create: {
           before: async (user) => {
-            const email = normalizeCampusEmail(user.email);
-            if (!email) throw new Error("仅支持 SUAT 校园邮箱注册");
+            const email = normalizeLoginEmail(user.email, adminEmail);
+            if (!email)
+              throw new Error("仅支持 SUAT 校园邮箱或配置的管理员邮箱");
             if (user.emailVerified !== true) {
               throw new Error("请先完成校园邮箱验证");
             }
@@ -93,8 +124,9 @@ export function createAuth(options: AuthOptions) {
         update: {
           before: async (user) => {
             if (typeof user.email === "string") {
-              const email = normalizeCampusEmail(user.email);
-              if (!email) throw new Error("仅支持 SUAT 校园邮箱");
+              const email = normalizeLoginEmail(user.email, adminEmail);
+              if (!email)
+                throw new Error("仅支持 SUAT 校园邮箱或配置的管理员邮箱");
               return { data: { ...user, email } };
             }
             return { data: user };
@@ -111,8 +143,8 @@ export function createAuth(options: AuthOptions) {
         resendStrategy: "rotate",
         changeEmail: { enabled: true, verifyCurrentEmail: true },
         sendVerificationOTP: async ({ email: value, otp, type }) => {
-          const email = normalizeCampusEmail(value);
-          if (!email) throw new Error("仅支持 SUAT 校园邮箱");
+          const email = normalizeLoginEmail(value, adminEmail);
+          if (!email) throw new Error("仅支持 SUAT 校园邮箱或配置的管理员邮箱");
           const subject =
             type === "change-email"
               ? "深小狸校园：确认新的校园邮箱"

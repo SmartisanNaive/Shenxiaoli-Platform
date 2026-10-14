@@ -12,7 +12,13 @@ import { Hono } from "hono";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import type { AppDatabase } from "./db";
-import { createAuth, deliverCampusEmail, normalizeCampusEmail } from "./auth";
+import {
+  configuredAdminEmail,
+  createAuth,
+  deliverCampusEmail,
+  normalizeCampusEmail,
+  normalizeLoginEmail,
+} from "./auth";
 import { enqueueEmail } from "./notifications";
 import { Resend } from "resend";
 
@@ -28,6 +34,7 @@ export interface User {
 
 interface AppConfig {
   database: AppDatabase;
+  adminEmail?: string;
   demoAuthEnabled?: boolean;
   production?: boolean;
   sessionSecret?: string;
@@ -38,6 +45,7 @@ interface AppConfig {
 
 interface Variables {
   user: User | null;
+  auth: ReturnType<typeof createAuth>;
 }
 
 type AppContext = { Variables: Variables };
@@ -418,6 +426,7 @@ function shanghaiMonthStart(): string {
 
 export function createApp(config: AppConfig): Hono<AppContext> {
   const { database: db } = config;
+  const adminEmail = configuredAdminEmail(config.adminEmail);
   const production = config.production ?? process.env.NODE_ENV === "production";
   const demoAuthEnabled = Boolean(config.demoAuthEnabled) && !production;
   const secret =
@@ -437,13 +446,42 @@ export function createApp(config: AppConfig): Hono<AppContext> {
   const uploadsDir = resolve(
     config.uploadsDir ?? process.env.UPLOADS_PATH ?? "./uploads",
   );
-  const auth = createAuth({
-    database: db,
-    production,
-    secret,
-    trustedOrigins: [...allowedOrigins],
-    sendEmail: config.sendEmail,
-  });
+  const authInstances = new Map<string, ReturnType<typeof createAuth>>();
+  const configuredAuthURL = process.env.BETTER_AUTH_URL?.trim();
+  const requestOrigin = (request: Request): string => {
+    const url = new URL(request.url);
+    const host = request.headers.get("host") ?? url.host;
+    if (!host || /[\s,@/\\?#]/.test(host))
+      throw new HttpError(400, "INVALID_HOST", "请求主机地址无效");
+    try {
+      // Compose exposes HTTP to the local tunnel; production browsers use HTTPS.
+      return new URL(
+        `${production ? "https" : url.protocol.slice(0, -1)}://${host}`,
+      ).origin;
+    } catch {
+      throw new HttpError(400, "INVALID_HOST", "请求主机地址无效");
+    }
+  };
+  const authForOrigin = (origin: string): ReturnType<typeof createAuth> => {
+    const baseURL = configuredAuthURL || origin;
+    let auth = authInstances.get(baseURL);
+    if (!auth) {
+      auth = createAuth({
+        database: db,
+        adminEmail: adminEmail ?? "",
+        baseURL,
+        production,
+        secret,
+        trustedOrigins: [...allowedOrigins],
+        sendEmail: config.sendEmail,
+      });
+      // Bound memory when a tunnel changes hosts or a client varies Host.
+      if (authInstances.size >= 32)
+        authInstances.delete(authInstances.keys().next().value!);
+      authInstances.set(baseURL, auth);
+    }
+    return auth;
+  };
 
   const app = new Hono<AppContext>();
 
@@ -455,13 +493,14 @@ export function createApp(config: AppConfig): Hono<AppContext> {
   });
 
   app.use("/api/*", async (c, next) => {
+    const incomingOrigin = requestOrigin(c.req.raw);
     const method = c.req.method.toUpperCase();
     if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
       const origin = c.req.header("origin");
       if (origin) {
         let sameOrigin = false;
         try {
-          sameOrigin = new URL(origin).origin === new URL(c.req.url).origin;
+          sameOrigin = new URL(origin).origin === incomingOrigin;
         } catch {
           sameOrigin = false;
         }
@@ -487,11 +526,13 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     } else {
       c.set("user", null);
     }
+    const auth = authForOrigin(incomingOrigin);
+    c.set("auth", auth);
     const authSession = await auth.api.getSession({
       headers: c.req.raw.headers,
     });
     if (authSession?.user.emailVerified) {
-      const email = normalizeCampusEmail(authSession.user.email);
+      const email = normalizeLoginEmail(authSession.user.email, adminEmail);
       if (email) {
         const now = nowIso();
         db.query(
@@ -504,7 +545,11 @@ export function createApp(config: AppConfig): Hono<AppContext> {
              email_verified = 1,
              updated_at = excluded.updated_at`,
         ).run(authSession.user.id, authSession.user.name, email, now, now);
-        c.set("user", readUser(db, authSession.user.id));
+        const user = readUser(db, authSession.user.id);
+        // Environment-granted access follows the verified email, so changing
+        // ADMIN_EMAIL or the account email does not leave a permanent grant.
+        if (user && email === adminEmail) user.role = "admin";
+        c.set("user", user);
       }
     }
     await next();
@@ -595,7 +640,9 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       authenticated: Boolean(user),
       user,
       demoAuthAvailable: demoAuthEnabled,
-      campusEmailVerified: Boolean(user?.emailVerified),
+      campusEmailVerified: Boolean(
+        user?.emailVerified && user.email && normalizeCampusEmail(user.email),
+      ),
     });
   });
 
@@ -3976,6 +4023,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
   });
 
   app.all("/api/auth/*", async (c) => {
+    const auth = c.get("auth");
     if (
       c.req.method === "POST" &&
       c.req.path === "/api/auth/sign-in/email-otp"
@@ -3986,7 +4034,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const email =
         isRecord(body) && typeof body.email === "string"
-          ? normalizeCampusEmail(body.email)
+          ? normalizeLoginEmail(body.email, adminEmail)
           : null;
       if (email) {
         const deleting = db
@@ -4012,13 +4060,13 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const email =
         isRecord(body) && typeof body.email === "string"
-          ? normalizeCampusEmail(body.email)
+          ? normalizeLoginEmail(body.email, adminEmail)
           : null;
       if (!email)
         throw new HttpError(
           400,
           "CAMPUS_EMAIL_REQUIRED",
-          "仅支持 @stu.suat-sz.edu.cn 或 @suat-sz.edu.cn 校园邮箱",
+          "仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱或配置的管理员邮箱",
         );
       const deleting = db
         .query(
@@ -4069,13 +4117,13 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const newEmail =
         isRecord(body) && typeof body.newEmail === "string"
-          ? normalizeCampusEmail(body.newEmail)
+          ? normalizeLoginEmail(body.newEmail, adminEmail)
           : null;
       if (!newEmail)
         throw new HttpError(
           400,
           "CAMPUS_EMAIL_REQUIRED",
-          "新邮箱仅支持 @stu.suat-sz.edu.cn 或 @suat-sz.edu.cn",
+          "新邮箱仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 或配置的管理员邮箱",
         );
     }
     return auth.handler(c.req.raw);

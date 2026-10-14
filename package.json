@@ -31,6 +31,7 @@
     "format:check": "cd backend && bun run format:check && cd ../frontend && bun run format:check",
     "typecheck": "cd backend && bun run typecheck && cd ../frontend && bun run typecheck",
     "test": "cd backend && bun run test",
+    "mail:test": "bun --env-file=.env run backend/src/test-email.ts",
     "setup": "cd frontend && bun install && cd ../backend && bun install",
     "deploy": "deno -Ar https://host.retiehe.com/cli deploy"
   }

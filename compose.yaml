@@ -6,11 +6,12 @@ x-runtime-environment: &runtime-environment
   UPLOADS_PATH: /uploads
   PORT: "8787"
   SESSION_SECRET: ${SESSION_SECRET:?Set a long random SESSION_SECRET in .env}
-  ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:?Set ALLOWED_ORIGINS to the HTTPS site origin}
-  BETTER_AUTH_URL: ${BETTER_AUTH_URL:?Set BETTER_AUTH_URL to the HTTPS site origin}
+  ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
+  BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
+  ADMIN_EMAIL: ${ADMIN_EMAIL:-}
   RESEND_API_KEY: ${RESEND_API_KEY:?Set RESEND_API_KEY}
   RESEND_FROM: ${RESEND_FROM:?Set RESEND_FROM to an authenticated sender on a domain you control}
-  RESEND_WEBHOOK_SECRET: ${RESEND_WEBHOOK_SECRET:?Set RESEND_WEBHOOK_SECRET}
+  RESEND_WEBHOOK_SECRET: ${RESEND_WEBHOOK_SECRET:-}
 
 services:
   api:
@@ -48,15 +49,8 @@ services:
     build:
       context: .
       target: web
-    environment:
-      SITE_ADDRESS: ${SITE_ADDRESS:?Set SITE_ADDRESS to the public domain}
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - caddy-data:/data
-      - caddy-config:/config
+      - "127.0.0.1:${WEB_PORT:-8080}:80"
     restart: unless-stopped
     depends_on:
       api:
@@ -78,5 +72,3 @@ services:
 volumes:
   sqlite-data:
   uploads:
-  caddy-data:
-  caddy-config:

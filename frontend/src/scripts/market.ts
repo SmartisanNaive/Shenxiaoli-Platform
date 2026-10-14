@@ -54,7 +54,7 @@ export function initMarket(): void {
       <span class="absolute bottom-3 right-3 rounded-lg bg-primary px-2.5 py-1 text-label-sm font-bold text-on-primary">¥${Number(listing.price).toFixed(0)}</span>
     </div>
     <div><div class="mb-1 flex items-center gap-2"><span class="text-label-sm text-outline">${escapeHtml(listing.condition)}</span><span class="text-outline-variant">·</span><span class="text-label-sm text-outline">${escapeHtml(listing.location)}</span></div><h3 class="line-clamp-1 font-headline-sm font-bold text-primary transition-colors group-hover:text-secondary">${escapeHtml(listing.title)}</h3><p class="mt-1 line-clamp-2 text-body-sm text-on-surface-variant">${escapeHtml(listing.description)}</p></div>
-    <div class="mt-4 flex items-center justify-between border-t border-surface-container pt-3"><div class="flex items-center gap-2"><img src="./favicon.svg" alt="" class="flex h-6 w-6 items-center justify-center rounded-full bg-primary-fixed p-1" /><span class="text-body-sm text-on-surface-variant">${escapeHtml(listing.sellerName)}</span></div><span class="text-label-sm text-outline">${escapeHtml(formatRelativeTime(listing.createdAt))}</span></div>`;
+    <div class="mt-4 flex items-center justify-between border-t border-surface-container pt-3"><div class="flex items-center gap-2"><img src="./mascot-avatar.png" alt="" class="h-8 w-8 rounded-full object-cover" /><span class="text-body-sm text-on-surface-variant">${escapeHtml(listing.sellerName)}</span></div><span class="text-label-sm text-outline">${escapeHtml(formatRelativeTime(listing.createdAt))}</span></div>`;
     const open = (): void => {
       activeListing = listing;
       const data: ListingDetailData = {

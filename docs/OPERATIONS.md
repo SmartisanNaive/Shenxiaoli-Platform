@@ -13,7 +13,7 @@
 
 `.env.production.example` 和 `.env.demo.example` 是站点变量示例。后者虽然标注为
 非生产演示/预发布配置，但当前 `compose.yaml` 固定采用生产模式；复制它不会启用
-演示账号、合成数据或放宽生产检查。示例域名、密钥和密码路径均须替换。
+演示账号、合成数据或放宽生产检查。示例密钥和备份密码路径须替换；公网地址由请求自动识别。
 
 | 变量                    | 本地默认/要求                              | Compose 行为                                                     |
 | ----------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
@@ -24,17 +24,72 @@
 | `DATABASE_PATH`         | 默认 `backend/data/shenxiaoli.sqlite`      | 固定 `/data/shenxiaoli.sqlite`，挂载 `sqlite-data`               |
 | `UPLOADS_PATH`          | 默认 API 工作目录的 `./uploads`            | 固定 `/uploads`，挂载 `uploads`                                  |
 | `SESSION_SECRET`        | 开发可使用代码默认值；真实部署须另设       | 必填，至少 32 字符，使用随机值                                   |
-| `BETTER_AUTH_URL`       | 默认 `http://127.0.0.1:8787`               | 必填，设为浏览器访问的 HTTPS 站点 origin                         |
-| `ALLOWED_ORIGINS`       | 默认包含本地 5173 来源，逗号分隔           | 必填，配置实际 HTTPS 来源                                        |
-| `SITE_ADDRESS`          | 原生开发不使用                             | Caddy 的公开主机名，通常不包含协议                               |
+| `BETTER_AUTH_URL`       | 可选；按请求的 Host 自动识别               | 可留空，无需配置穿透公网地址；仅固定地址部署时覆盖               |
+| `ALLOWED_ORIGINS`       | 默认包含本地 5173 来源，逗号分隔           | 可留空，自动接受请求主机的 HTTPS 同源地址；可添加额外来源         |
+| `WEB_PORT`              | 原生开发不使用                             | 默认 `8080`，只将 Web HTTP 端口映射到宿主机 `127.0.0.1`          |
+| `ADMIN_EMAIL`           | 可选，指定一个内置管理员邮箱              | 显式传入 API/worker；示例为 `jianghanchn@vip.qq.com`，须验证码验证 |
 | `RESEND_API_KEY`        | 真实验证码和通知邮件需要                   | 必填                                                             |
 | `RESEND_FROM`           | 已认证发件域上的发件地址                   | 必填                                                             |
-| `RESEND_WEBHOOK_SECRET` | 本地仅验证邮件发送时可不设置，回执接口需要 | 必填，用于验证 Resend 回执签名                                   |
+| `RESEND_WEBHOOK_SECRET` | 可选；接收回执时需要                       | 可留空；未配置时回执接口返回 503，验证码和通知发送仍正常          |
 | `RESTIC_REPOSITORY`     | 备份脚本使用的异地仓库地址                 | 宿主机配置，不注入应用服务                                       |
 | `RESTIC_PASSWORD_FILE`  | Restic 密码文件路径                        | 宿主机配置，密码文件独立保护                                     |
 
 API 原生进程的相对数据路径以进程工作目录解析。Compose 的运行参数由配置固定或
 显式映射，不能假定在根 `.env` 中增加变量会自动传入容器。
+
+### 上云需要填写的变量
+
+完整 Compose 部署在根目录 `.env` 填写以下配置；现有 `RTH_API_KEY` 只用于静态托管
+发布，不能替代后端配置。若已有 `.env`，合并下面的内容，避免覆盖已有密钥。
+
+```dotenv
+WEB_PORT=8080
+ADMIN_EMAIL=jianghanchn@vip.qq.com
+SESSION_SECRET=replace-with-at-least-32-random-characters
+RESEND_API_KEY=re_replace_me
+RESEND_FROM=noreply@kangtaoai.cn
+RESEND_WEBHOOK_SECRET=
+```
+
+填写随机会话密钥、Resend API 密钥和已认证发件地址，无需配置公网域名。管理员邮箱是收件与登录账号，
+`RESEND_FROM` 是经过认证的发件地址，两者用途不同。Compose 已设置生产模式、关闭
+演示登录，并固定数据库和上传持久化路径，无须重复补充这些变量。
+如在云平台直接启动 Bun，则还须设置 `NODE_ENV=production`、`DEMO_AUTH_ENABLED=false`、
+`DATABASE_PATH`、`UPLOADS_PATH`，并将两个路径挂载到持久存储；按平台要求设置 `PORT`。
+使用独立迁移时设置 `RUN_MIGRATIONS=false`，先执行迁移，再启动 API 与 worker。
+当前架构使用 SQLite 和本地上传目录，需要共享持久磁盘的单主机部署，不能只上传静态前端。
+异地备份另配 `RESTIC_REPOSITORY`、`RESTIC_PASSWORD_FILE` 以及存储端所需凭据。
+
+### 内网穿透的单端口入口
+
+默认入口为 `http://127.0.0.1:8080`，只映射 Web 的 HTTP 端口；API、SQLite 和 worker
+不单独发布端口。穿透服务提供 HTTPS，并将所有路径转发到这个入口，同时保留访问者
+请求的 `Host`（包含非默认端口时也需保留）。无需在本地填写穿透域名或公网地址；
+`WEB_PORT` 可以换成其他可用端口。Caddy 不申请证书、不提供 HTTPS 或 HTTP 到 HTTPS 跳转。
+
+在根目录 `.env` 设置端口，例如：
+
+```dotenv
+WEB_PORT=9080
+```
+
+重新创建 Web 容器后，入口变为 `http://127.0.0.1:9080`：
+
+```bash
+docker compose up -d --force-recreate web
+```
+
+也可以直接在 `compose.yaml` 的 `web.ports` 中设置
+`"127.0.0.1:9080:80"`；最后的 `80` 是容器内固定监听端口。
+
+生产认证按传入 Host 构造 HTTPS 地址，每个地址使用独立的认证配置；会话 cookie 为
+Secure、HttpOnly 且不设置 Domain。写请求仍校验同源，不使用全局通配来源，也不把
+客户端提供的 `X-Forwarded-Host` 当作可信地址。浏览器正式登录通过穿透 HTTPS 入口进行；
+本地 HTTP 入口可用于健康检查。额外前端来源可用 `ALLOWED_ORIGINS` 显式添加。
+
+邮件发送不依赖站点域名或回执服务，可执行 `bun run mail:test`，通过项目发信函数向
+`ADMIN_EMAIL` 发送一封测试邮件；命令只输出邮件 ID 和受理状态，不输出密钥。
+Resend 受理成功不等于投递完成，需要结合回执或实际收信判断。
 
 ### 本地真实邮箱联调
 
@@ -64,8 +119,8 @@ worker 读取同一个数据库与环境配置；邮件密钥缺失时邮件消�
 
 ## 上线前准备与发布
 
-准备持久挂载 Docker volume 的 Linux 主机、公开域名与 DNS，开放 TCP 80/443
-（可选 UDP 443），安装 Docker Compose、Restic，以及 cron 或 systemd timer。
+准备支持持久 Docker volume 的主机，安装 Docker Compose。Web 默认只监听本地
+`127.0.0.1:8080`，公网 HTTPS 由运营方的穿透服务提供。备份另外需要 Restic 与调度服务。
 Resend 发件域须由运营方控制 DNS 并认证，不使用未经授权的学校邮箱域发信。
 
 ```bash
@@ -74,9 +129,9 @@ chmod 600 .env
 openssl rand -base64 48
 ```
 
-将生成的随机值写入 `SESSION_SECRET`，补全站点、origin、Resend 密钥和发件地址。
-`.env` 是受信任的服务器配置，只由管理员保存。Resend webhook 指向
-`https://<站点域名>/api/webhooks/resend`，订阅 `email.sent`、`email.delivered`、
+将生成的随机值写入 `SESSION_SECRET`，填写 Resend 密钥和发件地址；已有 `.env` 时合并
+示例配置，避免覆盖已有密钥。`.env` 是受信任的服务器配置，只由管理员保存。
+若使用可选的 Resend 回执，webhook 指向 `https://<穿透地址>/api/webhooks/resend`，订阅 `email.sent`、`email.delivered`、
 `email.delivery_delayed`、`email.bounced`、`email.complained`、`email.failed` 和
 `email.suppressed`。API 校验 Svix 签名并按事件 ID 去重；通知队列才有对应的回执状态。
 
@@ -95,18 +150,28 @@ docker compose ps
 更新已有服务时先备份，再安排维护窗口停止 API/worker，执行构建与迁移，最后重建
 服务。worker 和 API 使用相同 Dockerfile 阶段，各服务都要更新镜像。
 
-确认 Caddy 从公网取得 HTTPS 证书，检查 `/api/health` 和 `/api/ready`，后者仅证明
+检查 `http://127.0.0.1:8080/api/health` 和 `/api/ready`，再通过 HTTPS 穿透入口验收登录。
+ready 仅证明
 数据库可访问与迁移版本达到要求，不能证明邮件、图片、备份或业务流程正常。
 
 ### 管理员与真实课程目录
 
-用正式校园邮箱完成验证和首次登录后，执行：
+`ADMIN_EMAIL=jianghanchn@vip.qq.com` 允许该精确地址作为校园域名以外的登录例外。
+在普通登录入口输入该邮箱并完成验证码验证后，自动获得管理员权限；不会预建未验证
+账号或设置默认密码，也不会放开整个 QQ 邮箱域。邮件服务配置正确后才能完成登录。
+根目录 `bun run dev` 继承根 `.env`；直接从 `backend/` 启动时在 `backend/.env` 配置。
+
+自动管理员权限在每次已验证会话请求中计算，不写入永久 `is_admin` 标记。
+修改或清空 `ADMIN_EMAIL` 后重建服务，或账号换绑到其他邮箱后，该自动授权失效。
+已由命令手动授予的管理员权限仍由数据库控制；账号封禁与注销限制仍然适用。
+
+额外管理员可用正式校园邮箱完成验证和首次登录后，执行：
 
 ```bash
 docker compose exec api bun run src/admin.ts grant-admin name@suat-sz.edu.cn
 ```
 
-命令只向数据库中已验证的允许域账号授予 `is_admin`，不会由邮箱域或演示审核员自动
+命令只向数据库中已验证的校园域账号授予 `is_admin`，不会由邮箱域或演示审核员自动
 授予。管理员登录后，在审核页面可下载课程 CSV 模板、预览并确认导入，也可设置
 课程启停和教师资料。模板、九列表头与预览有效期见[后端 API](../backend/README.md)。
 生产库不会自动提供合成目录；真实课程和教师来源需由运营方审核。

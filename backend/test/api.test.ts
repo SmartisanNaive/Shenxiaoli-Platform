@@ -6,14 +6,19 @@ import { Database } from "bun:sqlite";
 import { createApp } from "../src/app";
 import { createDatabase } from "../src/db";
 import { cleanupExpiredDeletedAccounts } from "../src/maintenance";
+import { configuredAdminEmail, normalizeLoginEmail } from "../src/auth";
 
 const databases = [] as ReturnType<typeof createDatabase>[];
 
-function setup(sendEmail?: Parameters<typeof createApp>[0]["sendEmail"]) {
+function setup(
+  sendEmail?: Parameters<typeof createApp>[0]["sendEmail"],
+  adminEmail = "",
+) {
   const db = createDatabase({ path: ":memory:", seedDemoUsers: true });
   databases.push(db);
   const app = createApp({
     database: db,
+    adminEmail,
     demoAuthEnabled: true,
     sessionSecret: "test-only-secret",
     allowedOrigins: ["http://localhost:5173"],
@@ -38,6 +43,221 @@ afterEach(() => {
 });
 
 describe("Shenxiaoli API", () => {
+  test("production login follows the request host behind an HTTP proxy without a configured public URL", async () => {
+    const db = createDatabase({ path: ":memory:", seedDemoUsers: false });
+    databases.push(db);
+    const codes = new Map<string, string>();
+    const app = createApp({
+      database: db,
+      production: true,
+      adminEmail: "admin@vip.qq.com",
+      sessionSecret: "production-test-secret-at-least-32-characters",
+      allowedOrigins: [],
+      sendEmail: async ({ to, text }) => {
+        codes.set(to, /验证码是 (\d{6})/.exec(text)?.[1] ?? "");
+      },
+    });
+    for (const [host, email, role] of [
+      ["first.tunnel.example", "admin@vip.qq.com", "admin"],
+      ["second.tunnel.example:9443", "student@suat-sz.edu.cn", "student"],
+    ]) {
+      const headers = {
+        host: host!,
+        origin: `https://${host}`,
+        "content-type": "application/json",
+        "x-forwarded-for": "192.0.2.21",
+      };
+      const request = (
+        path: string,
+        init: NonNullable<Parameters<typeof app.request>[1]> = {},
+      ) =>
+        app.request(`http://api:8787${path}`, {
+          ...init,
+          headers: { ...headers, ...init.headers },
+        });
+      const send = await request("/api/auth/email-otp/send-verification-otp", {
+        method: "POST",
+        body: JSON.stringify({ email, type: "sign-in" }),
+      });
+      expect(send.status).toBe(200);
+      expect(codes.get(email!)).toMatch(/^\d{6}$/);
+      const signIn = await request("/api/auth/sign-in/email-otp", {
+        method: "POST",
+        body: JSON.stringify({
+          email,
+          otp: codes.get(email!),
+          name: "穿透测试",
+        }),
+      });
+      expect(signIn.status).toBe(200);
+      const setCookie = signIn.headers.get("set-cookie") ?? "";
+      expect(setCookie).toContain("Secure");
+      expect(setCookie).toContain("HttpOnly");
+      expect(setCookie).not.toContain("Domain=");
+      const cookie = setCookie.split(";")[0]!;
+      const session = await request("/api/session", { headers: { cookie } });
+      expect(await session.json()).toMatchObject({
+        authenticated: true,
+        user: { role, emailVerified: true },
+      });
+      expect(
+        (
+          await request("/api/auth/sign-out", {
+            method: "POST",
+            headers: {
+              cookie,
+              origin: "https://evil.example",
+              "x-forwarded-host": "evil.example",
+            },
+            body: "{}",
+          })
+        ).status,
+      ).toBe(403);
+      expect(
+        (
+          await request("/api/me/profile", {
+            method: "PATCH",
+            headers: { cookie },
+            body: JSON.stringify({ displayName: "合法同源请求" }),
+          })
+        ).status,
+      ).toBe(200);
+      expect(
+        (
+          await request("/api/auth/sign-out", {
+            method: "POST",
+            headers: { cookie },
+            body: "{}",
+          })
+        ).status,
+      ).toBe(200);
+      expect(
+        await (await request("/api/session", { headers: { cookie } })).json(),
+      ).toMatchObject({ authenticated: false });
+    }
+  });
+
+  test("admin configuration permits only one exact address", () => {
+    const email = configuredAdminEmail(" Jianghanchn@VIP.QQ.COM ");
+    expect(email).toBe("jianghanchn@vip.qq.com");
+    expect(configuredAdminEmail("")).toBeNull();
+    expect(() =>
+      configuredAdminEmail("one@example.com,two@example.com"),
+    ).toThrow();
+    expect(() => configuredAdminEmail("invalid")).toThrow();
+    expect(normalizeLoginEmail("jianghanchn@vip.qq.com", null)).toBeNull();
+    expect(normalizeLoginEmail("other@vip.qq.com", email)).toBeNull();
+    expect(
+      normalizeLoginEmail("jianghanchn@vip.qq.com.evil.test", email),
+    ).toBeNull();
+  });
+
+  test("configured admin requires OTP and loses automatic access when config or email changes", async () => {
+    let sentText = "";
+    const email = "jianghanchn@vip.qq.com";
+    const { app, db } = setup(async (message) => {
+      expect(message.to).toBe(email);
+      sentText = message.text;
+    }, " Jianghanchn@VIP.QQ.COM ");
+    const headers = {
+      origin: "http://localhost:5173",
+      "content-type": "application/json",
+      // Better Auth's in-memory IP limiter is shared across app instances.
+      "x-forwarded-for": "192.0.2.20",
+    };
+    const send = await app.request(
+      "/api/auth/email-otp/send-verification-otp",
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          email: " Jianghanchn@VIP.QQ.COM ",
+          type: "sign-in",
+        }),
+      },
+    );
+    expect(send.status).toBe(200);
+    const otp = /验证码是 (\d{6})/.exec(sentText)?.[1];
+    expect(otp).toBeTruthy();
+    const invalid = await app.request("/api/auth/sign-in/email-otp", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        email,
+        otp: otp === "000000" ? "111111" : "000000",
+      }),
+    });
+    expect(invalid.ok).toBe(false);
+    expect(
+      db.query("SELECT 1 FROM auth_users WHERE email = ?").get(email),
+    ).toBeNull();
+    const signIn = await app.request("/api/auth/sign-in/email-otp", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ email, otp, name: "管理员" }),
+    });
+    expect(signIn.status).toBe(200);
+    const cookie = signIn.headers.get("set-cookie")?.split(";")[0];
+    expect(cookie).toBeTruthy();
+    const authenticatedHeaders = { ...headers, cookie: cookie! };
+    const session = await app.request("/api/session", {
+      headers: authenticatedHeaders,
+    });
+    expect(await session.json()).toMatchObject({
+      authenticated: true,
+      campusEmailVerified: false,
+      user: { email, emailVerified: true, role: "admin" },
+    });
+    const adminRequest = () =>
+      app.request("/api/admin/courses/import-template", {
+        headers: authenticatedHeaders,
+      });
+    expect((await adminRequest()).status).toBe(200);
+    expect(
+      db.query("SELECT is_admin FROM users WHERE email = ?").get(email),
+    ).toEqual({ is_admin: 0 });
+
+    db.query("UPDATE users SET account_status = 'banned' WHERE email = ?").run(
+      email,
+    );
+    expect((await adminRequest()).status).toBe(403);
+    db.query("UPDATE users SET account_status = 'active' WHERE email = ?").run(
+      email,
+    );
+
+    const withoutAdmin = createApp({
+      database: db,
+      adminEmail: "",
+      sessionSecret: "test-only-secret",
+      allowedOrigins: ["http://localhost:5173"],
+    });
+    expect(
+      (
+        await withoutAdmin.request("/api/admin/courses/import-template", {
+          headers: authenticatedHeaders,
+        })
+      ).status,
+    ).toBe(401);
+    const denied = await app.request(
+      "/api/auth/email-otp/send-verification-otp",
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ email: "other@vip.qq.com", type: "sign-in" }),
+      },
+    );
+    expect(denied.status).toBe(400);
+
+    db.query("UPDATE auth_users SET emailVerified = 0 WHERE email = ?").run(
+      email,
+    );
+    expect((await adminRequest()).status).toBe(401);
+    db.query(
+      "UPDATE auth_users SET emailVerified = 1, email = 'former.admin@suat-sz.edu.cn' WHERE email = ?",
+    ).run(email);
+    expect((await adminRequest()).status).toBe(403);
+  });
+
   test("health and product data endpoints return seeded development data", async () => {
     const { app } = setup();
     const cookie = await login(app);

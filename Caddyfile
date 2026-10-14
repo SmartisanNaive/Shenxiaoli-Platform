@@ -1,15 +1,24 @@
-{$SITE_ADDRESS:localhost} {
+{
+	auto_https off
+}
+
+:80 {
 	encode zstd gzip
 	root * /srv
 
-	handle /api /api/* {
+	@api path /api /api/*
+	handle @api {
 		header Cache-Control "private, no-store"
-		reverse_proxy api:8787
+		reverse_proxy api:8787 {
+			header_up Host {http.request.hostport}
+		}
 	}
 
 	handle /uploads/* {
 		header Cache-Control "private, no-store"
-		reverse_proxy api:8787
+		reverse_proxy api:8787 {
+			header_up Host {http.request.hostport}
+		}
 	}
 
 	handle {

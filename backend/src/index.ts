@@ -19,9 +19,6 @@ if (production) {
   const requiredProductionSettings = [
     "RESEND_API_KEY",
     "RESEND_FROM",
-    "RESEND_WEBHOOK_SECRET",
-    "BETTER_AUTH_URL",
-    "ALLOWED_ORIGINS",
     "DATABASE_PATH",
     "UPLOADS_PATH",
   ];

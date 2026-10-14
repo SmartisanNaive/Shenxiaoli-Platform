@@ -127,10 +127,10 @@ function authWidget(): void {
     if (label) label.textContent = state.user?.displayName ?? '未登录';
     if (message) {
       message.textContent = state.user
-        ? `${state.user.displayName} · ${state.campusEmailVerified ? '校园邮箱已验证' : state.user.role === 'moderator' ? '本地审核员演示身份' : '本地演示身份'}`
+        ? `${state.user.displayName} · ${state.campusEmailVerified ? '校园邮箱已验证' : state.user.emailVerified ? '邮箱已验证' : state.user.role === 'moderator' ? '本地审核员演示身份' : '本地演示身份'}`
         : state.demoAuthAvailable
           ? '使用校园邮箱验证码登录；也可选择本地演示身份。'
-          : '使用 SUAT 校园邮箱验证码登录。';
+          : '使用校园邮箱或指定的管理员邮箱接收验证码登录。';
     }
     if (emailForm) emailForm.hidden = Boolean(state.authenticated);
     if (loginOptions)
@@ -217,7 +217,7 @@ function authWidget(): void {
       otpField?.classList.remove('hidden');
       verifyButton?.classList.remove('hidden');
       sendButton.textContent = '重新发送验证码';
-      showToast('如果邮箱符合校园域名要求，验证码已发送。', 'success');
+      showToast('如果邮箱符合登录要求，验证码已发送。', 'success');
       otpInput?.focus();
     } catch (error) {
       showToast(
@@ -240,11 +240,11 @@ function authWidget(): void {
       });
       if (result.error) throw new Error(result.error.message || '验证码无效');
       const state = await api<SessionState>('/api/session');
-      if (!state.authenticated || !state.campusEmailVerified)
-        throw new Error('校园邮箱验证尚未完成，请重新登录。');
+      if (!state.authenticated || !state.user?.emailVerified)
+        throw new Error('邮箱验证尚未完成，请重新登录。');
       render(state);
       close();
-      showToast('校园邮箱已验证，登录成功。', 'success');
+      showToast('邮箱已验证，登录成功。', 'success');
       window.dispatchEvent(
         new CustomEvent('shenxiaoli:session-changed', { detail: state }),
       );

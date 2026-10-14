@@ -35,8 +35,8 @@ export const NAV_ITEMS: readonly NavItem[] = [
   { key: 'tree-hole', label: '树洞', href: './tree-hole.html' },
 ];
 
-const PROFILE_AVATAR = './favicon.svg';
-const LOGO_AVATAR = './favicon.svg';
+const PROFILE_AVATAR = './mascot-avatar.png';
+const LOGO_AVATAR = './mascot-logo.png';
 
 const escapeHtml = (s: string): string =>
   s
@@ -67,7 +67,7 @@ export const renderHeader = (activeKey?: NavKey): string => {
     <div class="mx-auto flex h-20 max-w-[1200px] items-center justify-between gap-3 px-4 sm:gap-6 sm:px-6 lg:px-8">
       <div class="flex min-w-0 items-center gap-3 sm:gap-8">
         <a class="flex min-w-0 items-center gap-3" data-path="home" href="./index.html">
-          <img alt="深小狸校园 logo" class="h-8 w-8 shrink-0 rounded-full object-cover" src="${LOGO_AVATAR}" />
+          <img alt="深小狸校园 logo" class="h-11 w-11 shrink-0 object-contain" src="${LOGO_AVATAR}" />
           <span class="truncate font-headline-sm font-bold text-primary">深小狸校园</span>
         </a>
         <nav class="hidden items-center gap-6 lg:flex">
@@ -111,19 +111,19 @@ export const renderHeader = (activeKey?: NavKey): string => {
             aria-expanded="false"
             aria-label="账户与登录选项"
           >
-            <img alt="" class="h-8 w-8 rounded-full object-cover" src="${PROFILE_AVATAR}" />
+            <img alt="" class="h-9 w-9 rounded-full object-cover" src="${PROFILE_AVATAR}" />
             <span class="hidden max-w-28 truncate text-label-sm sm:block" data-auth-label>未登录</span>
             <span class="material-symbols-outlined text-sm" aria-hidden="true">expand_more</span>
           </button>
           <div class="absolute right-0 top-full z-50 mt-2 hidden w-64 rounded-xl border border-surface-variant bg-surface p-4 shadow-lg" data-auth-panel>
             <p class="mb-3 text-body-sm text-on-surface-variant" data-auth-message>正在检查登录状态…</p>
             <form class="mb-3 flex flex-col gap-2" data-email-login>
-              <label class="text-label-sm text-on-surface-variant">校园邮箱<input data-login-email autocomplete="email" type="email" required placeholder="name@stu.suat-sz.edu.cn" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
+              <label class="text-label-sm text-on-surface-variant">登录邮箱<input data-login-email autocomplete="email" type="email" required placeholder="name@stu.suat-sz.edu.cn" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
               <label data-login-name-field class="hidden text-label-sm text-on-surface-variant">昵称<input data-login-name autocomplete="nickname" maxlength="40" placeholder="社区昵称" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
               <label data-login-otp-field class="hidden text-label-sm text-on-surface-variant">邮箱验证码<input data-login-otp inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6 位验证码" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
               <button data-login-send type="submit" class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary">发送验证码</button>
               <button data-login-verify type="button" class="hidden rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary">验证并登录</button>
-              <p class="text-xs leading-5 text-outline">仅接受 @stu.suat-sz.edu.cn 和 @suat-sz.edu.cn 邮箱。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。</p>
+              <p class="text-xs leading-5 text-outline">支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱和指定的管理员邮箱。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。</p>
             </form>
             <div class="flex flex-col gap-2" data-demo-login-options hidden>
               <button class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary" data-demo-login="student" type="button">以演示同学身份登录</button>
@@ -145,7 +145,7 @@ export const renderFooter = (): string => `
     <div class="max-w-[1200px] mx-auto px-gutter py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
       <div class="md:col-span-2">
         <div class="flex items-center gap-3 mb-4">
-          <img alt="深小狸校园 logo" class="w-8 h-8 rounded-full object-cover" src="${LOGO_AVATAR}" />
+          <img alt="深小狸校园 logo" class="h-11 w-11 shrink-0 object-contain" src="${LOGO_AVATAR}" />
           <span class="font-headline-sm text-primary font-bold">深小狸校园</span>
         </div>
         <p class="text-body-md text-on-surface-variant max-w-md">
