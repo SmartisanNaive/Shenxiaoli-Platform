@@ -26,8 +26,8 @@ Vite 代理 `/api/*` 和 `/uploads/*`。本地默认启用合成数据和学生/
 
 校园邮箱只接受精确的 `stu.suat-sz.edu.cn` 与 `suat-sz.edu.cn` 域名，输入会去除首尾空格
 并转成小写，子域名不在允许范围内。验证证明邮箱控制权，不证明学籍或实名身份。
-唯一的外部邮箱例外是 `ADMIN_EMAIL` 配置的精确地址；该邮箱完成验证码验证后自动
-获得管理员权限。示例配置为 `jianghanchn@vip.qq.com`，不会开放整个 QQ 邮箱域。
+外部邮箱不能注册，也不会自动获得管理员权限。已验证的校园账号可再验证并绑定辅助
+邮箱；辅助邮箱仅用于恢复原账号，不能替代首次校园邮箱验证。
 密码登录关闭；登录验证码为 6 位、5 分钟有效、最多 5 次校验尝试，同一邮箱发送冷却
 60 秒。验证码由 API 直接调用 Resend 发送，不经过通知队列。
 
@@ -38,14 +38,14 @@ Vite 代理 `/api/*` 和 `/uploads/*`。本地默认启用合成数据和学生/
 
 下文表格使用以下权限简称，资源归属检查仍需同时满足：
 
-| 权限     | 含义                                                                            |
-| -------- | ------------------------------------------------------------------------------- |
-| 公开     | 不要求业务登录；反馈、验证码和 webhook 仍有各自校验                             |
-| 会话     | 必须有业务会话；申诉保留此入口，不通过普通封禁检查                              |
-| 用户     | 已登录，且账号不是 `banned` 或 `deleting`；`suspended` 可使用部分读取和自助接口 |
-| 活跃用户 | 用户权限且不处于 `suspended`，可发布与互动                                      |
-| 审核员   | 活跃用户，角色为 `moderator` 或 `admin`                                         |
-| 管理员   | 活跃用户，角色为 `admin`；由业务表 `is_admin` 或已验证的 `ADMIN_EMAIL` 授予，邮箱域不会自动授予 |
+| 权限     | 含义                                                                                          |
+| -------- | --------------------------------------------------------------------------------------------- |
+| 公开     | 不要求业务登录；反馈、验证码和 webhook 仍有各自校验                                           |
+| 会话     | 必须有业务会话；申诉保留此入口，不通过普通封禁检查                                            |
+| 用户     | 已登录，且账号不是 `banned` 或 `deleting`；`suspended` 可使用部分读取和自助接口               |
+| 活跃用户 | 用户权限且不处于 `suspended`，可发布与互动                                                    |
+| 审核员   | 活跃用户，角色为 `moderator` 或 `admin`                                                       |
+| 管理员   | 活跃用户，角色为 `admin`；由已验证校园账号的授权命令设置业务表 `is_admin`，邮箱域不会自动授予 |
 
 写入请求若带有 `Origin`，业务中间件接受请求同源地址或 `ALLOWED_ORIGINS` 列表中的地址；
 未携带 `Origin` 的请求不会被该检查拒绝，Better Auth 另执行其认证校验。API 没有通用
@@ -95,7 +95,7 @@ Better Auth 自身的响应和错误格式由认证处理器返回，不保证�
 | 方法  | 路径                                        | 权限与行为                                                                    |
 | ----- | ------------------------------------------- | ----------------------------------------------------------------------------- |
 | GET   | `/api/health`                               | 公开；存活状态                                                                |
-| GET   | `/api/ready`                                | 公开；数据库访问和迁移版本检查，当前要求至少版本 9                            |
+| GET   | `/api/ready`                                | 公开；数据库访问和迁移版本检查，当前要求至少版本 10                           |
 | GET   | `/api/session`                              | 公开；`authenticated/user/demoAuthAvailable/campusEmailVerified`              |
 | POST  | `/api/feedback`                             | 公开；`subject/message/email`，未登录者须提供校园邮箱；此提交不验证邮箱控制权 |
 | POST  | `/api/auth/email-otp/send-verification-otp` | 公开；`email/type`，登录使用 `type: 'sign-in'`                                |
@@ -131,7 +131,7 @@ Better Auth 自身的响应和错误格式由认证处理器返回，不保证�
 | POST  | `/api/tree-hole`           | 活跃用户；`content/topic`，直接发布、匿名展示                                     |
 | POST  | `/api/tree-hole/:id/feel`  | 活跃用户；切换共鸣状态                                                            |
 | POST  | `/api/uploads`             | 活跃用户；JPEG/PNG/WebP，单张 4 MB，校验文件签名并随机命名                        |
-| GET   | `/uploads/:filename`       | 路由要求用户权限，但当前会话解析未覆盖此路径，登录后仍返回 401，见已知限制        |
+| GET   | `/uploads/:filename`       | 用户；读取已上传图片，访客拒绝访问，私有缓存                                      |
 
 评价字段为 `rating`（1–10）、`difficulty/workload`（1–5）、`content`（10–1200 字）、
 `term`（3–40 字）、可选 `tags/offeringId`。指定开课时会校验归属并使用该开课学期；
@@ -259,13 +259,34 @@ const response = await fetch("/api/tree-hole", {
 console.log(response.status, await response.json()); // 201、status: 'approved'
 ```
 
+## 辅助邮箱恢复 API
+
+所有路径均以 `/api/auth/recovery-email` 开头。设置操作要求已验证、未封禁或注销的正式
+校园账号会话；恢复登录成功后建立同一用户的 Better Auth 会话。
+
+| 方法 | 后缀              | 请求与结果                                                                                       |
+| ---- | ----------------- | ------------------------------------------------------------------------------------------------ |
+| GET  | 空                | 返回自己的 `email`、`verifiedAt`；未绑定时为 null                                                |
+| POST | `/change/request` | `email` 为新辅助邮箱，`method=campus/auxiliary`；首次仅允许 campus；返回 `challengeId/expiresIn` |
+| POST | `/change/confirm` | `challengeId/currentOtp/newOtp`；同时验证当前与新邮箱，保存后撤销所有会话                        |
+| POST | `/remove/request` | `method=campus/auxiliary`；返回解绑挑战                                                          |
+| POST | `/remove/confirm` | `challengeId/otp`；解绑并撤销所有会话                                                            |
+| POST | `/login/request`  | `email` 必须为注册时的校园邮箱；只发送到已绑定辅助邮箱，返回挑战，不公开是否存在账号             |
+| POST | `/login/confirm`  | `email/challengeId/otp`；成功登录原账号，不修改主邮箱或权限                                      |
+
+辅助验证码按挑战、用途、账号和目标邮箱隔离，仅保存 HMAC 哈希，5 分钟有效、最多
+5 次错误、60 秒重发冷却，成功后不可重放。修改或解绑使该账号其他恢复挑战失效。
+验证码发送及绑定步骤失败时不会产生已验证辅助邮箱。注销时由外键删除辅助邮箱和挑战。
+主邮箱更换和账号注销继续使用校园邮箱验证。
+
+仅本地测试模式启用 `/api/testing/status`、`/inbox` 和 `/reset`，并限制本机 Host/Origin。
+重置要求 `confirmation=RESET_LOCAL_TEST_DATABASE`。真实邮箱不进入本地明文收件箱。
+详见[本地测试说明](../docs/LOCAL_TESTING.md)。
+
 ## 管理员与 CSV 导入
 
-设置 `ADMIN_EMAIL=jianghanchn@vip.qq.com` 后，该邮箱完成验证码登录即可使用管理员功能，
-无需手工授权。修改环境配置并重启或换绑邮箱后，自动权限随之失效；配置不会设置密码
-或预建已验证账号。外部管理员邮箱的 `user.emailVerified=true`，但 `campusEmailVerified=false`。
-
-为其他校园账号授予永久管理员权限时，先用校园邮箱验证并登录，再在 `backend/` 工作目录执行：
+管理员必须先用校园邮箱完成验证码登录，再在 `backend/` 工作目录执行授权命令。
+`ADMIN_EMAIL` 已取消，不再按外部邮箱或配置地址自动授权。
 
 ```bash
 bun run admin:grant name@suat-sz.edu.cn
@@ -316,9 +337,8 @@ await fetch("/api/admin/courses/import-confirm", {
 正文和修订记录。到期举报证据也由该任务清理，处置时设定 180 天到期时间；未结证据
 未设置到期时间。并非所有业务历史、私信、上传文件或旧备份都会删除。
 
-**已知限制：** `/uploads/:filename` 调用用户权限检查，但会话解析中间件仅覆盖
-`/api/*`。当前即使业务会话有效，图片读取也返回 `401 AUTH_REQUIRED`。上线前须修复
-并验证同源页面图片访问与未登录拒绝访问，不能把上传接口成功视为图片闭环已验收。
+图片读取与 API 使用相同的会话解析；演示 Cookie 的路径为 `/`，退出时同时清理历史
+`/api` 路径 Cookie。登录后的图片请求可以正常携带会话。
 
 从仓库根目录执行检查：
 

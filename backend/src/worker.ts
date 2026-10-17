@@ -2,6 +2,18 @@ import { resolve } from "node:path";
 import { createDatabase } from "./db";
 import { startEmailWorker } from "./notifications";
 import { cleanupExpiredDeletedAccounts } from "./maintenance";
+import { localTestEmailSender } from "./local-testing";
+const localTestMode = process.env.LOCAL_TEST_MODE === "true";
+if (localTestMode && process.env.NODE_ENV === "production")
+  throw new Error("Local test mode is forbidden in production");
+if (
+  localTestMode &&
+  (!process.env.DATABASE_PATH ||
+    !resolve(process.env.DATABASE_PATH).startsWith(
+      `${resolve(import.meta.dir, "../../.local-test")}/`,
+    ))
+)
+  throw new Error("Local test databases must be inside .local-test/");
 
 const database = createDatabase({
   path: process.env.DATABASE_PATH
@@ -10,7 +22,21 @@ const database = createDatabase({
   seedDemoUsers: false,
   migrate: false,
 });
-const stop = startEmailWorker(database);
+const stop = startEmailWorker(
+  database,
+  localTestMode
+    ? {
+        sendEmail: localTestEmailSender(database),
+        onTick: () => {
+          database
+            .query(
+              "INSERT INTO test_runtime_state (key, value) VALUES ('worker-heartbeat', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+            )
+            .run(new Date().toISOString());
+        },
+      }
+    : {},
+);
 const cleanupTimer = setInterval(
   () => {
     try {

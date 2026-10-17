@@ -5,22 +5,22 @@ import {
   randomUUID,
   timingSafeEqual,
 } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile, rm } from "node:fs/promises";
 import { extname, resolve } from "node:path";
 import { deleteCookie, getCookie, setCookie } from "hono/cookie";
 import { Hono } from "hono";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
-import type { AppDatabase } from "./db";
-import {
-  configuredAdminEmail,
-  createAuth,
-  deliverCampusEmail,
-  normalizeCampusEmail,
-  normalizeLoginEmail,
-} from "./auth";
+import { SCHEMA_VERSION, type AppDatabase } from "./db";
+import { createAuth, deliverCampusEmail, normalizeCampusEmail } from "./auth";
 import { enqueueEmail } from "./notifications";
 import { Resend } from "resend";
+import {
+  initializeLocalTesting,
+  isSyntheticTestEmail,
+  localTestEmailSender,
+  localTestRouter,
+} from "./local-testing";
 
 export interface User {
   id: string;
@@ -34,7 +34,7 @@ export interface User {
 
 interface AppConfig {
   database: AppDatabase;
-  adminEmail?: string;
+  localTestMode?: boolean;
   demoAuthEnabled?: boolean;
   production?: boolean;
   sessionSecret?: string;
@@ -255,9 +255,10 @@ function setSessionCookie(
     httpOnly: true,
     secure: production,
     sameSite: "Lax",
-    path: "/api",
+    path: "/",
     maxAge: SESSION_TTL_SECONDS,
   });
+  deleteCookie(c, COOKIE_NAME, { path: "/api" });
 }
 
 function readUser(db: AppDatabase, userId: string): User | null {
@@ -426,9 +427,14 @@ function shanghaiMonthStart(): string {
 
 export function createApp(config: AppConfig): Hono<AppContext> {
   const { database: db } = config;
-  const adminEmail = configuredAdminEmail(config.adminEmail);
   const production = config.production ?? process.env.NODE_ENV === "production";
   const demoAuthEnabled = Boolean(config.demoAuthEnabled) && !production;
+  if (production && config.localTestMode)
+    throw new Error("Local test mode must not be enabled in production");
+  if (config.localTestMode) initializeLocalTesting(db);
+  const sendEmail =
+    config.sendEmail ??
+    (config.localTestMode ? localTestEmailSender(db) : undefined);
   const secret =
     config.sessionSecret ??
     process.env.SESSION_SECRET ??
@@ -468,12 +474,11 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     if (!auth) {
       auth = createAuth({
         database: db,
-        adminEmail: adminEmail ?? "",
         baseURL,
         production,
         secret,
         trustedOrigins: [...allowedOrigins],
-        sendEmail: config.sendEmail,
+        sendEmail,
       });
       // Bound memory when a tunnel changes hosts or a client varies Host.
       if (authInstances.size >= 32)
@@ -492,7 +497,9 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     await next();
   });
 
-  app.use("/api/*", async (c, next) => {
+  app.use("*", async (c, next) => {
+    if (!c.req.path.startsWith("/api/") && !c.req.path.startsWith("/uploads/"))
+      return next();
     const incomingOrigin = requestOrigin(c.req.raw);
     const method = c.req.method.toUpperCase();
     if (["POST", "PUT", "PATCH", "DELETE"].includes(method)) {
@@ -532,7 +539,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       headers: c.req.raw.headers,
     });
     if (authSession?.user.emailVerified) {
-      const email = normalizeLoginEmail(authSession.user.email, adminEmail);
+      const email = normalizeCampusEmail(authSession.user.email);
       if (email) {
         const now = nowIso();
         db.query(
@@ -546,9 +553,6 @@ export function createApp(config: AppConfig): Hono<AppContext> {
              updated_at = excluded.updated_at`,
         ).run(authSession.user.id, authSession.user.name, email, now, now);
         const user = readUser(db, authSession.user.id);
-        // Environment-granted access follows the verified email, so changing
-        // ADMIN_EMAIL or the account email does not leave a permanent grant.
-        if (user && email === adminEmail) user.role = "admin";
         c.set("user", user);
       }
     }
@@ -574,6 +578,20 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     );
   });
 
+  if (config.localTestMode)
+    app.route(
+      "/api/testing",
+      localTestRouter(db, async () => {
+        authInstances.clear();
+        if (
+          uploadsDir.startsWith(
+            `${resolve(import.meta.dir, "../../.local-test")}/`,
+          )
+        )
+          await rm(uploadsDir, { recursive: true, force: true });
+      }),
+    );
+
   app.get("/api/health", (c) =>
     c.json({ status: "ok", service: "shenxiaoli-api" }),
   );
@@ -584,7 +602,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .query("SELECT MAX(version) AS version FROM schema_migrations")
         .get() as { version: number | null };
       db.query("SELECT 1").get();
-      if ((migrations.version ?? 0) < 9)
+      if ((migrations.version ?? 0) < SCHEMA_VERSION)
         return c.json({ status: "not-ready", reason: "migrations" }, 503);
       return c.json({ status: "ready" });
     } catch {
@@ -640,6 +658,10 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       authenticated: Boolean(user),
       user,
       demoAuthAvailable: demoAuthEnabled,
+      localTestMode: Boolean(config.localTestMode),
+      syntheticIdentity: Boolean(
+        config.localTestMode && user?.email && isSyntheticTestEmail(user.email),
+      ),
       campusEmailVerified: Boolean(
         user?.emailVerified && user.email && normalizeCampusEmail(user.email),
       ),
@@ -669,6 +691,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     db.query("DELETE FROM sessions WHERE user_id = ?").run(user.id);
     db.query("DELETE FROM auth_sessions WHERE userId = ?").run(user.id);
     deleteCookie(c, COOKIE_NAME, { path: "/api" });
+    deleteCookie(c, COOKIE_NAME, { path: "/" });
     return c.json({ ok: true });
   });
 
@@ -695,7 +718,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
           text: `你的注销验证码是 ${otp}，5 分钟内有效。提交后账号立即停用，身份资料将在 30 天后清理。若非本人操作，请忽略此邮件。`,
           idempotencyKey: `account-delete/${user.id}/${hash}`,
         },
-        config.sendEmail,
+        sendEmail,
       );
     } catch (error) {
       db.query("DELETE FROM account_deletion_codes WHERE user_id = ?").run(
@@ -772,6 +795,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       ).run(user.id);
     })();
     deleteCookie(c, COOKIE_NAME, { path: "/api" });
+    deleteCookie(c, COOKIE_NAME, { path: "/" });
     return c.json({
       ok: true,
       message: "账号已停用，身份资料将在 30 天后清理。",
@@ -803,6 +827,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         tokenHash(token, secret),
       );
     deleteCookie(c, COOKIE_NAME, { path: "/api" });
+    deleteCookie(c, COOKIE_NAME, { path: "/" });
     return c.json({ ok: true });
   });
 
@@ -811,7 +836,9 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     const counts = {
       courses: Number(
         (
-          db.query("SELECT COUNT(*) AS count FROM courses").get() as {
+          db
+            .query("SELECT COUNT(*) AS count FROM courses WHERE active = 1")
+            .get() as {
             count: number;
           } | null
         )?.count ?? 0,
@@ -852,6 +879,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
          FROM courses c LEFT JOIN course_reviews r
            ON r.course_id = c.id AND r.status = 'approved'
              AND r.moderation_status = 'visible' AND r.deleted_at IS NULL
+         WHERE c.active = 1
          GROUP BY c.id ORDER BY rating DESC, review_count DESC LIMIT 3`,
       )
       .all() as Record<string, unknown>[];
@@ -882,7 +910,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       latestListings: listings.map((row) => mapListing(row, user?.id)),
       latestSkills: skills.map((row) => mapSkill(row, user?.id)),
       latestTreePosts: posts.map((row) => ({ ...row, author: "匿名狸友" })),
-      demoData: demoAuthEnabled,
+      demoData: demoAuthEnabled || Boolean(config.localTestMode),
     });
   });
 
@@ -945,8 +973,8 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     const courses = db
       .query(
         `SELECT id, code AS identifier, title, department AS detail, 'course' AS type
-         FROM courses WHERE code LIKE ? ESCAPE '\\' OR title LIKE ? ESCAPE '\\'
-           OR english_title LIKE ? ESCAPE '\\' OR department LIKE ? ESCAPE '\\' LIMIT 5`,
+         FROM courses WHERE active = 1 AND (code LIKE ? ESCAPE '\\' OR title LIKE ? ESCAPE '\\'
+           OR english_title LIKE ? ESCAPE '\\' OR department LIKE ? ESCAPE '\\') LIMIT 5`,
       )
       .all(like, like, like, like) as Record<string, unknown>[];
     const listings = db
@@ -1252,9 +1280,15 @@ export function createApp(config: AppConfig): Hono<AppContext> {
   app.get("/api/favorites", (c) => {
     const user = requireUser(c);
     const page = pagination(c);
+    const visible = ["review", "listing", "skill", "tree-hole"]
+      .map((type) => {
+        const target = contentTableFor(type)!;
+        return `(f.target_type = '${type}' AND EXISTS (SELECT 1 FROM ${target.table} WHERE id = f.target_id AND ${target.predicate}))`;
+      })
+      .join(" OR ");
     const rows = db
       .query(
-        "SELECT target_type AS type, target_id AS id, created_at AS createdAt FROM content_favorites WHERE user_id = ? ORDER BY created_at DESC, target_type, target_id LIMIT ? OFFSET ?",
+        `SELECT f.target_type AS type, f.target_id AS id, f.created_at AS createdAt FROM content_favorites f WHERE f.user_id = ? AND (${visible}) ORDER BY f.created_at DESC, f.target_type, f.target_id LIMIT ? OFFSET ?`,
       )
       .all(user.id, page.pageSize, page.offset) as {
       type: string;
@@ -1285,7 +1319,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       (
         db
           .query(
-            "SELECT COUNT(*) AS count FROM content_favorites WHERE user_id = ?",
+            `SELECT COUNT(*) AS count FROM content_favorites f WHERE f.user_id = ? AND (${visible})`,
           )
           .get(user.id) as { count: number }
       ).count,
@@ -1512,25 +1546,6 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     });
   });
 
-  app.patch("/api/notifications/:id", (c) => {
-    const user = requireUser(c);
-    const result = db
-      .query(
-        "UPDATE notifications SET read_at = COALESCE(read_at, ?) WHERE id = ? AND user_id = ?",
-      )
-      .run(nowIso(), c.req.param("id"), user.id);
-    if (!result.changes) throw new HttpError(404, "NOT_FOUND", "通知不存在");
-    return c.json({ ok: true });
-  });
-
-  app.post("/api/notifications/read-all", (c) => {
-    const user = requireUser(c);
-    db.query(
-      "UPDATE notifications SET read_at = COALESCE(read_at, ?) WHERE user_id = ? AND read_at IS NULL",
-    ).run(nowIso(), user.id);
-    return c.json({ ok: true });
-  });
-
   app.get("/api/notifications/preferences", (c) => {
     const user = requireUser(c);
     const row = db
@@ -1550,6 +1565,25 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       "INSERT INTO notification_preferences (user_id, social_email_enabled) VALUES (?, ?) ON CONFLICT(user_id) DO UPDATE SET social_email_enabled = excluded.social_email_enabled",
     ).run(user.id, body.socialEmailEnabled ? 1 : 0);
     return c.json({ socialEmailEnabled: body.socialEmailEnabled });
+  });
+
+  app.patch("/api/notifications/:id", (c) => {
+    const user = requireUser(c);
+    const result = db
+      .query(
+        "UPDATE notifications SET read_at = COALESCE(read_at, ?) WHERE id = ? AND user_id = ?",
+      )
+      .run(nowIso(), c.req.param("id"), user.id);
+    if (!result.changes) throw new HttpError(404, "NOT_FOUND", "通知不存在");
+    return c.json({ ok: true });
+  });
+
+  app.post("/api/notifications/read-all", (c) => {
+    const user = requireUser(c);
+    db.query(
+      "UPDATE notifications SET read_at = COALESCE(read_at, ?) WHERE user_id = ? AND read_at IS NULL",
+    ).run(nowIso(), user.id);
+    return c.json({ ok: true });
   });
 
   app.post("/api/webhooks/resend", async (c) => {
@@ -1953,7 +1987,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         `SELECT t.id, t.code, t.name, t.department, COUNT(DISTINCT o.id) AS offeringCount,
       COUNT(DISTINCT r.id) AS reviewCount, ROUND(COALESCE(AVG(r.rating), 0), 1) AS rating
       FROM teachers t LEFT JOIN offering_teachers ot ON ot.teacher_id = t.id
-      LEFT JOIN course_offerings o ON o.id = ot.offering_id AND o.active = 1
+      LEFT JOIN course_offerings o ON o.id = ot.offering_id AND o.active = 1 AND EXISTS (SELECT 1 FROM courses ac WHERE ac.id = o.course_id AND ac.active = 1)
       LEFT JOIN course_reviews r ON r.offering_id = o.id AND r.status = 'approved' AND r.moderation_status = 'visible' AND r.deleted_at IS NULL
       WHERE ${where.join(" AND ")} GROUP BY t.id ORDER BY t.name, t.id LIMIT ? OFFSET ?`,
       )
@@ -1993,7 +2027,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       (
         db
           .query(
-            "SELECT COUNT(*) AS count FROM offering_teachers ot JOIN course_offerings o ON o.id = ot.offering_id WHERE ot.teacher_id = ? AND o.active = 1",
+            "SELECT COUNT(*) AS count FROM offering_teachers ot JOIN course_offerings o ON o.id = ot.offering_id JOIN courses c ON c.id = o.course_id WHERE ot.teacher_id = ? AND o.active = 1 AND c.active = 1",
           )
           .get(c.req.param("id")) as { count: number }
       ).count,
@@ -2103,9 +2137,12 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     requireUser(c);
     const course = db
       .query(
-        `SELECT id, code, title, english_title AS englishTitle, department,
-      course_type AS courseType, enrollment_type AS enrollmentType, credits, term, assessment
-      FROM courses WHERE (id = ? OR code = ?) AND active = 1`,
+        `SELECT c.id, c.code, c.title, c.english_title AS englishTitle, c.department,
+      c.course_type AS courseType, c.enrollment_type AS enrollmentType, c.credits, c.term, c.assessment,
+      ROUND(COALESCE(AVG(r.rating), 0), 1) AS rating,
+      ROUND(COALESCE(AVG(r.difficulty), c.difficulty), 1) AS difficulty, COUNT(r.id) AS reviewCount
+      FROM courses c LEFT JOIN course_reviews r ON r.course_id = c.id AND r.status = 'approved' AND r.moderation_status = 'visible' AND r.deleted_at IS NULL
+      WHERE (c.id = ? OR c.code = ?) AND c.active = 1 GROUP BY c.id`,
       )
       .get(c.req.param("id"), c.req.param("id")) as
       (Record<string, unknown> & { id: string }) | null;
@@ -2132,7 +2169,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     requireUser(c);
     const courseId = c.req.param("id");
     const course = db
-      .query("SELECT id FROM courses WHERE id = ? OR code = ?")
+      .query("SELECT id FROM courses WHERE (id = ? OR code = ?) AND active = 1")
       .get(courseId, courseId);
     if (!course) throw new HttpError(404, "NOT_FOUND", "课程不存在");
     const page = pagination(c);
@@ -2181,7 +2218,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     consumeRateLimit(db, user.id, "course-review", 3, 24 * 60 * 60 * 1000);
     const courseId = c.req.param("id");
     const course = db
-      .query("SELECT id FROM courses WHERE id = ? OR code = ?")
+      .query("SELECT id FROM courses WHERE (id = ? OR code = ?) AND active = 1")
       .get(courseId, courseId) as { id: string } | null;
     if (!course) throw new HttpError(404, "NOT_FOUND", "课程不存在");
     const body: unknown = await c.req.json().catch(() => null);
@@ -2898,7 +2935,11 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       .get(...countArgs) as { count: number } | null;
     const total = Number(count?.count ?? 0);
     return c.json({
-      items: rows.map((row) => ({ ...row, author: "匿名狸友" })),
+      items: rows.map((row) => ({
+        ...row,
+        reacted: Boolean(row.reacted),
+        author: "匿名狸友",
+      })),
       total,
       page: page.page,
       pageSize: limit,
@@ -3653,7 +3694,16 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       if (["warn", "mute", "ban"].includes(action) && ownerId) {
         db.query(
           "INSERT INTO user_penalties (id, user_id, case_id, penalty_type, starts_at, ends_at, reason, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-        ).run(randomUUID(), ownerId, caseId, action, now, endsAt, reason, now);
+        ).run(
+          randomUUID(),
+          ownerId,
+          caseId,
+          action === "warn" ? "warning" : action,
+          now,
+          endsAt,
+          reason,
+          now,
+        );
         if (action === "mute")
           db.query(
             "UPDATE users SET account_status = 'suspended', suspended_until = ?, updated_at = ? WHERE id = ? AND account_status <> 'banned'",
@@ -4034,7 +4084,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const email =
         isRecord(body) && typeof body.email === "string"
-          ? normalizeLoginEmail(body.email, adminEmail)
+          ? normalizeCampusEmail(body.email)
           : null;
       if (email) {
         const deleting = db
@@ -4060,13 +4110,13 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const email =
         isRecord(body) && typeof body.email === "string"
-          ? normalizeLoginEmail(body.email, adminEmail)
+          ? normalizeCampusEmail(body.email)
           : null;
       if (!email)
         throw new HttpError(
           400,
           "CAMPUS_EMAIL_REQUIRED",
-          "仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱或配置的管理员邮箱",
+          "仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱",
         );
       const deleting = db
         .query(
@@ -4117,13 +4167,13 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const newEmail =
         isRecord(body) && typeof body.newEmail === "string"
-          ? normalizeLoginEmail(body.newEmail, adminEmail)
+          ? normalizeCampusEmail(body.newEmail)
           : null;
       if (!newEmail)
         throw new HttpError(
           400,
           "CAMPUS_EMAIL_REQUIRED",
-          "新邮箱仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 或配置的管理员邮箱",
+          "新邮箱仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn",
         );
     }
     return auth.handler(c.req.raw);

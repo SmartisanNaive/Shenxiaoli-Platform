@@ -136,7 +136,7 @@ export function initCourses(): void {
     const offeringHtml = courseDetails?.offerings.length
       ? `<section class="mt-5 rounded-lg bg-surface-container-low p-4"><h3 class="font-headline-sm text-primary">开课与教师</h3><div class="mt-3 space-y-3">${courseDetails.offerings.map((offering) => `<div class="border-t border-surface-variant pt-3 first:border-0 first:pt-0"><p class="text-body-sm text-outline">${escapeHtml(offering.term)}${offering.section ? ` · ${escapeHtml(offering.section)}` : ''}</p><div class="mt-2 flex flex-wrap gap-2">${offering.teachers.map((teacher) => `<button type="button" data-review-teacher="${escapeHtml(teacher.id)}" class="rounded-lg bg-surface px-3 py-1.5 text-body-sm text-primary hover:bg-secondary-container">${escapeHtml(teacher.name)} · 查看该教师评价</button>`).join('') || '<span class="text-body-sm text-outline">教师信息待补充</span>'}</div></div>`).join('')}</div></section>`
       : '<p class="mt-4 rounded-lg bg-surface-container-low p-4 text-body-sm text-outline">这门课程还没有已导入的开课和教师记录。</p>';
-    detail.innerHTML = `<section class="rounded-xl bg-surface p-6 shadow-sm"><div class="flex flex-wrap items-start justify-between gap-5"><div><span class="font-mono text-label-sm text-outline">${escapeHtml(course.code)}</span><h2 class="mt-1 font-headline-lg text-primary">${escapeHtml(course.title)}</h2><p class="mt-2 text-body-md text-on-surface-variant">${escapeHtml(course.department)} · ${escapeHtml(course.courseType)} · ${course.credits} 学分</p></div><div class="text-right"><div class="font-headline-xl text-primary">${Number(course.rating).toFixed(1)}</div><div class="text-body-sm text-outline">${Number(course.reviewCount)} 条公开评价</div></div></div><div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4"><div class="rounded-lg bg-surface-container-low p-3"><span class="block text-body-sm text-outline">修读性质</span><strong class="text-label-md text-primary">${escapeHtml(course.enrollmentType)}</strong></div><div class="rounded-lg bg-surface-container-low p-3"><span class="block text-body-sm text-outline">学期</span><strong class="text-label-md text-primary">${escapeHtml(course.term)}</strong></div><div class="rounded-lg bg-surface-container-low p-3"><span class="block text-body-sm text-outline">考核方式</span><strong class="text-label-md text-primary">${escapeHtml(course.assessment)}</strong></div><div class="rounded-lg bg-surface-container-low p-3"><span class="block text-body-sm text-outline">平均难度</span><strong class="text-label-md text-primary">${Number(course.difficulty).toFixed(1)}/5</strong></div></div>${offeringHtml}</section><section class="mt-6 rounded-xl bg-surface p-6 shadow-sm"><div class="mb-4 flex items-center justify-between gap-4"><div><h3 class="font-headline-md text-primary">${activeTeacherId ? '该教师的课程评价' : '同学评价'}</h3><p class="text-body-sm text-outline">评价经审核后公开，不显示发布者身份。</p></div><button class="rounded-lg bg-primary px-4 py-2 text-label-sm text-on-primary hover:bg-secondary" data-write-review>写条评价</button></div><div data-review-list><p class="text-body-sm text-outline">正在加载评价…</p></div></section>`;
+    detail.innerHTML = `<section class="rounded-xl bg-surface p-6 shadow-sm"><div class="flex flex-wrap items-start justify-between gap-5"><div><span class="font-mono text-label-sm text-outline">${escapeHtml(course.code)}</span><h2 class="mt-1 font-headline-lg text-primary">${escapeHtml(course.title)}</h2><p class="mt-2 text-body-md text-on-surface-variant">${escapeHtml(course.department)} · ${escapeHtml(course.courseType)} · ${course.credits} 学分</p></div><div class="text-right"><div class="font-headline-xl text-primary">${Number(course.rating).toFixed(1)}</div><div class="text-body-sm text-outline">${Number(course.reviewCount)} 条公开评价</div></div></div><div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4"><div class="rounded-lg bg-surface-container-low p-3"><span class="block text-body-sm text-outline">修读性质</span><strong class="text-label-md text-primary">${escapeHtml(course.enrollmentType)}</strong></div><div class="rounded-lg bg-surface-container-low p-3"><span class="block text-body-sm text-outline">学期</span><strong class="text-label-md text-primary">${escapeHtml(course.term)}</strong></div><div class="rounded-lg bg-surface-container-low p-3"><span class="block text-body-sm text-outline">考核方式</span><strong class="text-label-md text-primary">${escapeHtml(course.assessment)}</strong></div><div class="rounded-lg bg-surface-container-low p-3"><span class="block text-body-sm text-outline">平均难度</span><strong class="text-label-md text-primary">${Number(course.difficulty).toFixed(1)}/5</strong></div></div>${offeringHtml}</section><section class="mt-6 rounded-xl bg-surface p-6 shadow-sm"><div class="mb-4 flex items-center justify-between gap-4"><div><h3 class="font-headline-md text-primary">${activeTeacherId ? '该教师的课程评价' : '同学评价'}</h3><p class="text-body-sm text-outline">评价提交后即时公开，不显示发布者身份。</p></div><button class="rounded-lg bg-primary px-4 py-2 text-label-sm text-on-primary hover:bg-secondary" data-write-review>写条评价</button></div><div data-review-list><p class="text-body-sm text-outline">正在加载评价…</p></div></section>`;
     detail
       .querySelector('[data-write-review]')
       ?.addEventListener('click', openReviewModal);
@@ -271,6 +271,7 @@ export function initCourses(): void {
       modal.close();
       form.reset();
       showToast(response.message, 'success');
+      await load(false, selected.id);
     } catch (error) {
       showToast(
         error instanceof Error ? error.message : '提交失败，请检查登录状态。',
@@ -281,7 +282,10 @@ export function initCourses(): void {
     }
   });
 
-  const load = async (append = false): Promise<void> => {
+  const load = async (
+    append = false,
+    preferredId: string | null = null,
+  ): Promise<void> => {
     const params = new URLSearchParams();
     params.set('page', String(append ? coursePage + 1 : 1));
     params.set('pageSize', '20');
@@ -302,12 +306,17 @@ export function initCourses(): void {
       coursePage = response.page;
       courseTotal = response.total;
       if (!append) {
-        const requested = new URLSearchParams(location.search).get('course');
+        const requested =
+          preferredId ?? new URLSearchParams(location.search).get('course');
         selected =
           courses.find(
             (course) => course.id === requested || course.code === requested,
           ) ??
-          courses[0] ??
+          (preferredId
+            ? await api<Course>(
+                `/api/courses/${encodeURIComponent(preferredId)}`,
+              )
+            : courses[0]) ??
           null;
         activeTeacherId = null;
       }

@@ -1,4 +1,5 @@
 import { Database } from "bun:sqlite";
+import { createDatabase } from "./db";
 import { spawnSync } from "node:child_process";
 import {
   chmod,
@@ -86,13 +87,18 @@ await mkdir(uploadsPath, { recursive: true });
 await mkdir(stagedUploads, { recursive: true });
 await copyFile(sourceDatabase, tempDatabase);
 await chmod(tempDatabase, 0o600);
-const tempCheck = new Database(tempDatabase, { readonly: true, strict: true });
+const tempCheck = createDatabase({ path: tempDatabase, seedDemoUsers: false });
 try {
   const integrity = tempCheck.query("PRAGMA integrity_check").get() as {
     integrity_check: string;
   };
   if (integrity.integrity_check !== "ok")
     throw new Error("Copied database snapshot failed integrity check.");
+  // The staged database must be self-contained before its main file is renamed.
+  const checkpoint = tempCheck
+    .query("PRAGMA wal_checkpoint(TRUNCATE)")
+    .get() as { busy: number };
+  if (checkpoint.busy) throw new Error("Staged database checkpoint is busy.");
 } finally {
   tempCheck.close();
 }

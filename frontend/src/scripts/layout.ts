@@ -121,9 +121,10 @@ export const renderHeader = (activeKey?: NavKey): string => {
               <label class="text-label-sm text-on-surface-variant">登录邮箱<input data-login-email autocomplete="email" type="email" required placeholder="name@stu.suat-sz.edu.cn" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
               <label data-login-name-field class="hidden text-label-sm text-on-surface-variant">昵称<input data-login-name autocomplete="nickname" maxlength="40" placeholder="社区昵称" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
               <label data-login-otp-field class="hidden text-label-sm text-on-surface-variant">邮箱验证码<input data-login-otp inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" placeholder="6 位验证码" class="mt-1 w-full rounded-lg border border-outline-variant bg-surface px-3 py-2 text-body-sm" /></label>
-              <button data-login-send type="submit" class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary">发送验证码</button>
+              <label class="flex items-start gap-2 text-xs leading-5 text-on-surface-variant"><input data-login-recovery type="checkbox" class="mt-1" />通过已绑定的辅助邮箱接收登录验证码</label>
+              <button data-login-send type="submit" formnovalidate class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary">发送验证码</button>
               <button data-login-verify type="button" class="hidden rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary">验证并登录</button>
-              <p class="text-xs leading-5 text-outline">支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱和指定的管理员邮箱。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。</p>
+              <p class="text-xs leading-5 text-outline">注册仅接受 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。</p>
             </form>
             <div class="flex flex-col gap-2" data-demo-login-options hidden>
               <button class="rounded-lg bg-primary px-3 py-2 text-label-sm text-on-primary hover:bg-secondary" data-demo-login="student" type="button">以演示同学身份登录</button>

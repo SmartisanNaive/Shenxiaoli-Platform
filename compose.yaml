@@ -8,7 +8,6 @@ x-runtime-environment: &runtime-environment
   SESSION_SECRET: ${SESSION_SECRET:?Set a long random SESSION_SECRET in .env}
   ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
   BETTER_AUTH_URL: ${BETTER_AUTH_URL:-}
-  ADMIN_EMAIL: ${ADMIN_EMAIL:-}
   RESEND_API_KEY: ${RESEND_API_KEY:?Set RESEND_API_KEY}
   RESEND_FROM: ${RESEND_FROM:?Set RESEND_FROM to an authenticated sender on a domain you control}
   RESEND_WEBHOOK_SECRET: ${RESEND_WEBHOOK_SECRET:-}
@@ -26,7 +25,13 @@ services:
       - uploads:/uploads
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:8787/api/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      test:
+        [
+          "CMD",
+          "bun",
+          "-e",
+          "fetch('http://127.0.0.1:8787/api/ready').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
       interval: 30s
       timeout: 5s
       retries: 3

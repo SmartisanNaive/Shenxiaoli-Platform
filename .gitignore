@@ -45,3 +45,8 @@ coverage/
 
 # OS
 .DS_Store
+
+# Isolated local testing and browser artifacts
+.local-test/
+playwright-report/
+test-results/

@@ -13,3 +13,6 @@ public/
 
 # Markdown is fine to format on demand
 # (kept here so `prettier --check .` is not required for docs)
+
+playwright-report/
+test-results/

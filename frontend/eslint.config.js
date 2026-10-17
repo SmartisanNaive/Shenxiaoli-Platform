@@ -7,6 +7,8 @@ export default tseslint.config(
   {
     ignores: [
       'dist/**',
+      'playwright-report/**',
+      'test-results/**',
       'node_modules/**',
       '.vite/**',
       'bun.lock',
@@ -22,6 +24,7 @@ export default tseslint.config(
     languageOptions: {
       globals: {
         ...globals.browser,
+        ...globals.node,
       },
       ecmaVersion: 2022,
       sourceType: 'module',

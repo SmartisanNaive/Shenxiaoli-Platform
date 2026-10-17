@@ -6,19 +6,15 @@ import { Database } from "bun:sqlite";
 import { createApp } from "../src/app";
 import { createDatabase } from "../src/db";
 import { cleanupExpiredDeletedAccounts } from "../src/maintenance";
-import { configuredAdminEmail, normalizeLoginEmail } from "../src/auth";
+import { normalizeCampusEmail } from "../src/auth";
 
 const databases = [] as ReturnType<typeof createDatabase>[];
 
-function setup(
-  sendEmail?: Parameters<typeof createApp>[0]["sendEmail"],
-  adminEmail = "",
-) {
+function setup(sendEmail?: Parameters<typeof createApp>[0]["sendEmail"]) {
   const db = createDatabase({ path: ":memory:", seedDemoUsers: true });
   databases.push(db);
   const app = createApp({
     database: db,
-    adminEmail,
     demoAuthEnabled: true,
     sessionSecret: "test-only-secret",
     allowedOrigins: ["http://localhost:5173"],
@@ -50,7 +46,6 @@ describe("Shenxiaoli API", () => {
     const app = createApp({
       database: db,
       production: true,
-      adminEmail: "admin@vip.qq.com",
       sessionSecret: "production-test-secret-at-least-32-characters",
       allowedOrigins: [],
       sendEmail: async ({ to, text }) => {
@@ -58,7 +53,7 @@ describe("Shenxiaoli API", () => {
       },
     });
     for (const [host, email, role] of [
-      ["first.tunnel.example", "admin@vip.qq.com", "admin"],
+      ["first.tunnel.example", "teacher@suat-sz.edu.cn", "student"],
       ["second.tunnel.example:9443", "student@suat-sz.edu.cn", "student"],
     ]) {
       const headers = {
@@ -137,32 +132,43 @@ describe("Shenxiaoli API", () => {
     }
   });
 
-  test("admin configuration permits only one exact address", () => {
-    const email = configuredAdminEmail(" Jianghanchn@VIP.QQ.COM ");
-    expect(email).toBe("jianghanchn@vip.qq.com");
-    expect(configuredAdminEmail("")).toBeNull();
-    expect(() =>
-      configuredAdminEmail("one@example.com,two@example.com"),
-    ).toThrow();
-    expect(() => configuredAdminEmail("invalid")).toThrow();
-    expect(normalizeLoginEmail("jianghanchn@vip.qq.com", null)).toBeNull();
-    expect(normalizeLoginEmail("other@vip.qq.com", email)).toBeNull();
-    expect(
-      normalizeLoginEmail("jianghanchn@vip.qq.com.evil.test", email),
-    ).toBeNull();
+  test("registration accepts exact campus domains and never promotes an external admin email", async () => {
+    expect(normalizeCampusEmail(" STUDENT@STU.SUAT-SZ.EDU.CN ")).toBe(
+      "student@stu.suat-sz.edu.cn",
+    );
+    expect(normalizeCampusEmail("teacher@suat-sz.edu.cn")).toBe(
+      "teacher@suat-sz.edu.cn",
+    );
+    for (const email of [
+      "person@vip.qq.com",
+      "student@sub.stu.suat-sz.edu.cn",
+      "student@stu.suat-sz.edu.cn.evil.test",
+      "invalid",
+      "a@@suat-sz.edu.cn",
+    ]) {
+      expect(normalizeCampusEmail(email)).toBeNull();
+      const { app } = setup();
+      const denied = await app.request(
+        "/api/auth/email-otp/send-verification-otp",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ email, type: "sign-in" }),
+        },
+      );
+      expect(denied.status).toBe(400);
+    }
   });
 
-  test("configured admin requires OTP and loses automatic access when config or email changes", async () => {
+  test("a verified campus account is a student until explicitly granted admin access", async () => {
     let sentText = "";
-    const email = "jianghanchn@vip.qq.com";
+    const email = "admin.test@stu.suat-sz.edu.cn";
     const { app, db } = setup(async (message) => {
-      expect(message.to).toBe(email);
       sentText = message.text;
-    }, " Jianghanchn@VIP.QQ.COM ");
+    });
     const headers = {
       origin: "http://localhost:5173",
       "content-type": "application/json",
-      // Better Auth's in-memory IP limiter is shared across app instances.
       "x-forwarded-for": "192.0.2.20",
     };
     const send = await app.request(
@@ -170,92 +176,50 @@ describe("Shenxiaoli API", () => {
       {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          email: " Jianghanchn@VIP.QQ.COM ",
-          type: "sign-in",
-        }),
+        body: JSON.stringify({ email, type: "sign-in" }),
       },
     );
     expect(send.status).toBe(200);
-    const otp = /验证码是 (\d{6})/.exec(sentText)?.[1];
-    expect(otp).toBeTruthy();
-    const invalid = await app.request("/api/auth/sign-in/email-otp", {
+    const signIn = await app.request("/api/auth/sign-in/email-otp", {
       method: "POST",
       headers,
       body: JSON.stringify({
         email,
-        otp: otp === "000000" ? "111111" : "000000",
+        otp: /验证码是 (\d{6})/.exec(sentText)?.[1],
+        name: "校园管理员",
       }),
     });
-    expect(invalid.ok).toBe(false);
-    expect(
-      db.query("SELECT 1 FROM auth_users WHERE email = ?").get(email),
-    ).toBeNull();
-    const signIn = await app.request("/api/auth/sign-in/email-otp", {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ email, otp, name: "管理员" }),
-    });
     expect(signIn.status).toBe(200);
-    const cookie = signIn.headers.get("set-cookie")?.split(";")[0];
-    expect(cookie).toBeTruthy();
-    const authenticatedHeaders = { ...headers, cookie: cookie! };
-    const session = await app.request("/api/session", {
-      headers: authenticatedHeaders,
-    });
-    expect(await session.json()).toMatchObject({
+    const cookie = signIn.headers.get("set-cookie")!.split(";")[0];
+    const request = (path: string) =>
+      app.request(path, { headers: { ...headers, cookie } });
+    expect(await (await request("/api/session")).json()).toMatchObject({
       authenticated: true,
-      campusEmailVerified: false,
-      user: { email, emailVerified: true, role: "admin" },
+      campusEmailVerified: true,
+      user: { email, role: "student" },
     });
-    const adminRequest = () =>
-      app.request("/api/admin/courses/import-template", {
-        headers: authenticatedHeaders,
-      });
-    expect((await adminRequest()).status).toBe(200);
-    expect(
-      db.query("SELECT is_admin FROM users WHERE email = ?").get(email),
-    ).toEqual({ is_admin: 0 });
-
+    expect((await request("/api/admin/courses/import-template")).status).toBe(
+      403,
+    );
+    db.query("UPDATE users SET is_admin = 1 WHERE email = ?").run(email);
+    expect((await request("/api/admin/courses/import-template")).status).toBe(
+      200,
+    );
     db.query("UPDATE users SET account_status = 'banned' WHERE email = ?").run(
       email,
     );
-    expect((await adminRequest()).status).toBe(403);
+    expect((await request("/api/admin/courses/import-template")).status).toBe(
+      403,
+    );
     db.query("UPDATE users SET account_status = 'active' WHERE email = ?").run(
       email,
     );
-
-    const withoutAdmin = createApp({
-      database: db,
-      adminEmail: "",
-      sessionSecret: "test-only-secret",
-      allowedOrigins: ["http://localhost:5173"],
-    });
-    expect(
-      (
-        await withoutAdmin.request("/api/admin/courses/import-template", {
-          headers: authenticatedHeaders,
-        })
-      ).status,
-    ).toBe(401);
-    const denied = await app.request(
-      "/api/auth/email-otp/send-verification-otp",
-      {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ email: "other@vip.qq.com", type: "sign-in" }),
-      },
-    );
-    expect(denied.status).toBe(400);
-
     db.query("UPDATE auth_users SET emailVerified = 0 WHERE email = ?").run(
       email,
     );
-    expect((await adminRequest()).status).toBe(401);
-    db.query(
-      "UPDATE auth_users SET emailVerified = 1, email = 'former.admin@suat-sz.edu.cn' WHERE email = ?",
-    ).run(email);
-    expect((await adminRequest()).status).toBe(403);
+    expect((await request("/api/admin/courses/import-template")).status).toBe(
+      401,
+    );
   });
 
   test("health and product data endpoints return seeded development data", async () => {
@@ -1340,7 +1304,7 @@ describe("Shenxiaoli API", () => {
         migrated
           .query("SELECT MAX(version) AS version FROM schema_migrations")
           .get(),
-      ).toEqual({ version: 9 });
+      ).toEqual({ version: 10 });
       expect(migrated.query("PRAGMA integrity_check").get()).toEqual({
         integrity_check: "ok",
       });

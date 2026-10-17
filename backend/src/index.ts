@@ -3,6 +3,19 @@ import { createApp } from "./app";
 import { createDatabase } from "./db";
 
 const production = process.env.NODE_ENV === "production";
+const localTestMode = process.env.LOCAL_TEST_MODE === "true";
+if (localTestMode && production)
+  throw new Error("Local test mode is forbidden in production");
+if (localTestMode) {
+  const directory = resolve(import.meta.dir, "../../.local-test");
+  if (
+    !process.env.DATABASE_PATH ||
+    !resolve(process.env.DATABASE_PATH).startsWith(`${directory}/`) ||
+    !process.env.UPLOADS_PATH ||
+    !resolve(process.env.UPLOADS_PATH).startsWith(`${directory}/`)
+  )
+    throw new Error("Local test databases must be inside .local-test/");
+}
 const demoAuthEnabled = process.env.DEMO_AUTH_ENABLED
   ? process.env.DEMO_AUTH_ENABLED === "true"
   : !production;
@@ -46,6 +59,7 @@ const db = createDatabase({
 const app = createApp({
   database: db,
   demoAuthEnabled,
+  localTestMode,
   production,
   sessionSecret: process.env.SESSION_SECRET,
 });
@@ -58,5 +72,6 @@ console.info(
 
 export default {
   port,
+  ...(localTestMode ? { hostname: "127.0.0.1" } : {}),
   fetch: app.fetch,
 };

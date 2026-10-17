@@ -13,10 +13,6 @@
       href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Source+Serif+4:wght@500;600&display=swap"
       rel="stylesheet"
     />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
-      rel="stylesheet"
-    />
     <script type="module" src="./scripts/main.ts"></script>
   </head>
   <body class="bg-background font-body-md text-on-surface">
@@ -208,11 +204,11 @@
         </section>
         <!-- Publish Modal (Hidden by default) -->
         <div
-          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 backdrop-blur-sm"
+          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 p-4 backdrop-blur-sm"
           id="publish-modal"
         >
           <div
-            class="relative flex w-full max-w-lg flex-col gap-6 rounded-2xl bg-surface-container-lowest p-8 shadow-xl"
+            class="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col gap-6 overflow-y-auto rounded-2xl bg-surface-container-lowest p-5 shadow-xl sm:p-8"
             id="skill-form"
             role="form"
           >

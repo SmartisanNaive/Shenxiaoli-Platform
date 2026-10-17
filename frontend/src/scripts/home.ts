@@ -43,15 +43,25 @@ function renderListing(listing: Listing): string {
   </a>`;
 }
 
+let listeningForSessionChanges = false;
+
 export async function initHome(): Promise<void> {
   const footer = document.querySelector<HTMLElement>('footer');
   if (!footer) return;
+  if (!listeningForSessionChanges) {
+    listeningForSessionChanges = true;
+    window.addEventListener(
+      'shenxiaoli:session-changed',
+      () => void initHome(),
+    );
+  }
   document
     .querySelectorAll(
-      '#home-featured-courses, #home-featured-market, #home-social-feed',
+      '#home-featured-courses, #home-featured-market, #home-social-feed, [data-home-feed]',
     )
     .forEach((sampleSection) => sampleSection.remove());
   const section = document.createElement('section');
+  section.setAttribute('data-home-feed', '');
   section.className = 'mx-auto mb-20 w-full max-w-[1200px] px-gutter';
   section.setAttribute('aria-labelledby', 'campus-feed-title');
   section.innerHTML = `<div class="mb-6 flex flex-wrap items-end justify-between gap-3"><div><h2 id="campus-feed-title" class="font-headline-lg text-primary">校园动态</h2><p class="mt-1 text-body-md text-on-surface-variant">把课程信息、闲置流转和同学互助汇在一起。</p></div><span class="hidden rounded-full bg-surface-container-low px-3 py-1 text-body-sm text-outline" data-demo-data-label>本地开发演示数据</span></div><div class="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4" data-home-counts></div><div class="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4"><section class="rounded-xl border border-surface-variant bg-surface p-5"><div class="mb-2 flex items-center justify-between"><h3 class="font-headline-sm text-primary">课程口碑</h3><a href="./course-evaluation.html" class="text-label-sm text-secondary">查看评课</a></div><div data-home-courses></div></section><section class="rounded-xl border border-surface-variant bg-surface p-5"><div class="mb-2 flex items-center justify-between"><h3 class="font-headline-sm text-primary">最新闲置</h3><a href="./market.html" class="text-label-sm text-secondary">逛逛集市</a></div><div data-home-listings></div></section><section class="rounded-xl border border-surface-variant bg-surface p-5"><div class="mb-2 flex items-center justify-between"><h3 class="font-headline-sm text-primary">技能互助</h3><a href="./skill-mutual-aid.html" class="text-label-sm text-secondary">找搭子</a></div><div data-home-skills></div></section><section class="rounded-xl border border-surface-variant bg-surface p-5"><div class="mb-2 flex items-center justify-between"><h3 class="font-headline-sm text-primary">树洞一角</h3><a href="./tree-hole.html" class="text-label-sm text-secondary">进入树洞</a></div><div data-home-tree></div></section></div>`;

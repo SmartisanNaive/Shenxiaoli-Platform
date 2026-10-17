@@ -3,6 +3,7 @@ import { dirname, resolve } from "node:path";
 import { Database } from "bun:sqlite";
 
 export type AppDatabase = Database;
+export const SCHEMA_VERSION = 10;
 
 export interface DatabaseOptions {
   path?: string;
@@ -605,6 +606,7 @@ export function createDatabase(options: DatabaseOptions = {}): AppDatabase {
   if (filename !== ":memory:")
     mkdirSync(dirname(filename), { recursive: true });
   const db = new Database(filename, { create: true, strict: true });
+  db.exec("PRAGMA busy_timeout = 5000");
   db.exec(SCHEMA);
   if (options.migrate !== false) {
     migrateDatabase(db);
@@ -619,7 +621,7 @@ export function createDatabase(options: DatabaseOptions = {}): AppDatabase {
           .query("SELECT MAX(version) AS version FROM schema_migrations")
           .get() as { version: number | null } | null)
       : null;
-    if ((version?.version ?? 0) < 9) {
+    if ((version?.version ?? 0) < SCHEMA_VERSION) {
       db.close();
       throw new Error(
         "Database migrations are incomplete; run `bun run src/migrate.ts` before starting the service.",
@@ -885,9 +887,42 @@ function migrateDatabase(db: AppDatabase): void {
       throw error;
     }
   }
+  if (!db.query("SELECT 1 FROM schema_migrations WHERE version = 10").get()) {
+    db.transaction(() => {
+      db.exec(`
+        CREATE TABLE recovery_emails (
+          user_id TEXT PRIMARY KEY REFERENCES auth_users(id) ON DELETE CASCADE,
+          email TEXT NOT NULL,
+          verified_at TEXT NOT NULL
+        );
+        CREATE TABLE recovery_challenges (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES auth_users(id) ON DELETE CASCADE,
+          purpose TEXT NOT NULL CHECK (purpose IN ('bind', 'unbind', 'login')),
+          campus_email TEXT NOT NULL,
+          proof_method TEXT NOT NULL CHECK (proof_method IN ('campus', 'auxiliary')),
+          proof_email TEXT NOT NULL,
+          new_email TEXT,
+          code_hash TEXT NOT NULL,
+          new_code_hash TEXT,
+          attempts INTEGER NOT NULL DEFAULT 0,
+          expires_at INTEGER NOT NULL,
+          created_at INTEGER NOT NULL
+        );
+        CREATE INDEX recovery_challenges_user_idx ON recovery_challenges(user_id, purpose);
+        CREATE TABLE recovery_email_cooldowns (
+          subject_hash TEXT PRIMARY KEY,
+          last_sent_at INTEGER NOT NULL
+        );
+      `);
+      db.query(
+        "INSERT INTO schema_migrations (version, applied_at) VALUES (10, ?)",
+      ).run(new Date().toISOString());
+    })();
+  }
 }
 
-function seedDatabase(db: AppDatabase, seedDemoUsers: boolean): void {
+export function seedDatabase(db: AppDatabase, seedDemoUsers: boolean): void {
   if (!seedDemoUsers) return;
   const now = new Date().toISOString();
   if (seedDemoUsers) {

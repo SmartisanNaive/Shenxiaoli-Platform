@@ -1,87 +1,25 @@
-import { Resend } from "resend";
 import { createHash } from "node:crypto";
 import { betterAuth } from "better-auth";
 import { emailOTP } from "better-auth/plugins";
 import type { AppDatabase } from "./db";
-
-export const CAMPUS_EMAIL_DOMAINS = [
-  "stu.suat-sz.edu.cn",
-  "suat-sz.edu.cn",
-] as const;
-
-export function normalizeCampusEmail(value: string): string | null {
-  const email = value.trim().toLowerCase();
-  const match = /^[^\s@]+@([^\s@]+)$/.exec(email);
-  if (!match) return null;
-  return CAMPUS_EMAIL_DOMAINS.some((domain) => match[1] === domain)
-    ? email
-    : null;
-}
-
-export function configuredAdminEmail(
-  value = process.env.ADMIN_EMAIL,
-): string | null {
-  const email = value?.trim().toLowerCase();
-  if (!email) return null;
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    throw new Error("ADMIN_EMAIL must be a single valid email address");
-  }
-  return email;
-}
-
-export function normalizeLoginEmail(
-  value: string,
-  adminEmail: string | null,
-): string | null {
-  const email = value.trim().toLowerCase();
-  return adminEmail && email === adminEmail
-    ? email
-    : normalizeCampusEmail(email);
-}
-
-export async function deliverCampusEmail(
-  message: {
-    to: string;
-    subject: string;
-    text: string;
-    idempotencyKey: string;
-  },
-  override?: AuthOptions["sendEmail"],
-): Promise<string | undefined> {
-  if (override) {
-    await override(message);
-    return;
-  }
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM;
-  if (!apiKey || !from)
-    throw new Error("邮件服务未配置 RESEND_API_KEY 和 RESEND_FROM");
-  const resend = new Resend(apiKey);
-  const { data, error } = await resend.emails.send(
-    { from, to: [message.to], subject: message.subject, text: message.text },
-    { idempotencyKey: message.idempotencyKey },
-  );
-  if (error) throw new Error(`邮件发送失败（${error.name}）：${error.message}`);
-  return data?.id;
-}
+import {
+  deliverCampusEmail,
+  normalizeCampusEmail,
+  type EmailSender,
+} from "./email";
+import { recoveryEmailPlugin } from "./recovery";
+export { deliverCampusEmail, normalizeCampusEmail } from "./email";
 
 interface AuthOptions {
   database: AppDatabase;
-  adminEmail?: string;
   baseURL?: string;
   production?: boolean;
   secret?: string;
   trustedOrigins?: string[];
-  sendEmail?: (message: {
-    to: string;
-    subject: string;
-    text: string;
-    idempotencyKey: string;
-  }) => Promise<void>;
+  sendEmail?: EmailSender;
 }
 
 export function createAuth(options: AuthOptions) {
-  const adminEmail = configuredAdminEmail(options.adminEmail);
   const origin =
     options.baseURL ??
     (process.env.BETTER_AUTH_URL?.trim() || "http://127.0.0.1:8787");
@@ -106,15 +44,16 @@ export function createAuth(options: AuthOptions) {
       customRules: {
         "/email-otp/send-verification-otp": { window: 60, max: 3 },
         "/sign-in/email-otp": { window: 60, max: 5 },
+        "/recovery-email/login/request": { window: 60, max: 3 },
+        "/recovery-email/login/confirm": { window: 60, max: 5 },
       },
     },
     databaseHooks: {
       user: {
         create: {
           before: async (user) => {
-            const email = normalizeLoginEmail(user.email, adminEmail);
-            if (!email)
-              throw new Error("仅支持 SUAT 校园邮箱或配置的管理员邮箱");
+            const email = normalizeCampusEmail(user.email);
+            if (!email) throw new Error("仅支持 SUAT 校园邮箱");
             if (user.emailVerified !== true) {
               throw new Error("请先完成校园邮箱验证");
             }
@@ -124,9 +63,8 @@ export function createAuth(options: AuthOptions) {
         update: {
           before: async (user) => {
             if (typeof user.email === "string") {
-              const email = normalizeLoginEmail(user.email, adminEmail);
-              if (!email)
-                throw new Error("仅支持 SUAT 校园邮箱或配置的管理员邮箱");
+              const email = normalizeCampusEmail(user.email);
+              if (!email) throw new Error("仅支持 SUAT 校园邮箱");
               return { data: { ...user, email } };
             }
             return { data: user };
@@ -135,6 +73,15 @@ export function createAuth(options: AuthOptions) {
       },
     },
     plugins: [
+      recoveryEmailPlugin({
+        database: options.database,
+        secret:
+          options.secret ??
+          process.env.SESSION_SECRET ??
+          "local-development-only-secret",
+        sendEmail: async (message) =>
+          deliverCampusEmail(message, options.sendEmail),
+      }),
       emailOTP({
         otpLength: 6,
         expiresIn: 300,
@@ -143,8 +90,8 @@ export function createAuth(options: AuthOptions) {
         resendStrategy: "rotate",
         changeEmail: { enabled: true, verifyCurrentEmail: true },
         sendVerificationOTP: async ({ email: value, otp, type }) => {
-          const email = normalizeLoginEmail(value, adminEmail);
-          if (!email) throw new Error("仅支持 SUAT 校园邮箱或配置的管理员邮箱");
+          const email = normalizeCampusEmail(value);
+          if (!email) throw new Error("仅支持 SUAT 校园邮箱");
           const subject =
             type === "change-email"
               ? "深小狸校园：确认新的校园邮箱"

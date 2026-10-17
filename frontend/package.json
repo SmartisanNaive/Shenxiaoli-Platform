@@ -21,7 +21,7 @@
   },
   "engines": {
     "bun": ">=1.1.0",
-    "node": ">=18.18.0"
+    "node": ">=20"
   },
   "scripts": {
     "dev": "vite",
@@ -31,11 +31,13 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist node_modules .vite bun.lockb"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.e2e.json",
+    "clean": "rm -rf dist node_modules .vite bun.lockb",
+    "test:e2e": "node node_modules/@playwright/test/cli.js test"
   },
   "devDependencies": {
     "@eslint/js": "^9.17.0",
+    "@playwright/test": "1.64.1",
     "@types/bun": "latest",
     "@typescript-eslint/eslint-plugin": "^8.18.0",
     "@typescript-eslint/parser": "^8.18.0",
@@ -52,6 +54,7 @@
     "vite": "^6.0.5"
   },
   "dependencies": {
+    "@fontsource/material-symbols-outlined": "5.3.9",
     "better-auth": "1.7.7"
   }
 }

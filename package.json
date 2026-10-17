@@ -33,6 +33,9 @@
     "test": "cd backend && bun run test",
     "mail:test": "bun --env-file=.env run backend/src/test-email.ts",
     "setup": "cd frontend && bun install && cd ../backend && bun install",
-    "deploy": "deno -Ar https://host.retiehe.com/cli deploy"
+    "deploy": "deno -Ar https://host.retiehe.com/cli deploy",
+    "test:local": "bun run scripts/local-test.ts",
+    "test:local:reset": "bun run scripts/local-test.ts --reset",
+    "test:e2e": "cd frontend && bun run test:e2e"
   }
 }

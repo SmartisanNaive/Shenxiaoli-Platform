@@ -4,6 +4,12 @@ const nowIso = (): string => new Date().toISOString();
 
 export function cleanupExpiredDeletedAccounts(database: AppDatabase): number {
   database
+    .query("DELETE FROM recovery_challenges WHERE expires_at <= ?")
+    .run(Date.now());
+  database
+    .query("DELETE FROM recovery_email_cooldowns WHERE last_sent_at < ?")
+    .run(Date.now() - 3 * 24 * 60 * 60_000);
+  database
     .query(
       "DELETE FROM moderation_evidence WHERE expires_at IS NOT NULL AND expires_at <= ?",
     )

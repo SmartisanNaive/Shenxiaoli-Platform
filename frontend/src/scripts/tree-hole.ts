@@ -46,7 +46,7 @@ export function initTreeHole(): void {
       ? posts
           .map(
             (post) =>
-              `<article class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm" id="tree-${escapeHtml(post.id)}"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container">狸</div><div><strong class="block text-label-md text-on-surface">匿名狸友</strong><span class="text-body-sm text-outline">${escapeHtml(formatRelativeTime(post.createdAt))}</span></div></div><span class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-secondary">#${escapeHtml(post.topic)}</span></div><p class="whitespace-pre-line text-body-lg leading-relaxed text-on-surface">${escapeHtml(post.content)}</p><div class="flex items-center justify-between border-t border-surface-container pt-4"><div class="flex items-center gap-5"><button type="button" data-tree-feel="${escapeHtml(post.id)}" aria-pressed="${post.reacted}" class="flex items-center gap-1.5 text-label-md ${post.reacted ? 'text-secondary' : 'text-on-surface-variant'} hover:text-primary"><span class="material-symbols-outlined text-sm" aria-hidden="true">favorite</span>同感 <span class="font-bold">${post.reactions}</span></button><button type="button" data-tree-report="${escapeHtml(post.id)}" class="text-label-sm text-outline hover:text-primary">举报</button></div><button type="button" data-tree-share="${escapeHtml(post.id)}" class="flex items-center gap-1 text-label-sm text-outline hover:text-primary"><span class="material-symbols-outlined text-sm" aria-hidden="true">share</span>复制链接</button></div>${commentSlot('tree-hole', post.id)}</article>`,
+              `<article class="flex flex-col gap-4 rounded-xl bg-surface p-6 shadow-sm" id="tree-${escapeHtml(post.id)}"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="flex h-10 w-10 items-center justify-center rounded-full bg-secondary-container text-label-md font-bold text-on-secondary-container">狸</div><div><strong class="block text-label-md text-on-surface">匿名狸友</strong><span class="text-body-sm text-outline">${escapeHtml(formatRelativeTime(post.createdAt))}</span></div></div><span class="rounded-full bg-surface-container-low px-3 py-1 text-label-sm text-secondary">#${escapeHtml(post.topic)}</span></div><p class="whitespace-pre-line text-body-lg leading-relaxed text-on-surface">${escapeHtml(post.content)}</p><div class="flex items-center justify-between border-t border-surface-container pt-4"><div class="flex items-center gap-5"><button type="button" data-tree-feel="${escapeHtml(post.id)}" aria-pressed="${Boolean(post.reacted)}" class="flex items-center gap-1.5 text-label-md ${post.reacted ? 'text-secondary' : 'text-on-surface-variant'} hover:text-primary"><span class="material-symbols-outlined text-sm" aria-hidden="true">favorite</span>同感 <span class="font-bold">${post.reactions}</span></button><button type="button" data-tree-report="${escapeHtml(post.id)}" class="text-label-sm text-outline hover:text-primary">举报</button></div><button type="button" data-tree-share="${escapeHtml(post.id)}" class="flex items-center gap-1 text-label-sm text-outline hover:text-primary"><span class="material-symbols-outlined text-sm" aria-hidden="true">share</span>复制链接</button></div>${commentSlot('tree-hole', post.id)}</article>`,
           )
           .join('')
       : '<div class="rounded-xl border border-dashed border-outline-variant bg-surface p-10 text-center"><span class="material-symbols-outlined text-3xl text-outline" aria-hidden="true">spa</span><p class="mt-3 text-body-md text-on-surface-variant">这个话题暂时没有公开树洞。</p><p class="mt-1 text-body-sm text-outline">树洞会即时公开并接受后续巡查；普通展示不包含发布者账号信息。</p></div>';
@@ -216,6 +216,13 @@ export function initTreeHole(): void {
       if (status)
         status.textContent = '树洞已公开；举报和治理流程仍可处理违规内容。';
       showToast(response.message, 'success');
+      sort = 'recent';
+      if (topic !== 'all' && topic !== composerTopic) {
+        setTopic(composerTopic);
+      } else {
+        offset = 0;
+        await load();
+      }
     } catch (error) {
       const message =
         error instanceof Error

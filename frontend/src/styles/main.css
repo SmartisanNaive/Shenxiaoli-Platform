@@ -7,16 +7,38 @@
  */
 
 @import './tokens.css';
+@import '@fontsource/material-symbols-outlined/400.css';
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Keep the semantic hidden attribute effective alongside display utilities. */
+[hidden] {
+  display: none !important;
+}
 
 .account-tab {
   @apply rounded-lg bg-surface-container px-4 py-2 text-label-sm text-primary transition-colors hover:bg-surface-container-high;
 }
 
 @layer base {
+  .material-symbols-outlined {
+    display: inline-block;
+    font-family: 'Material Symbols Outlined';
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    word-wrap: normal;
+    direction: ltr;
+    font-feature-settings: 'liga';
+    -webkit-font-smoothing: antialiased;
+  }
+
   html,
   body {
     margin: 0;

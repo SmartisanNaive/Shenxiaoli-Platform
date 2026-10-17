@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { configuredAdminEmail, deliverCampusEmail } from "./auth";
+import { normalizeEmail, deliverCampusEmail } from "./email";
 
-const email = configuredAdminEmail();
+const email = normalizeEmail(process.env.MAIL_TEST_TO ?? "");
 if (!email)
-  throw new Error("Configure ADMIN_EMAIL before testing email delivery");
+  throw new Error("Configure MAIL_TEST_TO before testing email delivery");
 
 const id = await deliverCampusEmail({
   to: email,

@@ -131,8 +131,14 @@ export default defineConfig({
     open: true,
     host: '127.0.0.1',
     proxy: {
-      '/api': { target: 'http://127.0.0.1:8787', changeOrigin: false },
-      '/uploads': { target: 'http://127.0.0.1:8787', changeOrigin: false },
+      '/api': {
+        target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:8787',
+        changeOrigin: false,
+      },
+      '/uploads': {
+        target: process.env.API_PROXY_TARGET ?? 'http://127.0.0.1:8787',
+        changeOrigin: false,
+      },
     },
   },
 

@@ -12,6 +12,7 @@ export interface SessionState {
   user: User | null;
   demoAuthAvailable: boolean;
   campusEmailVerified?: boolean;
+  syntheticIdentity?: boolean;
 }
 
 export interface Course {
@@ -89,6 +90,7 @@ export interface SearchResult {
 }
 
 interface ApiError {
+  message?: string;
   error?: { code?: string; message?: string };
 }
 
@@ -108,7 +110,8 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   });
   const payload: unknown = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = (payload as ApiError)?.error?.message;
+    const message =
+      (payload as ApiError)?.error?.message ?? (payload as ApiError)?.message;
     throw new Error(message || `请求失败（${response.status}）`);
   }
   return payload as T;

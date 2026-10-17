@@ -16,6 +16,7 @@ import { authClient } from './auth-client';
 import { initAccount } from './account';
 import { initInformation } from './information';
 import { initSearch } from './search';
+import { initLocalTestTools } from './local-testing';
 
 declare global {
   interface Window {
@@ -118,6 +119,11 @@ function authWidget(): void {
     '[data-login-verify]',
   );
   let pendingEmail = '';
+  let recoveryChallengeId = '';
+  const recoveryToggle = root.querySelector<HTMLInputElement>(
+    '[data-login-recovery]',
+  );
+  let pendingRecovery = false;
 
   const close = (): void => {
     panel?.classList.add('hidden');
@@ -127,10 +133,10 @@ function authWidget(): void {
     if (label) label.textContent = state.user?.displayName ?? '未登录';
     if (message) {
       message.textContent = state.user
-        ? `${state.user.displayName} · ${state.campusEmailVerified ? '校园邮箱已验证' : state.user.emailVerified ? '邮箱已验证' : state.user.role === 'moderator' ? '本地审核员演示身份' : '本地演示身份'}`
+        ? `${state.user.displayName} · ${state.syntheticIdentity ? '本地合成测试身份（未进行真实收信验证）' : state.campusEmailVerified ? '校园邮箱已验证' : state.user.emailVerified ? '邮箱已验证' : state.user.role === 'moderator' ? '本地审核员演示身份' : '本地演示身份'}`
         : state.demoAuthAvailable
           ? '使用校园邮箱验证码登录；也可选择本地演示身份。'
-          : '使用校园邮箱或指定的管理员邮箱接收验证码登录。';
+          : '使用校园邮箱登录；已绑定辅助邮箱的账号可通过辅助邮箱验证。';
     }
     if (emailForm) emailForm.hidden = Boolean(state.authenticated);
     if (loginOptions)
@@ -202,22 +208,36 @@ function authWidget(): void {
   });
   emailForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
-    if (!emailInput || !sendButton) return;
+    if (!emailInput || !sendButton || !emailInput.reportValidity()) return;
     const email = emailInput.value.trim().toLowerCase();
     pendingEmail = email;
     sendButton.disabled = true;
+    emailInput.disabled = true;
+    if (recoveryToggle) recoveryToggle.disabled = true;
     try {
-      const result = await authClient.emailOtp.sendVerificationOtp({
-        email,
-        type: 'sign-in',
-      });
-      if (result.error)
-        throw new Error(result.error.message || '验证码发送失败');
-      nameField?.classList.remove('hidden');
+      pendingRecovery = Boolean(recoveryToggle?.checked);
+      if (pendingRecovery) {
+        const result = await api<{ challengeId: string }>(
+          '/api/auth/recovery-email/login/request',
+          { method: 'POST', body: jsonBody({ email }) },
+        );
+        recoveryChallengeId = result.challengeId;
+      } else {
+        await api('/api/auth/email-otp/send-verification-otp', {
+          method: 'POST',
+          body: jsonBody({ email, type: 'sign-in' }),
+        });
+      }
+      nameField?.classList.toggle('hidden', pendingRecovery);
       otpField?.classList.remove('hidden');
       verifyButton?.classList.remove('hidden');
       sendButton.textContent = '重新发送验证码';
-      showToast('如果邮箱符合登录要求，验证码已发送。', 'success');
+      showToast(
+        pendingRecovery
+          ? '如果账号已绑定辅助邮箱，验证码已发送到该辅助邮箱。'
+          : '验证码已发送到校园邮箱。',
+        'success',
+      );
       otpInput?.focus();
     } catch (error) {
       showToast(
@@ -226,19 +246,36 @@ function authWidget(): void {
       );
     } finally {
       sendButton.disabled = false;
+      emailInput.disabled = false;
+      if (recoveryToggle) recoveryToggle.disabled = false;
     }
   });
   verifyButton?.addEventListener('click', async () => {
     if (!otpInput || !pendingEmail) return;
     verifyButton.disabled = true;
     try {
-      const result = await authClient.signIn.emailOtp({
-        email: pendingEmail,
-        otp: otpInput.value.trim(),
-        name:
-          nameInput?.value.trim() || pendingEmail.split('@')[0] || '校园同学',
-      });
-      if (result.error) throw new Error(result.error.message || '验证码无效');
+      if (pendingRecovery) {
+        await api('/api/auth/recovery-email/login/confirm', {
+          method: 'POST',
+          body: jsonBody({
+            email: pendingEmail,
+            challengeId: recoveryChallengeId,
+            otp: otpInput.value.trim(),
+          }),
+        });
+      } else {
+        await api('/api/auth/sign-in/email-otp', {
+          method: 'POST',
+          body: jsonBody({
+            email: pendingEmail,
+            otp: otpInput.value.trim(),
+            name:
+              nameInput?.value.trim() ||
+              pendingEmail.split('@')[0] ||
+              '校园同学',
+          }),
+        });
+      }
       const state = await api<SessionState>('/api/session');
       if (!state.authenticated || !state.user?.emailVerified)
         throw new Error('邮箱验证尚未完成，请重新登录。');
@@ -254,6 +291,17 @@ function authWidget(): void {
       verifyButton.disabled = false;
     }
   });
+  const resetLogin = () => {
+    pendingEmail = '';
+    recoveryChallengeId = '';
+    otpField?.classList.add('hidden');
+    nameField?.classList.add('hidden');
+    verifyButton?.classList.add('hidden');
+    if (sendButton) sendButton.textContent = '发送验证码';
+    if (otpInput) otpInput.value = '';
+  };
+  emailInput?.addEventListener('input', resetLogin);
+  recoveryToggle?.addEventListener('change', resetLogin);
   api<SessionState>('/api/session')
     .then(render)
     .catch(() => {
@@ -520,3 +568,5 @@ function init(): void {
 if (document.readyState === 'loading')
   document.addEventListener('DOMContentLoaded', init);
 else init();
+
+void initLocalTestTools();
