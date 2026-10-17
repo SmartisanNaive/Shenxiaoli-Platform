@@ -160,15 +160,15 @@ export function recoveryEmailPlugin(options: {
         to: proofEmail,
         subject:
           purpose === "login"
-            ? "深小狸校园：辅助邮箱登录验证码"
-            : "深小狸校园：确认辅助邮箱设置",
-        text: `校园账号：${value.email}\n你的${purpose === "login" ? "登录" : "当前邮箱"}验证码是 ${otp}，5 分钟内有效。${purpose === "login" ? "" : "本次操作用于修改或解绑辅助邮箱。"}若非本人操作，请忽略此邮件。`,
+            ? "深小狸：辅助邮箱登录验证码"
+            : "深小狸：确认辅助邮箱设置",
+        text: `校园账号：${value.email}\n你的${purpose === "login" ? "登录" : "当前邮箱"}验证码是 ${otp}，5 分钟内有效。${purpose === "login" ? "" : "本次操作将更新辅助邮箱设置，并使已有登录会话失效。"}若非本人操作，请忽略此邮件。`,
         idempotencyKey: `recovery/${id}/current`,
       });
       if (newEmail && newOtp)
         await options.sendEmail({
           to: newEmail,
-          subject: "深小狸校园：验证新的辅助邮箱",
+          subject: "深小狸：验证新的辅助邮箱",
           text: `校园账号：${value.email}\n你的新辅助邮箱验证码是 ${newOtp}，5 分钟内有效。若非本人操作，请忽略此邮件。`,
           idempotencyKey: `recovery/${id}/new`,
         });

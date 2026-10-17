@@ -121,7 +121,7 @@ spacing:
 
 ## Brand & Style
 
-This design system establishes a restrained, scholarly, and modern aesthetic tailored for the Shenzhen University of Advanced Technology (SUAT) campus platform, "深小狸校园". The brand personality is grounded, intellectual, highly professional, and deeply rooted in a natural, organic academic tradition.
+This design system establishes a restrained, scholarly, and modern aesthetic tailored for the Shenzhen University of Advanced Technology (SUAT) campus platform, "深小狸". The brand personality is grounded, intellectual, highly professional, and deeply rooted in a natural, organic academic tradition.
 
 The visual language rejects all blue tones in favor of a sophisticated botanical palette dominated by deep forest greens, crisp off-white backgrounds, and authoritative typographic hierarchy. The UI evokes a sense of tranquil focus, institutional reliability, and contemporary clarity, prioritizing generous whitespace, high legibility, and structured information architecture fit for a leading research institution.
 

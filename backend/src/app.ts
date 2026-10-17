@@ -403,12 +403,10 @@ function addNotification(
     enqueueEmail(db, {
       userId,
       kind: isSocial ? kind : "important",
-      subject: isSocial
-        ? "深小狸校园：你有新的站内消息"
-        : `深小狸校园：${title}`,
+      subject: isSocial ? "深小狸：你有新的站内消息" : `深小狸：${title}`,
       text: isSocial
-        ? "你有新的站内消息。请登录深小狸校园查看。\n\n为保护隐私，邮件不包含消息内容。"
-        : `${title}\n\n请登录深小狸校园查看详情。`,
+        ? "你有新的站内消息。请登录深小狸查看。\n\n为保护隐私，邮件不包含消息内容。"
+        : `${title}\n\n请登录深小狸查看详情。`,
       dedupeKey,
     });
   }
@@ -714,7 +712,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       await deliverCampusEmail(
         {
           to: user.email,
-          subject: "深小狸校园：确认账号注销",
+          subject: "深小狸：确认账号注销",
           text: `你的注销验证码是 ${otp}，5 分钟内有效。提交后账号立即停用，身份资料将在 30 天后清理。若非本人操作，请忽略此邮件。`,
           idempotencyKey: `account-delete/${user.id}/${hash}`,
         },

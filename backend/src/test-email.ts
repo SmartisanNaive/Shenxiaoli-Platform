@@ -7,8 +7,8 @@ if (!email)
 
 const id = await deliverCampusEmail({
   to: email,
-  subject: "深小狸校园：Resend 发信测试",
-  text: "这是一封深小狸校园服务的测试邮件，用于确认 Resend 发件配置可以向管理员邮箱发送邮件。若你收到此邮件，说明本次测试邮件已到达。此邮件不包含登录验证码，无需回复。",
+  subject: "深小狸：Resend 发信测试",
+  text: "如果你收到了这封邮件，说明本次邮件已到达你的邮箱。这是一封用于检查发件配置的测试邮件，不包含登录验证码，无需进行其他操作。",
   idempotencyKey: `mail-test/${randomUUID()}`,
 });
 if (!id) throw new Error("Resend did not return a message ID");

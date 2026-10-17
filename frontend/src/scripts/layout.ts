@@ -67,8 +67,8 @@ export const renderHeader = (activeKey?: NavKey): string => {
     <div class="mx-auto flex h-20 max-w-[1200px] items-center justify-between gap-3 px-4 sm:gap-6 sm:px-6 lg:px-8">
       <div class="flex min-w-0 items-center gap-3 sm:gap-8">
         <a class="flex min-w-0 items-center gap-3" data-path="home" href="./index.html">
-          <img alt="深小狸校园 logo" class="h-11 w-11 shrink-0 object-contain" src="${LOGO_AVATAR}" />
-          <span class="truncate font-headline-sm font-bold text-primary">深小狸校园</span>
+          <img alt="深小狸 logo" class="h-11 w-11 shrink-0 object-contain" src="${LOGO_AVATAR}" />
+          <span class="truncate font-headline-sm font-bold text-primary">深小狸</span>
         </a>
         <nav class="hidden items-center gap-6 lg:flex">
           ${navLinks}
@@ -146,8 +146,8 @@ export const renderFooter = (): string => `
     <div class="max-w-[1200px] mx-auto px-gutter py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
       <div class="md:col-span-2">
         <div class="flex items-center gap-3 mb-4">
-          <img alt="深小狸校园 logo" class="h-11 w-11 shrink-0 object-contain" src="${LOGO_AVATAR}" />
-          <span class="font-headline-sm text-primary font-bold">深小狸校园</span>
+          <img alt="深小狸 logo" class="h-11 w-11 shrink-0 object-contain" src="${LOGO_AVATAR}" />
+          <span class="font-headline-sm text-primary font-bold">深小狸</span>
         </div>
         <p class="text-body-md text-on-surface-variant max-w-md">
           服务于深圳理工大学（SUAT）同学的校园平台 — 评课、闲置、技能互助与树洞，一站式连接校园生活。
@@ -174,7 +174,7 @@ export const renderFooter = (): string => `
     </div>
     <div class="border-t border-surface-variant">
       <div class="max-w-[1200px] mx-auto px-gutter py-4 flex flex-col md:flex-row items-center justify-between gap-2 text-body-sm text-outline">
-        <span>© <span data-current-year>${new Date().getFullYear()}</span> 深小狸校园 · Shenxiaoli Platform</span>
+        <span>© <span data-current-year>${new Date().getFullYear()}</span> 深小狸</span>
         <span>Built with Bun · Vite · Tailwind CSS</span>
       </div>
     </div>

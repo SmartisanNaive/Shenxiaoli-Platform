@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Hono + SQLite API for 深小狸校园",
+  "description": "Hono + SQLite API for 深小狸",
   "scripts": {
     "dev": "bun --hot src/index.ts",
     "build": "bun build src/index.ts --target=bun --outdir=dist",

@@ -2,7 +2,7 @@
   "name": "@shenxiaoli/frontend",
   "version": "0.1.0",
   "private": true,
-  "description": "深小狸校园 frontend — Bun + Vite + Tailwind multi-page client for SUAT. 评课 · 集市 · 技能互助 · 树洞.",
+  "description": "深小狸 frontend — Bun + Vite + Tailwind multi-page client for SUAT. 评课 · 集市 · 技能互助 · 树洞.",
   "type": "module",
   "keywords": [
     "campus",

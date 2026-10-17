@@ -1,6 +1,6 @@
 # 后端 API
 
-深小狸校园后端使用 Bun + Hono + SQLite，校园邮箱认证使用 Better Auth email OTP，
+深小狸后端使用 Bun + Hono + SQLite，校园邮箱认证使用 Better Auth email OTP，
 邮件通过 Resend 发送。浏览器客户端使用同源 `/api`，业务路由定义于
 [`src/app.ts`](src/app.ts)，认证配置见 [`src/auth.ts`](src/auth.ts)。
 

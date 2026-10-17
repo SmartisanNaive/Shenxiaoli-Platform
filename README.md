@@ -1,4 +1,4 @@
-# 深小狸校园 · Shenxiaoli Platform
+# 深小狸
 
 > 学生共建的非官方校园社区，服务于深圳理工大学（SUAT）的同学。
 > 评课 · 集市 · 技能互助 · 树洞
@@ -16,7 +16,7 @@
 
 ## 项目与功能
 
-深小狸校园是 Bun + Vite + Tailwind + TypeScript 前端与 Bun + Hono + SQLite
+深小狸是 Bun + Vite + Tailwind + TypeScript 前端与 Bun + Hono + SQLite
 后端组成的 monorepo。前端使用多页 HTML 与按页面加载的 TypeScript 模块，公共页眉、
 页脚和样式在 Vite HTML 转换阶段注入。
 
@@ -39,10 +39,10 @@
 邮箱控制权，不代表学籍或真实身份已经核验。树洞对普通用户隐藏发布者账号标识，
 平台内部仍保留账号关联以执行限流、治理和必要审查。
 
-### 最新验证状态（2026-10-17）
+### 最新验证状态（2026-10-18）
 
 - 本轮修复 16 项已复现问题，包括图片读取、通知偏好保存、举报处置、停用课程过滤、首页登录状态刷新及外部字体不可用时的图标显示。
-- 后端 **41 例测试、628 项断言**通过；Chromium 桌面与手机视口共 **22 例浏览器测试**通过。Lint、类型检查、格式检查和前后端构建通过。
+- 后端 **45 例测试、707 项断言**通过；Chromium 桌面与手机视口共 **22 例浏览器测试**通过。Lint、类型检查、格式检查和前后端构建通过。
 - 真实校园邮箱注册、双邮箱验证绑定、辅助邮箱恢复登录及通知收信已完成验收。恢复保持同一用户 ID 和管理员权限，绑定变更会撤销旧会话。
 - 数据库当前版本为 **10**；已有版本 9 数据可迁移，旧备份恢复时迁移暂存副本。图标字体随前端本地打包。
 
@@ -138,6 +138,16 @@ bun run build
 类型检查。`preview` 仅预览 `frontend/dist/`，没有开发代理、API 或 worker。
 根目录检查主要覆盖两包代码，修改根目录或 `docs/` 下的 Markdown 时还需单独检查格式。
 
+### 邮件模板预览
+
+```bash
+bun run mail:preview
+```
+
+生成 `.local-test/mail-preview/index.html`，可直接用浏览器打开，切换验证码、辅助邮箱、
+注销与通知等邮件及桌面/手机宽度。预览使用演示数据，不发送邮件，也不需要邮件服务密钥。
+正式发送统一使用“深小狸”发件人名称、HTML 邮件和纯文本版本；模板维护见[邮件说明](docs/EMAIL_TEMPLATES.md)。
+
 ## 运行与部署方式
 
 | 方式     | 组成与用途                                                                                |
@@ -207,6 +217,7 @@ bun run build
 | [生产部署与恢复](docs/OPERATIONS.md)  | 配置、迁移、邮件、备份、恢复与上线验收           |
 | [本地测试说明](docs/LOCAL_TESTING.md) | 隔离启动、测试身份、收件箱、账号恢复及管理员授权 |
 | [功能测试报告](docs/TEST_REPORT.md)   | 全功能矩阵、已修复缺陷、自动化结果与真实邮件验收 |
+| [邮件模板](docs/EMAIL_TEMPLATES.md)   | 邮件用途、预览方式、渲染与发件人配置             |
 | [设计规范](docs/DESIGN.md)            | Deep Forest Emerald Academic 视觉令牌与交互规范  |
 | [贡献指南](CONTRIBUTING.md)           | 双包开发、检查、PR 和文档维护                    |
 | [变更记录](CHANGELOG.md)              | 未发布功能与项目历史                             |
@@ -221,7 +232,7 @@ bun run build
 
 ## 许可证
 
-[MIT](LICENSE) © 2026 Shenxiaoli Platform Contributors.
+[MIT](LICENSE) © 2026 Shenxiaoli Contributors.
 
 本地打包的 Material Symbols Outlined 字体由 Google 提供，遵循
 [SIL Open Font License 1.1](frontend/public/licenses/material-symbols-outlined-OFL.txt)。

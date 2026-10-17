@@ -2,7 +2,7 @@
   "name": "shenxiaoli-platform",
   "version": "0.1.0",
   "private": true,
-  "description": "深小狸校园 — A student-run campus community for SUAT (Shenzhen University of Advanced Technology). 评课 · 集市 · 技能互助 · 树洞.",
+  "description": "深小狸 — A student-run campus community for SUAT (Shenzhen University of Advanced Technology). 评课 · 集市 · 技能互助 · 树洞.",
   "type": "module",
   "keywords": [
     "campus",
@@ -32,6 +32,7 @@
     "typecheck": "cd backend && bun run typecheck && cd ../frontend && bun run typecheck",
     "test": "cd backend && bun run test",
     "mail:test": "bun --env-file=.env run backend/src/test-email.ts",
+    "mail:preview": "bun run backend/src/preview-emails.ts",
     "setup": "cd frontend && bun install && cd ../backend && bun install",
     "deploy": "deno -Ar https://host.retiehe.com/cli deploy",
     "test:local": "bun run scripts/local-test.ts",

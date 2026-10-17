@@ -94,8 +94,10 @@ export function createAuth(options: AuthOptions) {
           if (!email) throw new Error("仅支持 SUAT 校园邮箱");
           const subject =
             type === "change-email"
-              ? "深小狸校园：确认新的校园邮箱"
-              : "深小狸校园：校园邮箱验证码";
+              ? "深小狸：确认新的校园邮箱"
+              : type === "email-verification"
+                ? "深小狸：确认当前校园邮箱"
+                : "深小狸：校园邮箱验证码";
           const text = `你的验证码是 ${otp}，5 分钟内有效。请勿将验证码转发给他人。若非本人操作，请忽略此邮件。`;
           const codeHash = createHash("sha256")
             .update(`${email}:${otp}`)

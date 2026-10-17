@@ -2,7 +2,7 @@
 
 ## 系统组成与数据流
 
-深小狸校园采用前后端分离的 monorepo：前端为无框架的 Vite 多页 HTML + TypeScript +
+深小狸采用前后端分离的 monorepo：前端为无框架的 Vite 多页 HTML + TypeScript +
 Tailwind 客户端；后端为 Bun + Hono API，使用 SQLite 持久化。正式邮箱登录使用
 Better Auth email OTP，Resend 承担验证码和通知邮件投递。
 
