@@ -42,7 +42,14 @@
             </div>
             <div class="flex items-center gap-3">
               <button
-                class="flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-label-md text-on-primary shadow-sm transition-colors hover:bg-secondary"
+                id="course-import-cta"
+                type="button"
+                class="rounded border border-primary px-4 py-2.5 text-label-md text-primary hover:bg-secondary-container"
+              >
+                导入教务课程
+              </button>
+              <button
+                class="flex items-center gap-2 rounded bg-primary px-4 py-2.5 text-label-md text-on-primary shadow-sm transition-colors hover:bg-secondary"
                 id="review-cta"
                 type="button"
               >
@@ -54,11 +61,56 @@
             </div>
           </div>
         </section>
+        <nav
+          class="mx-auto flex w-full max-w-[1200px] gap-3 px-gutter py-6"
+          aria-label="课程范围"
+        >
+          <button
+            type="button"
+            data-course-scope="all"
+            aria-pressed="true"
+            class="rounded border border-outline-variant px-4 py-2 text-label-md text-primary aria-pressed:bg-primary aria-pressed:text-on-primary"
+          >
+            全部课程
+          </button>
+          <button
+            type="button"
+            data-course-scope="mine"
+            aria-pressed="false"
+            class="rounded border border-outline-variant px-4 py-2 text-label-md text-primary aria-pressed:bg-primary aria-pressed:text-on-primary"
+          >
+            我的课程
+          </button>
+        </nav>
+        <section
+          id="my-courses"
+          hidden
+          class="mx-auto w-full max-w-[1200px] px-gutter pb-12"
+          aria-label="我的课程"
+        >
+          <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <h2 class="font-headline-lg text-primary">我的课程</h2>
+            <label class="text-body-sm text-outline"
+              >学期
+              <select
+                id="my-courses-term"
+                class="rounded border border-outline-variant bg-surface px-3 py-2"
+              >
+                <option value="">全部学期</option>
+              </select></label
+            >
+          </div>
+          <p class="mb-4 text-body-sm text-outline">
+            选课记录仅自己可见，课程资料用于补充公共课程库。
+          </p>
+          <div id="my-course-list" class="space-y-3" aria-live="polite"></div>
+        </section>
         <!-- Filter Bar -->
         <section
+          data-course-catalog
           class="relative z-10 mx-auto -mt-6 w-full max-w-[1200px] px-gutter"
         >
-          <div class="rounded-xl bg-surface p-6 shadow-md shadow-primary/5">
+          <div class="rounded bg-surface p-6 shadow-md shadow-primary/5">
             <div class="flex flex-wrap items-center gap-4">
               <!-- Search Input -->
               <div class="relative min-w-[260px] flex-1">
@@ -68,7 +120,7 @@
                 >
                 <input
                   id="course-search"
-                  class="w-full rounded-xl bg-surface-container-low py-2 pl-10 pr-4 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="w-full rounded bg-surface-container-low py-2 pl-10 pr-4 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="搜索课程代码、名称或授课教师…"
                   type="text"
                 />
@@ -77,7 +129,7 @@
               <div class="flex flex-wrap items-center gap-3">
                 <select
                   data-course-filter="courseType"
-                  class="rounded-xl bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option>课程类型: 全部</option>
                   <option>公共课</option>
@@ -85,7 +137,7 @@
                 </select>
                 <select
                   data-course-filter="enrollmentType"
-                  class="rounded-xl bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option>修读性质: 全部</option>
                   <option>必修</option>
@@ -93,7 +145,7 @@
                 </select>
                 <select
                   data-course-filter="term"
-                  class="rounded-xl bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option>学期: 全部</option>
                   <option>春季</option>
@@ -101,7 +153,7 @@
                 </select>
                 <select
                   data-course-filter="assessment"
-                  class="rounded-xl bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option>考核方式: 全部</option>
                   <option>考试</option>
@@ -109,7 +161,7 @@
                 </select>
                 <select
                   data-course-filter="department"
-                  class="rounded-xl bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option>全部学院</option>
                   <option>细胞与基因技术研究院</option>
@@ -123,12 +175,13 @@
         </section>
         <!-- Main Content Layout: Split View / Course List + Detail Modal Container -->
         <section
+          data-course-catalog
           class="mx-auto grid w-full max-w-[1200px] grid-cols-1 gap-8 px-gutter py-12 lg:grid-cols-12"
         >
           <!-- Course Cards List (Left 7 Cols) -->
           <div class="flex flex-col gap-4 lg:col-span-5" id="course-list">
             <p
-              class="rounded-xl bg-surface p-8 text-center text-body-sm text-outline"
+              class="rounded bg-surface p-8 text-center text-body-sm text-outline"
             >
               正在加载课程库…
             </p>
@@ -136,17 +189,18 @@
           <!-- Course Detailed View Section for FBEE501 (Right 7 Cols) -->
           <div class="flex flex-col gap-6 lg:col-span-7" id="course-detail">
             <p
-              class="rounded-xl bg-surface p-8 text-center text-body-sm text-outline"
+              class="rounded bg-surface p-8 text-center text-body-sm text-outline"
             >
               选择一门课程以查看真实评价。
             </p>
           </div>
         </section>
         <section
+          data-course-catalog
           id="teacher-directory"
           class="mx-auto w-full max-w-[1200px] px-gutter pb-14"
         >
-          <div class="rounded-xl bg-surface p-6 shadow-sm">
+          <div class="rounded bg-surface p-6 shadow-sm">
             <div
               class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between"
             >
@@ -162,7 +216,7 @@
                   id="teacher-search"
                   type="search"
                   placeholder="搜索教师姓名、标识或院系"
-                  class="w-full rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="w-full rounded bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
               /></label>
             </div>
             <div

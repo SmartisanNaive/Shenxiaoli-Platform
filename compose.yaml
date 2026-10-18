@@ -1,6 +1,7 @@
 x-runtime-environment: &runtime-environment
   NODE_ENV: production
   DEMO_AUTH_ENABLED: "false"
+  QQ_EMAIL_LOGIN_ENABLED: ${QQ_EMAIL_LOGIN_ENABLED:-false}
   RUN_MIGRATIONS: "false"
   DATABASE_PATH: /data/shenxiaoli.sqlite
   UPLOADS_PATH: /uploads

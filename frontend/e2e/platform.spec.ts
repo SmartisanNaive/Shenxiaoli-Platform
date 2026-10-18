@@ -3,6 +3,125 @@ import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+test('academic SMS import persists personal courses and connects to real reviews', async ({
+  page,
+}, testInfo) => {
+  await login(page);
+  await page.goto('/course-evaluation.html');
+  await page.getByRole('button', { name: '导入教务课程', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '导入教务课程' });
+  await dialog
+    .getByLabel('学校绑定的手机号', { exact: true })
+    .fill('13800000000');
+  await dialog.locator('[name="consent"]').check();
+  await dialog
+    .getByRole('button', { name: '获取短信验证码', exact: true })
+    .click();
+  await expect(dialog.locator('[data-import-send]')).toBeDisabled();
+  await dialog.locator('[name="mobileCode"]').fill('000000');
+  await dialog.getByRole('button', { name: '登录并获取学期' }).click();
+  await expect(dialog.getByRole('status')).toContainText('验证码错误');
+  await dialog.locator('[name="mobileCode"]').fill('123456');
+  await dialog.getByRole('button', { name: '登录并获取学期' }).click();
+  await expect(dialog.locator('[name="semesterId"]')).toHaveValue('100');
+  await dialog.getByRole('button', { name: '获取课程并导入' }).click();
+  await expect(dialog).toContainText('合成教务课程');
+  await dialog.getByRole('button', { name: '确认导入课程' }).click();
+  await expect(dialog).toBeHidden();
+  await expect(page.locator('#my-courses')).toBeVisible();
+  await expect(page.locator('#my-course-list')).toContainText('合成教务教师');
+  await page.reload();
+  await page.getByRole('button', { name: '我的课程', exact: true }).click();
+  await expect(page.locator('#my-course-list')).toContainText('合成教务课程');
+  await page.screenshot({
+    path: testInfo.outputPath('academic-personal-courses.png'),
+    fullPage: true,
+  });
+  await page.locator('[data-my-write]').click();
+  const review = page.locator('[data-review-form]');
+  await expect(review.locator('[name="term"]')).toHaveValue('2026秋');
+  await expect(review.locator('[name="offeringId"]')).not.toHaveValue('');
+  await review
+    .locator('[name="content"]')
+    .fill('这是一条通过教务导入课程发布的真实接口测试评价。');
+  await review.getByRole('button', { name: '发布评价', exact: true }).click();
+  await expect(review).toBeHidden();
+  await expect(page.locator('#course-detail')).toContainText(
+    '通过教务导入课程发布',
+  );
+  await page.getByRole('button', { name: '全部课程', exact: true }).click();
+  await expect(page.locator('#course-detail')).toBeVisible();
+  const result = await page.request.get(
+    '/api/courses/TEST-ACADEMIC-001/reviews',
+  );
+  expect(await result.json()).toMatchObject({ total: 1 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test('academic password captcha, second factor, cancellation and expiry are usable', async ({
+  page,
+}, testInfo) => {
+  await login(page);
+  await page.goto('/course-evaluation.html');
+  await page.getByRole('button', { name: '导入教务课程', exact: true }).click();
+  const dialog = page.getByRole('dialog', { name: '导入教务课程' });
+  await dialog.getByRole('button', { name: '账号密码', exact: true }).click();
+  await dialog
+    .getByLabel('学校统一认证账号', { exact: true })
+    .fill('synthetic-student');
+  await dialog.locator('[name="password"]').fill('academic-test-password');
+  await dialog.getByRole('button', { name: '获取人机验证图片' }).click();
+  await expect(dialog.locator('[data-captcha-image]')).toBeVisible();
+  await dialog.locator('[name="captcha"]').fill('4');
+  await dialog.locator('[name="consent"]').check();
+  await page.screenshot({
+    path: testInfo.outputPath('academic-password-captcha.png'),
+  });
+  await dialog.getByRole('button', { name: '登录并获取学期' }).click();
+  await expect(dialog).toContainText('短信二次验证');
+  await dialog
+    .getByRole('button', { name: '获取短信验证码', exact: true })
+    .click();
+  await dialog.locator('[name="code"]').fill('123456');
+  await dialog.getByRole('button', { name: '验证并获取学期' }).click();
+  await expect(dialog.locator('[name="semesterId"]')).toBeVisible();
+  await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+  await expect(dialog).toBeHidden();
+  expect(
+    await (await page.request.get('/api/me/courses')).json(),
+  ).toMatchObject({ total: 0 });
+  await page.getByRole('button', { name: '导入教务课程', exact: true }).click();
+  await dialog
+    .getByLabel('学校绑定的手机号', { exact: true })
+    .fill('13800000000');
+  await dialog.locator('[name="mobileCode"]').fill('123456');
+  await dialog.locator('[name="consent"]').check();
+  const loginRequest = page.waitForRequest(
+    (request) =>
+      request.url().endsWith('/login') &&
+      request.url().includes('/course-imports/'),
+  );
+  // Expire the exact server session before submitting without changing UI state.
+  await page.route('**/api/me/course-imports/*/login', async (route) => {
+    const sessionUrl = route
+      .request()
+      .url()
+      .replace(/\/login$/, '');
+    await page.request.delete(sessionUrl);
+    await route.continue();
+  });
+  await dialog.getByRole('button', { name: '登录并获取学期' }).click();
+  await loginRequest;
+  await expect(
+    dialog.getByRole('button', { name: '重新登录教务' }),
+  ).toBeVisible();
+  await dialog.getByRole('button', { name: '关闭', exact: true }).click();
+});
+
 const student = 'test.user.a@stu.suat-sz.edu.cn';
 const otherStudent = 'test.user.b@suat-sz.edu.cn';
 let scenario = 10;
@@ -25,14 +144,15 @@ async function login(
 ): Promise<void> {
   await page.goto('/index.html');
   await page.locator('[data-auth-toggle]').click();
-  await page.locator('[data-login-email]').fill(email);
-  await page.locator('[data-login-recovery]').setChecked(recovery);
-  await page.locator('[data-login-send]').click();
-  await expect(page.locator('[data-login-verify]')).toBeVisible();
+  const mode = recovery ? 'recovery' : 'login';
+  await page.locator(`[data-auth-switch="${mode}"]:visible`).click();
+  await page.locator(`[data-${mode}-email]`).fill(email);
+  await page.locator(`[data-${mode}-send]`).click();
+  await expect(page.locator(`[data-${mode}-verify]`)).toBeVisible();
   await page
-    .locator('[data-login-otp]')
+    .locator(`[data-${mode}-otp]`)
     .fill(await otp(page, recovery ? 'test.user.a@example.test' : email));
-  await page.locator('[data-login-verify]').click();
+  await page.locator(`[data-${mode}-otp]`).press('Enter');
   await expect(page.locator('[data-auth-label]')).not.toHaveText('未登录');
   await expect(page.locator('[data-auth-panel]')).toBeHidden();
 }
@@ -55,19 +175,79 @@ test('public information, login gating, and invalid external registration', asyn
 }) => {
   await page.goto('/information.html');
   await expect(page.locator('main')).toBeVisible();
+  await expect(
+    page.locator('footer').getByText('产品', { exact: true }),
+  ).toHaveCount(0);
+  await expect(
+    page.locator('footer').getByRole('link', { name: '开源代码' }),
+  ).toHaveAttribute(
+    'href',
+    'https://github.com/SmartisanNaive/Shenxiaoli-Platform',
+  );
   await page.goto('/market.html');
   await expect(page.locator('main[data-requires-auth]')).toBeHidden();
   expect((await page.request.get('/api/admin/queue')).status()).toBe(401);
   await page.locator('[data-auth-toggle]').click();
+  await page.locator('[data-auth-switch="login"]:visible').click();
   await page.locator('[data-login-email]').fill('unbound@example.test');
   await page.locator('[data-login-send]').click();
   await expect(
-    page.getByText('仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱', {
+    page.getByText('仅支持 SUAT 校园邮箱或测试用 @qq.com 邮箱', {
       exact: true,
     }),
   ).toBeVisible();
   await expect(page.locator('[data-local-test-tools]')).toBeVisible();
 });
+
+for (const path of ['/index.html', '/market.html?category=books']) {
+  test(`campus email entry opens login and continues on ${path}`, async ({
+    page,
+  }) => {
+    await page.goto(path);
+    const entry = page.getByRole('button', {
+      name: /校园.*邮箱登录/,
+    });
+    const panel = page.locator('[data-auth-panel]');
+    const toggle = page.locator('[data-auth-toggle]');
+    await entry.click();
+    await expect(panel).toBeVisible();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    await expect(
+      page.locator('[data-password-login] [name="email"]'),
+    ).toBeFocused();
+    await page.locator('[data-auth-switch="login"]:visible').click();
+    await expect(page.locator('[data-login-email]')).toHaveAttribute(
+      'placeholder',
+      '校园邮箱或 QQ 邮箱',
+    );
+    await expect(page.locator('[data-login-email-policy]')).toContainText(
+      '测试期间临时支持 @qq.com 邮箱',
+    );
+    await expect(page.locator('[data-auth-dialog]')).toHaveJSProperty(
+      'open',
+      true,
+    );
+    await page.locator('[data-auth-close]').click();
+    await expect(panel).toBeHidden();
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    await entry.click();
+    await page.locator('[data-auth-switch="login"]:visible').click();
+    await page.locator('[data-login-email]').fill(student);
+    await page.locator('[data-login-send]').click();
+    await expect(page.locator('[data-login-verify]')).toBeVisible();
+    await page.locator('[data-login-otp]').fill(await otp(page, student));
+    await page.locator('[data-login-verify]').click();
+    await expect(panel).toBeHidden();
+    await expect(page.locator('[data-auth-label]')).not.toHaveText('未登录');
+    await expect(entry).toHaveCount(0);
+    await expect(page).toHaveURL(new URL(path, 'http://127.0.0.1:5176').href);
+    if (path.startsWith('/market.html')) {
+      await expect(page.locator('main[data-requires-auth]')).toBeVisible();
+    } else {
+      await expect(page.locator('[data-home-counts]')).toContainText('门课程');
+    }
+  });
+}
 
 test('all member pages load without runtime errors or horizontal overflow', async ({
   page,
@@ -197,6 +377,9 @@ test('course search, immediate review publication, comments, and account tabs', 
   await expect(
     page.getByText('账号设置已保存。', { exact: true }),
   ).toBeVisible();
+  expect(await (await page.request.get('/api/session')).json()).toMatchObject({
+    user: { displayName: '浏览器测试新昵称' },
+  });
   expect(
     await (await page.request.get('/api/notifications/preferences')).json(),
   ).toEqual({ socialEmailEnabled: false });
@@ -497,4 +680,378 @@ test('moderators handle reports and a different reviewer restores content after 
   } finally {
     await Promise.all(contexts.map((context) => context.close()));
   }
+});
+
+test('login and recovery views isolate proofs, validate on Enter and reset after resend failures', async ({
+  page,
+}, testInfo) => {
+  let releaseRequest = () => {};
+  const held = new Promise<void>((resolve) => {
+    releaseRequest = resolve;
+  });
+  let loginSends = 0;
+  let recoverySends = 0;
+  const confirmations: { email: string; challengeId: string; otp: string }[] =
+    [];
+  await page.route(
+    '**/api/auth/email-otp/send-verification-otp',
+    async (route) => {
+      loginSends++;
+      await held;
+      await route.fulfill({ json: { ok: true } });
+    },
+  );
+  await page.route(
+    '**/api/auth/recovery-email/login/request',
+    async (route) => {
+      recoverySends++;
+      await route.fulfill(
+        recoverySends === 2
+          ? { status: 503, json: { message: '测试发送失败，请重试。' } }
+          : { json: { challengeId: `proof-${recoverySends}`, expiresIn: 300 } },
+      );
+    },
+  );
+  await page.route(
+    '**/api/auth/recovery-email/login/confirm',
+    async (route) => {
+      confirmations.push(
+        route.request().postDataJSON() as (typeof confirmations)[number],
+      );
+      await route.fulfill({
+        status: 400,
+        json: { message: '验证码无效、已过期或尝试次数过多' },
+      });
+    },
+  );
+  await page.goto('/index.html');
+  await page.locator('[data-auth-toggle]').click();
+  await page.locator('[data-auth-switch="login"]:visible').click();
+  await expect(
+    page.getByRole('heading', { name: '邮箱登录 / 注册', exact: true }),
+  ).toBeVisible();
+  await expect(page.locator('[data-auth-view="login"]')).toContainText(
+    '首次验证将自动创建账号',
+  );
+  await expect(page.locator('[data-login-qq-note]')).toBeVisible();
+  await expect(
+    page.locator('[data-login-recovery], [data-login-name]'),
+  ).toHaveCount(0);
+  await page.locator('[data-login-email]').fill(student);
+  await page.locator('[data-login-email]').press('Enter');
+  try {
+    await expect(page.locator('[data-login-send]')).toBeDisabled();
+    await expect(page.locator('[data-login-email]')).toBeDisabled();
+    await expect(page.locator('[data-auth-switch="recovery"]')).toBeDisabled();
+  } finally {
+    releaseRequest();
+  }
+  await expect(page.locator('[data-login-otp]')).toBeFocused();
+  await expect(page.locator('[data-login-status]')).toContainText(student);
+  await page.locator('[data-login-otp]').fill('123456');
+  await page
+    .locator('[data-auth-panel]')
+    .screenshot({ path: testInfo.outputPath('email-login.png') });
+  await page.locator('[data-auth-switch="recovery"]').click();
+  await expect(page.locator('[data-recovery-email]')).toBeFocused();
+  await expect(page.locator('[data-email-login]')).toBeHidden();
+  await expect(page.locator('[data-login-otp]')).toHaveValue('');
+  await expect(page.locator('[data-account-recovery]')).toContainText(
+    '即使辅助邮箱是 QQ 邮箱',
+  );
+  await page.locator('[data-recovery-email]').fill(student);
+  await page.locator('[data-recovery-send]').click();
+  await expect(page.locator('[data-recovery-otp]')).toBeFocused();
+  await expect(page.locator('[data-recovery-status]')).toContainText(
+    '如果该账号可恢复且已绑定辅助邮箱',
+  );
+  await page
+    .locator('[data-auth-panel]')
+    .screenshot({ path: testInfo.outputPath('account-recovery.png') });
+  await page.locator('[data-recovery-otp]').fill('123456');
+  await page.locator('[data-recovery-otp]').press('Enter');
+  await expect(page.locator('[data-recovery-error]')).toContainText(
+    '验证码无效',
+  );
+  expect(recoverySends).toBe(1);
+  expect(confirmations).toEqual([
+    { email: student, challengeId: 'proof-1', otp: '123456' },
+  ]);
+  await page.locator('[data-recovery-resend]').click();
+  await expect(page.locator('[data-recovery-error]')).toContainText(
+    '测试发送失败',
+  );
+  await expect(page.locator('[data-recovery-otp]')).toHaveValue('');
+  await expect(page.locator('[data-recovery-verify]')).toBeHidden();
+  await expect(page.locator('[data-recovery-status]')).toBeEmpty();
+  await page.locator('[data-recovery-send]').click();
+  await expect(page.locator('[data-recovery-otp]')).toBeFocused();
+  await expect(page.locator('[data-recovery-error]')).toBeEmpty();
+  await page.locator('[data-recovery-otp]').fill('654321');
+  await page.locator('[data-recovery-otp]').press('Enter');
+  await expect(page.locator('[data-recovery-error]')).toContainText(
+    '验证码无效',
+  );
+  expect(confirmations.at(-1)).toEqual({
+    email: student,
+    challengeId: 'proof-3',
+    otp: '654321',
+  });
+  await page.locator('[data-recovery-email]').fill(otherStudent);
+  await expect(page.locator('[data-recovery-verify]')).toBeHidden();
+  await expect(page.locator('[data-recovery-otp]')).toHaveValue('');
+  await page.locator('[data-auth-switch="login"]:visible').click();
+  await expect(page.locator('[data-login-email]')).toBeFocused();
+  await expect(page.locator('[data-account-recovery]')).toBeHidden();
+  await expect(page.locator('[data-login-send]')).toBeVisible();
+  await expect(page.locator('[data-login-status]')).toBeEmpty();
+  await page.locator('[data-login-send]').click();
+  await expect(page.locator('[data-login-verify]')).toBeVisible();
+  await page.locator('[data-login-email]').fill(otherStudent);
+  await expect(page.locator('[data-login-verify]')).toBeHidden();
+  expect(loginSends).toBe(2);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
+    ),
+  ).toBe(true);
+});
+
+test('unknown and unbound accounts show the same recovery delivery message', async ({
+  page,
+}) => {
+  await login(page);
+  await page.locator('[data-auth-toggle]').click();
+  await page.locator('[data-auth-logout]').click();
+  await expect(page.locator('[data-auth-label]')).toHaveText('未登录');
+  await page.locator('[data-auth-toggle]').click();
+  await page.locator('[data-auth-switch="recovery"]').click();
+  let message = '';
+  for (const email of [student, 'unknown@stu.suat-sz.edu.cn']) {
+    await page.locator('[data-recovery-email]').fill(email);
+    await page.locator('[data-recovery-send]').click();
+    await expect(page.locator('[data-recovery-verify]')).toBeVisible();
+    const current = await page.locator('[data-recovery-status]').textContent();
+    if (!message) message = current!;
+    expect(current).toBe(message);
+  }
+  const inbox = (await (
+    await page.request.get('/api/testing/inbox')
+  ).json()) as { items: { subject: string }[] };
+  expect(
+    inbox.items.filter((item) => item.subject.includes('账号找回')),
+  ).toHaveLength(0);
+});
+
+test('QQ login and campus recovery submit distinct account emails and endpoints', async ({
+  page,
+}) => {
+  const sent: { endpoint: string; body: unknown }[] = [];
+  await page.route(
+    '**/api/auth/email-otp/send-verification-otp',
+    async (route) => {
+      sent.push({
+        endpoint: 'login-send',
+        body: route.request().postDataJSON() as unknown,
+      });
+      await route.fulfill({ json: { ok: true } });
+    },
+  );
+  await page.route('**/api/auth/sign-in/email-otp', async (route) => {
+    sent.push({
+      endpoint: 'login-confirm',
+      body: route.request().postDataJSON() as unknown,
+    });
+    await route.fulfill({ status: 400, json: { message: '测试验证码无效' } });
+  });
+  await page.route(
+    '**/api/auth/recovery-email/login/request',
+    async (route) => {
+      sent.push({
+        endpoint: 'recovery-send',
+        body: route.request().postDataJSON() as unknown,
+      });
+      await route.fulfill({
+        json: { challengeId: 'campus-recovery', expiresIn: 300 },
+      });
+    },
+  );
+  await page.route(
+    '**/api/auth/recovery-email/login/confirm',
+    async (route) => {
+      sent.push({
+        endpoint: 'recovery-confirm',
+        body: route.request().postDataJSON() as unknown,
+      });
+      await route.fulfill({ status: 400, json: { message: '测试验证码无效' } });
+    },
+  );
+  await page.goto('/index.html');
+  await page.locator('[data-auth-toggle]').click();
+  await page.locator('[data-auth-switch="login"]:visible').click();
+  await page.locator('[data-login-email]').fill('123456789@qq.com');
+  await page.locator('[data-login-send]').click();
+  await expect(page.locator('[data-login-otp]')).toBeFocused();
+  await page.locator('[data-login-otp]').fill('123456');
+  await page.locator('[data-login-otp]').press('Enter');
+  await expect(page.locator('[data-login-error]')).toContainText(
+    '测试验证码无效',
+  );
+  await page.locator('[data-auth-switch="recovery"]').click();
+  await page.locator('[data-recovery-email]').fill(student);
+  await page.locator('[data-recovery-send]').click();
+  await expect(page.locator('[data-recovery-otp]')).toBeFocused();
+  await page.locator('[data-recovery-otp]').fill('654321');
+  await page.locator('[data-recovery-otp]').press('Enter');
+  await expect(page.locator('[data-recovery-error]')).toContainText(
+    '测试验证码无效',
+  );
+  expect(sent).toEqual([
+    {
+      endpoint: 'login-send',
+      body: { email: '123456789@qq.com', type: 'sign-in' },
+    },
+    {
+      endpoint: 'login-confirm',
+      body: { email: '123456789@qq.com', otp: '123456', name: '123456789' },
+    },
+    { endpoint: 'recovery-send', body: { email: student } },
+    {
+      endpoint: 'recovery-confirm',
+      body: { email: student, challengeId: 'campus-recovery', otp: '654321' },
+    },
+  ]);
+});
+
+test('account settings set a password, reject mismatched confirmation and preserve the account on password login', async ({
+  page,
+}, testInfo) => {
+  const password = 'Browser-custom-password-123';
+  await login(page);
+  const original = (await (await page.request.get('/api/session')).json()) as {
+    user: { id: string };
+  };
+  await page.goto('/account.html#profile');
+  const settings = page.locator('[data-password-settings]');
+  await expect(settings).toContainText('登录密码');
+  await expect(settings.locator('[name="email"]')).toHaveAttribute(
+    'readonly',
+    '',
+  );
+  await settings.locator('[data-password-send]').click();
+  await expect(settings.locator('[data-password-proof]')).toBeVisible();
+  await settings.locator('[name="otp"]').fill(await otp(page, student));
+  await settings.locator('[name="password"]').fill(password);
+  await settings
+    .locator('[name="confirmPassword"]')
+    .fill('Different-password-123');
+  await settings.locator('[data-password-confirm]').click();
+  expect(
+    await settings
+      .locator('[name="confirmPassword"]')
+      .evaluate((input) => (input as HTMLInputElement).validity.customError),
+  ).toBe(true);
+  await settings.locator('[name="confirmPassword"]').fill(password);
+  await settings.locator('[data-password-confirm]').click();
+  await expect(page).toHaveURL(/index\.html$/);
+  await expect(page.locator('[data-auth-label]')).toHaveText('未登录');
+  await page.locator('[data-auth-toggle]').click();
+  const form = page.locator('[data-password-login]');
+  await expect(form).toBeVisible();
+  await expect(page.locator('[data-email-login]')).toBeHidden();
+  await form.locator('[name="email"]').fill(student);
+  await form.locator('[name="password"]').fill('Incorrect-password-123');
+  await form.locator('[name="password"]').press('Enter');
+  await expect(page.locator('[data-password-login-error]')).toContainText(
+    '邮箱或密码不正确',
+  );
+  await form.locator('[name="password"]').fill(password);
+  await page
+    .locator('[data-auth-panel]')
+    .screenshot({ path: testInfo.outputPath('password-login.png') });
+  await form.locator('[name="password"]').press('Enter');
+  await expect(page.locator('[data-auth-panel]')).toBeHidden();
+  const current = (await (await page.request.get('/api/session')).json()) as {
+    user: { id: string };
+  };
+  expect(current.user.id).toBe(original.user.id);
+  await page.locator('[data-auth-toggle]').click();
+  await expect(form).toBeHidden();
+  await expect(page.locator('[data-email-login]')).toBeHidden();
+  await expect(page.locator('[data-account-recovery]')).toBeHidden();
+});
+
+test('forgot password verifies the account inbox and allows an existing OTP account to choose a password', async ({
+  page,
+}, testInfo) => {
+  const password = 'Browser-reset-password-456';
+  await page.goto('/index.html');
+  await page.locator('[data-auth-toggle]').click();
+  await page
+    .locator('[data-password-login] [name="password"]')
+    .fill('clear-this-secret');
+  await page.locator('[data-auth-switch="reset"]').click();
+  await expect(
+    page.locator('[data-password-login] [name="password"]'),
+  ).toHaveValue('');
+  const view = page.locator('[data-auth-view="reset"]');
+  await expect(view.locator('[name="email"]')).toBeFocused();
+  await view.locator('[name="email"]').fill(student);
+  await view.locator('[data-password-send]').click();
+  await expect(view.locator('[data-password-proof]')).toBeVisible();
+  await view.locator('[name="otp"]').fill(await otp(page, student));
+  await view.locator('[name="password"]').fill(password);
+  await view.locator('[name="confirmPassword"]').fill(password);
+  await view.screenshot({ path: testInfo.outputPath('password-reset.png') });
+  await view.locator('[name="confirmPassword"]').press('Enter');
+  const form = page.locator('[data-password-login]');
+  await expect(form).toBeVisible();
+  await expect(form.locator('[name="email"]')).toHaveValue(student);
+  await expect(view.locator('[name="password"]')).toHaveValue('');
+  await form.locator('[name="password"]').fill(password);
+  await form.locator('[name="password"]').press('Enter');
+  await expect(page.locator('[data-auth-panel]')).toBeHidden();
+  await expect(page.locator('[data-auth-label]')).not.toHaveText('未登录');
+});
+
+test('login dialog stays centered, traps keyboard focus and closes with Escape or the backdrop', async ({
+  page,
+}, testInfo) => {
+  await page.goto('/index.html');
+  const toggle = page.locator('[data-auth-toggle]');
+  const dialog = page.locator('[data-auth-dialog]');
+  const panel = page.locator('[data-auth-panel]');
+  const close = page.getByRole('button', { name: '关闭登录窗口' });
+  await toggle.click();
+  await expect(dialog).toHaveJSProperty('open', true);
+  await expect(page.getByRole('dialog', { name: '登录深小狸' })).toBeVisible();
+  await expect(page.locator('[data-account-menu]')).toBeHidden();
+  await expect(page.locator('[data-auth-methods]')).toBeVisible();
+  const bounds = (await panel.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  expect(
+    Math.abs(bounds.x + bounds.width / 2 - viewport.width / 2),
+  ).toBeLessThan(2);
+  expect(bounds.x).toBeGreaterThanOrEqual(15);
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(viewport.width - 15);
+  await page.screenshot({ path: testInfo.outputPath('login-dialog.png') });
+  await panel.screenshot({
+    path: testInfo.outputPath('login-dialog-panel.png'),
+  });
+  const lastButton = page.locator('[data-auth-switch="recovery"]');
+  await lastButton.focus();
+  await page.keyboard.press('Tab');
+  await expect(close).toBeFocused();
+  await page.keyboard.press('Shift+Tab');
+  await expect(lastButton).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(panel).toBeHidden();
+  await expect(toggle).toBeFocused();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await expect(page.locator('html')).not.toHaveClass(/auth-modal-open/);
+  await toggle.click();
+  await expect(panel).toBeVisible();
+  await page.mouse.click(4, 4);
+  await expect(panel).toBeHidden();
+  await expect(toggle).toBeFocused();
 });

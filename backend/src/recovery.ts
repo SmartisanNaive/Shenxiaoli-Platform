@@ -12,11 +12,7 @@ import {
 import { deleteSessionCookie, setSessionCookie } from "better-auth/cookies";
 import type { BetterAuthPlugin } from "better-auth";
 import type { AppDatabase } from "./db";
-import {
-  normalizeCampusEmail,
-  normalizeEmail,
-  type EmailSender,
-} from "./email";
+import { normalizeLoginEmail, normalizeEmail, type EmailSender } from "./email";
 
 interface Account {
   id: string;
@@ -64,8 +60,11 @@ export function recoveryEmailPlugin(options: {
   database: AppDatabase;
   secret: string;
   sendEmail: EmailSender;
+  qqEmailLoginEnabled?: boolean;
 }): BetterAuthPlugin {
   const db = options.database;
+  const normalizeAllowedEmail = (value: string) =>
+    normalizeLoginEmail(value, options.qqEmailLoginEnabled);
   const binding = (id: string) =>
     db
       .query("SELECT email, verified_at FROM recovery_emails WHERE user_id = ?")
@@ -81,7 +80,7 @@ export function recoveryEmailPlugin(options: {
   const usable = (value: Account | null): value is Account =>
     Boolean(
       value?.emailVerified &&
-      normalizeCampusEmail(value.email) &&
+      normalizeAllowedEmail(value.email) &&
       !["banned", "deleting"].includes(value.account_status),
     );
   const requireAccount = (id?: string): Account => {
@@ -160,9 +159,9 @@ export function recoveryEmailPlugin(options: {
         to: proofEmail,
         subject:
           purpose === "login"
-            ? "深小狸：辅助邮箱登录验证码"
+            ? "深小狸：账号找回验证码"
             : "深小狸：确认辅助邮箱设置",
-        text: `校园账号：${value.email}\n你的${purpose === "login" ? "登录" : "当前邮箱"}验证码是 ${otp}，5 分钟内有效。${purpose === "login" ? "" : "本次操作将更新辅助邮箱设置，并使已有登录会话失效。"}若非本人操作，请忽略此邮件。`,
+        text: `原账号：${value.email}\n你的${purpose === "login" ? "登录" : "当前邮箱"}验证码是 ${otp}，5 分钟内有效。${purpose === "login" ? "你正在通过事先绑定的辅助邮箱找回该账号。验证后将进入上述原账号，不会创建辅助邮箱对应的账号。" : "本次操作将更新辅助邮箱设置，并使已有登录会话失效。"}若非本人操作，请忽略此邮件。`,
         idempotencyKey: `recovery/${id}/current`,
       });
       if (newEmail && newOtp)
@@ -351,11 +350,13 @@ export function recoveryEmailPlugin(options: {
         { method: "POST" },
         async (ctx) => {
           const input = body(ctx.body);
-          const email = normalizeCampusEmail(text(input.email));
+          const email = normalizeAllowedEmail(text(input.email));
           if (!email)
             throw new APIError("BAD_REQUEST", {
               code: "CAMPUS_EMAIL_REQUIRED",
-              message: "请填写注册时的 SUAT 校园邮箱",
+              message: options.qqEmailLoginEnabled
+                ? "请填写注册时的校园邮箱或 QQ 邮箱"
+                : "请填写注册时的 SUAT 校园邮箱",
             });
           cooldown(`login:${email}`);
           const challengeId = randomUUID();
@@ -374,7 +375,7 @@ export function recoveryEmailPlugin(options: {
         { method: "POST" },
         async (ctx) => {
           const input = body(ctx.body);
-          const email = normalizeCampusEmail(text(input.email));
+          const email = normalizeAllowedEmail(text(input.email));
           if (!email) invalidCode();
           const value = consume(
             text(input.challengeId),

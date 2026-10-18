@@ -28,6 +28,7 @@ export default defineConfig({
     },
   ],
   webServer: {
+    env: { QQ_EMAIL_LOGIN_ENABLED: 'true', ACADEMIC_IMPORT_FIXTURE: 'true' },
     command: 'bun run scripts/local-test.ts --e2e --reset',
     cwd: '..',
     url: 'http://127.0.0.1:5176/api/ready',

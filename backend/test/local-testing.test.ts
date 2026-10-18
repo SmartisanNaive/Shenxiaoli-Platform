@@ -1,6 +1,6 @@
 import { afterEach, expect, test } from "bun:test";
 import { createApp } from "../src/app";
-import { createDatabase } from "../src/db";
+import { createDatabase, SCHEMA_VERSION } from "../src/db";
 import {
   initializeLocalTesting,
   localTestEmailSender,
@@ -93,7 +93,7 @@ test("synthetic messages stay local and real recipients use the normal sender; r
   expect(response.status).toBe(200);
   expect(
     db.query("SELECT MAX(version) AS version FROM schema_migrations").get(),
-  ).toEqual({ version: 10 });
+  ).toEqual({ version: SCHEMA_VERSION });
   expect(
     db.query("SELECT COUNT(*) AS count FROM test_mail_inbox").get(),
   ).toEqual({ count: 0 });

@@ -12,6 +12,7 @@ export interface SessionState {
   user: User | null;
   demoAuthAvailable: boolean;
   campusEmailVerified?: boolean;
+  qqEmailLoginEnabled?: boolean;
   syntheticIdentity?: boolean;
 }
 
@@ -29,6 +30,8 @@ export interface Course {
   rating: number;
   difficulty: number;
   reviewCount: number;
+  codePending?: number;
+  creditsKnown?: number;
 }
 
 export interface Review {
@@ -112,7 +115,13 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   if (!response.ok) {
     const message =
       (payload as ApiError)?.error?.message ?? (payload as ApiError)?.message;
-    throw new Error(message || `请求失败（${response.status}）`);
+    throw Object.assign(
+      new Error(message || `请求失败（${response.status}）`),
+      {
+        status: response.status,
+        code: (payload as ApiError)?.error?.code,
+      },
+    );
   }
   return payload as T;
 }

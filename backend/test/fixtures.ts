@@ -9,14 +9,23 @@ afterEach(() => {
   for (const db of databases.splice(0)) db.close();
 });
 
-export function fixture(seed = false) {
+export function fixture(
+  seed = false,
+  qqEmailLoginEnabled = false,
+  academic: Pick<
+    Parameters<typeof createApp>[0],
+    "academicClientFactory" | "academicNow"
+  > = {},
+) {
   const db = createDatabase({ path: ":memory:", seedDemoUsers: seed });
   databases.push(db);
   const mail: EmailMessage[] = [];
   let mailFailure = false;
   const app = createApp({
     database: db,
+    ...academic,
     demoAuthEnabled: seed,
+    qqEmailLoginEnabled,
     sessionSecret: "integration-tests-secret-at-least-32-characters",
     allowedOrigins: ["http://localhost:5173"],
     sendEmail: async (message) => {

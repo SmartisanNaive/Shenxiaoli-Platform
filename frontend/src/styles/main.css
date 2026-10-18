@@ -78,3 +78,231 @@
     scrollbar-width: none;
   }
 }
+
+/* Authentication is a focused dialog; signed-in actions stay in the header menu. */
+.auth-dialog {
+  width: min(440px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  margin: auto;
+  padding: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  color: var(--color-on-surface);
+  background: var(--color-surface);
+  border: 1px solid var(--color-surface-variant);
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgb(0 20 12 / 16%);
+}
+
+.auth-dialog::backdrop {
+  background: rgb(10 27 19 / 38%);
+}
+
+html.auth-modal-open {
+  overflow: hidden;
+}
+
+.auth-dialog-content {
+  padding: 28px;
+}
+
+.auth-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.auth-dialog-heading h2 {
+  margin: 0;
+  color: var(--color-primary);
+  font-family: 'Source Serif 4', serif;
+  font-size: 26px;
+  line-height: 1.35;
+}
+
+.auth-close {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin: -6px -8px -6px 0;
+  border-radius: 6px;
+  color: var(--color-outline);
+}
+
+.auth-close:hover {
+  background: var(--color-surface-container);
+  color: var(--color-primary);
+}
+
+.auth-methods {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--color-surface-variant);
+}
+
+.auth-methods button {
+  padding: 0 0 12px;
+  margin-bottom: -1px;
+  border-bottom: 2px solid transparent;
+  color: var(--color-outline);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.auth-methods button[aria-pressed='true'] {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+.auth-form,
+.auth-dialog [data-password-form] {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+}
+
+.auth-field {
+  display: grid;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.auth-field-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auth-dialog input {
+  display: block;
+  width: 100%;
+  height: 46px;
+  margin-top: 0;
+  padding: 10px 12px;
+  color: var(--color-on-surface);
+  background: var(--color-surface-container-lowest);
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 24px;
+}
+
+.auth-dialog input:focus-visible {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgb(44 105 78 / 12%);
+}
+
+.auth-dialog [role='alert']:empty,
+.auth-dialog [role='status']:empty {
+  display: none;
+}
+
+.auth-primary,
+.auth-dialog [data-password-send],
+.auth-dialog [data-password-confirm] {
+  min-height: 44px;
+  padding: 10px 16px;
+  background: var(--color-primary);
+  color: var(--color-on-primary);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.auth-primary:hover {
+  background: var(--color-secondary);
+}
+
+.auth-secondary {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid var(--color-outline-variant);
+  border-radius: 8px;
+  color: var(--color-primary);
+  font-size: 14px;
+}
+
+.auth-text-link,
+.auth-back {
+  color: var(--color-on-surface-variant);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.auth-text-link:hover,
+.auth-back:hover {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.auth-back {
+  display: block;
+  margin-top: 20px;
+}
+
+.auth-description {
+  margin-bottom: 20px;
+  color: var(--color-on-surface-variant);
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.auth-note,
+.auth-email-policy {
+  color: var(--color-outline);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.auth-note {
+  margin-top: 12px;
+}
+
+.auth-help {
+  display: grid;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-surface-variant);
+  text-align: center;
+}
+
+.auth-help .auth-note {
+  margin-top: 0;
+}
+
+.auth-email-policy {
+  margin-top: 12px;
+}
+
+.auth-email-policy summary {
+  cursor: pointer;
+}
+
+.auth-email-policy p {
+  margin-top: 8px;
+}
+
+@media (max-width: 480px) {
+  .auth-dialog-content {
+    padding: 24px;
+  }
+}
+
+.auth-dialog button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}

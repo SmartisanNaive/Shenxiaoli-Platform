@@ -5,9 +5,15 @@ import { renderEmailHtml } from "./email-template";
 const directory = resolve(import.meta.dir, "../../.local-test/mail-preview");
 const samples = [
   {
+    id: "password",
+    label: "设置登录密码",
+    subject: "设置登录密码验证码",
+    text: "你的验证码是 123456，5 分钟内有效。你正在为 test.user.a@stu.suat-sz.edu.cn 对应的账号设置或重设登录密码。设置成功后，所有设备上的登录会话将失效，请重新登录。若非本人操作，请忽略此邮件。",
+  },
+  {
     id: "sign-in",
-    label: "校园邮箱登录",
-    subject: "校园邮箱验证码",
+    label: "邮箱登录 / 注册",
+    subject: "邮箱登录验证码",
     text: "你的验证码是 123456，5 分钟内有效。请勿将验证码转发给他人。若非本人操作，请忽略此邮件。",
   },
   {
@@ -30,9 +36,9 @@ const samples = [
   },
   {
     id: "recovery",
-    label: "辅助邮箱登录",
-    subject: "辅助邮箱登录验证码",
-    text: "校园账号：test.user.a@stu.suat-sz.edu.cn\n你的登录验证码是 123456，5 分钟内有效。若非本人操作，请忽略此邮件。",
+    label: "找回原账号",
+    subject: "账号找回验证码",
+    text: "原账号：test.user.a@stu.suat-sz.edu.cn\n你的登录验证码是 123456，5 分钟内有效。验证后将回到上述原账号，不会创建辅助邮箱对应的账号。若非本人操作，请忽略此邮件。",
   },
   {
     id: "deletion",

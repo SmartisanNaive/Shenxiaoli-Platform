@@ -16,7 +16,7 @@ test("restoring a version 9 backup migrates the staged copy and preserves the so
     const sourcePath = join(backup, "database.sqlite");
     const source = createDatabase({ path: sourcePath, seedDemoUsers: true });
     source.exec(
-      "DROP TABLE recovery_challenges; DROP TABLE recovery_emails; DROP TABLE recovery_email_cooldowns; DELETE FROM schema_migrations WHERE version = 10;",
+      "DROP TABLE recovery_challenges; DROP TABLE recovery_emails; DROP TABLE recovery_email_cooldowns; DELETE FROM schema_migrations WHERE version >= 10;",
     );
     source.close();
     expect(

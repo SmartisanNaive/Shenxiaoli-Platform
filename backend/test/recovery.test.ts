@@ -258,6 +258,59 @@ describe("verified auxiliary email recovery", () => {
     }
   });
 
+  test("recovery login rejects wrong, expired and exhausted proofs without creating accounts", async () => {
+    for (const mode of ["wrong", "expired", "attempts"]) {
+      const f = fixture();
+      const c = f.client();
+      const user = await c.signIn(campus);
+      const proof = await bind(f, c);
+      expect(
+        (await c.request(`${base}/change/confirm`, "POST", proof)).status,
+      ).toBe(200);
+      const requested = await c.request(`${base}/login/request`, "POST", {
+        email: campus,
+      });
+      const issued = (await requested.json()) as Issued;
+      const input = {
+        email: campus,
+        challengeId: issued.challengeId,
+        otp: f.code(auxiliary),
+      };
+      if (mode === "expired")
+        f.db
+          .query("UPDATE recovery_challenges SET expires_at = ?")
+          .run(Date.now() - 1);
+      if (mode === "attempts") {
+        for (let attempt = 0; attempt < 5; attempt++)
+          expect(
+            (
+              await c.request(`${base}/login/confirm`, "POST", {
+                ...input,
+                otp: "000000",
+              })
+            ).status,
+          ).toBe(400);
+      }
+      expect(
+        (
+          await f
+            .client()
+            .request(
+              `${base}/login/confirm`,
+              "POST",
+              mode === "wrong" ? { ...input, otp: "000000" } : input,
+            )
+        ).status,
+      ).toBe(400);
+      expect(await (await c.request("/api/session")).json()).toMatchObject({
+        authenticated: false,
+      });
+      expect(f.db.query("SELECT id FROM auth_users").all()).toEqual([
+        { id: user.id },
+      ]);
+    }
+  });
+
   test("resending is throttled, delivery failure leaves no usable challenge, and primary-email changes invalidate proofs", async () => {
     const f = fixture();
     const c = f.client();

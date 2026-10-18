@@ -28,8 +28,13 @@ Vite 代理 `/api/*` 和 `/uploads/*`。本地默认启用合成数据和学生/
 并转成小写，子域名不在允许范围内。验证证明邮箱控制权，不证明学籍或实名身份。
 外部邮箱不能注册，也不会自动获得管理员权限。已验证的校园账号可再验证并绑定辅助
 邮箱；辅助邮箱仅用于恢复原账号，不能替代首次校园邮箱验证。
-密码登录关闭；登录验证码为 6 位、5 分钟有效、最多 5 次校验尝试，同一邮箱发送冷却
-60 秒。验证码由 API 直接调用 Resend 发送，不经过通知队列。
+支持邮箱密码登录，并保留验证码登录 / 注册。首次注册仍须验证邮箱，之后可在账号设置
+自定义 8–128 位密码；忘记密码时通过账号邮箱验证码重设。密码由 Better Auth 哈希保存，
+设置或重设后撤销该账号的全部正式会话；密码注册接口关闭，不能绕过邮箱验证。
+登录和密码设置验证码均为 6 位、5 分钟有效、最多 5 次校验尝试，各用途的同一邮箱发送
+冷却 60 秒。验证码由 API 直接调用 Resend 发送，不经过通知队列。
+`QQ_EMAIL_LOGIN_ENABLED=true` 时，密码登录也接受已验证的 `@qq.com` 账号；关闭开关后
+QQ 密码登录、密码设置和重设均不可用，校园账号仍可用绑定的 QQ 辅助邮箱恢复。
 
 正式账号由 Better Auth 管理，已验证的认证用户通过请求同步到业务 `users` 表。
 演示账号使用另一套开发 cookie，会话有效期 14 天，只存储令牌摘要；不要将演示会话
@@ -92,23 +97,26 @@ Better Auth 自身的响应和错误格式由认证处理器返回，不保证�
 
 ### 服务、登录与账号
 
-| 方法  | 路径                                        | 权限与行为                                                                    |
-| ----- | ------------------------------------------- | ----------------------------------------------------------------------------- |
-| GET   | `/api/health`                               | 公开；存活状态                                                                |
-| GET   | `/api/ready`                                | 公开；数据库访问和迁移版本检查，当前要求至少版本 10                           |
-| GET   | `/api/session`                              | 公开；`authenticated/user/demoAuthAvailable/campusEmailVerified`              |
-| POST  | `/api/feedback`                             | 公开；`subject/message/email`，未登录者须提供校园邮箱；此提交不验证邮箱控制权 |
-| POST  | `/api/auth/email-otp/send-verification-otp` | 公开；`email/type`，登录使用 `type: 'sign-in'`                                |
-| POST  | `/api/auth/sign-in/email-otp`               | 公开；`email/otp/name`，验证码验证后注册或登录                                |
-| POST  | `/api/auth/sign-out`                        | Better Auth 正式账号退出                                                      |
-| POST  | `/api/auth/email-otp/request-email-change`  | Better Auth 邮箱变更流程；`newEmail` 须为校园邮箱                             |
-| POST  | `/api/auth/email-otp/change-email`          | Better Auth 验证邮箱变更；须验证当前邮箱并完成新邮箱验证                      |
-| POST  | `/api/auth/demo`                            | 仅开发；`role: 'student'` 或 `'moderator'`                                    |
-| POST  | `/api/auth/logout`                          | 清除开发演示会话；正式账号使用 Better Auth sign-out                           |
-| PATCH | `/api/me/profile`                           | 用户；`displayName`（2–40 字）                                                |
-| POST  | `/api/me/sessions/revoke`                   | 用户；撤销该用户的演示与 Better Auth 会话                                     |
-| POST  | `/api/me/account/deletion-code`             | 用户且邮箱已验证；发送注销验证码                                              |
-| POST  | `/api/me/account/delete`                    | 用户；`otp`，确认后立即停用账号、撤销会话并隐藏发布内容                       |
+| 方法  | 路径                                         | 权限与行为                                                                     |
+| ----- | -------------------------------------------- | ------------------------------------------------------------------------------ |
+| GET   | `/api/health`                                | 公开；存活状态                                                                 |
+| GET   | `/api/ready`                                 | 公开；数据库访问和迁移版本检查，当前要求至少版本 11                            |
+| GET   | `/api/session`                               | 公开；`authenticated/user/demoAuthAvailable/campusEmailVerified`               |
+| POST  | `/api/feedback`                              | 公开；`subject/message/email`，未登录者须提供校园邮箱；此提交不验证邮箱控制权  |
+| POST  | `/api/auth/email-otp/send-verification-otp`  | 公开；`email/type`，登录使用 `type: 'sign-in'`                                 |
+| POST  | `/api/auth/sign-in/email-otp`                | 公开；`email/otp/name`，验证码验证后注册或登录                                 |
+| POST  | `/api/auth/sign-in/email`                    | 公开；`email/password`，仅登录已验证且可用的既有账号                           |
+| POST  | `/api/auth/email-otp/request-password-reset` | 公开；`email`，向可用既有账号的登录邮箱发送设置 / 重设密码验证码；统一返回成功 |
+| POST  | `/api/auth/email-otp/reset-password`         | 公开；`email/otp/password`，验证后设置 8–128 位密码并撤销正式会话              |
+| POST  | `/api/auth/sign-out`                         | Better Auth 正式账号退出                                                       |
+| POST  | `/api/auth/email-otp/request-email-change`   | Better Auth 邮箱变更流程；`newEmail` 须为校园邮箱                              |
+| POST  | `/api/auth/email-otp/change-email`           | Better Auth 验证邮箱变更；须验证当前邮箱并完成新邮箱验证                       |
+| POST  | `/api/auth/demo`                             | 仅开发；`role: 'student'` 或 `'moderator'`                                     |
+| POST  | `/api/auth/logout`                           | 清除开发演示会话；正式账号使用 Better Auth sign-out                            |
+| PATCH | `/api/me/profile`                            | 用户；`displayName`（2–40 字）                                                 |
+| POST  | `/api/me/sessions/revoke`                    | 用户；撤销该用户的演示与 Better Auth 会话                                      |
+| POST  | `/api/me/account/deletion-code`              | 用户且邮箱已验证；发送注销验证码                                               |
+| POST  | `/api/me/account/delete`                     | 用户；`otp`，确认后立即停用账号、撤销会话并隐藏发布内容                        |
 
 ### 内容、目录与搜索
 
@@ -355,5 +363,8 @@ API 集成测试使用内存 SQLite 和注入的邮件发送函数，不发送�
 Resend 投递、Docker HTTPS、图片读取闭环或异地恢复。
 
 正式上线需完成[运维验收](../docs/OPERATIONS.md)：服务器/DNS、发件域、双域收信、
-持久化数据、管理员、真实课程、治理流程、备份与恢复。SSO、学籍核验和教务自动同步
-尚未实现。静态部署工作流只发布前端。
+持久化数据、管理员、真实课程、治理流程、备份与恢复。站内教务认证仅用于用户主动导入课表，不作为平台登录或学籍核验；教务定时自动同步尚未实现。静态部署工作流只发布前端。
+
+## 个人教务课程导入
+
+提供学校统一认证账号密码、手机号短信验证码、人工图片/滑块/文字点选验证码和短信二次验证。导入后复用现有课程详情与评价 API；目录更新与个人关联事务提交，普通用户只能补充缺失资料。接口、状态及验收说明见[教务课程导入](../docs/COURSE_IMPORT.md)。

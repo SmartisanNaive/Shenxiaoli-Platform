@@ -3,7 +3,7 @@ import { dirname, resolve } from "node:path";
 import { Database } from "bun:sqlite";
 
 export type AppDatabase = Database;
-export const SCHEMA_VERSION = 10;
+export const SCHEMA_VERSION = 11;
 
 export interface DatabaseOptions {
   path?: string;
@@ -917,6 +917,47 @@ function migrateDatabase(db: AppDatabase): void {
       `);
       db.query(
         "INSERT INTO schema_migrations (version, applied_at) VALUES (10, ?)",
+      ).run(new Date().toISOString());
+    })();
+  }
+  if (!db.query("SELECT 1 FROM schema_migrations WHERE version = 11").get()) {
+    db.transaction(() => {
+      addColumn("courses", "code_pending", "INTEGER NOT NULL DEFAULT 0");
+      addColumn("courses", "credits_known", "INTEGER NOT NULL DEFAULT 1");
+      addColumn(
+        "course_offerings",
+        "imported_teachers_json",
+        "TEXT NOT NULL DEFAULT '[]'",
+      );
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS academic_course_sources (
+          source_key TEXT PRIMARY KEY,
+          course_id TEXT NOT NULL REFERENCES courses(id) ON DELETE RESTRICT,
+          offering_id TEXT NOT NULL REFERENCES course_offerings(id) ON DELETE RESTRICT
+        );
+        CREATE TABLE IF NOT EXISTS user_courses (
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          offering_id TEXT NOT NULL REFERENCES course_offerings(id) ON DELETE CASCADE,
+          imported_at TEXT NOT NULL,
+          PRIMARY KEY (user_id, offering_id)
+        );
+        CREATE TABLE IF NOT EXISTS academic_import_batches (
+          id TEXT PRIMARY KEY,
+          user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          term TEXT NOT NULL,
+          course_count INTEGER NOT NULL,
+          new_course_count INTEGER NOT NULL,
+          created_at TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS academic_sms_limits (
+          subject_hash TEXT PRIMARY KEY,
+          last_sent_at INTEGER NOT NULL,
+          window_start INTEGER NOT NULL,
+          count INTEGER NOT NULL
+        );
+      `);
+      db.query(
+        "INSERT INTO schema_migrations (version, applied_at) VALUES (11, ?)",
       ).run(new Date().toISOString());
     })();
   }

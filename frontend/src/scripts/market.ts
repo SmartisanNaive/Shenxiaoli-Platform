@@ -42,15 +42,15 @@ export function initMarket(): void {
   const buildCard = (listing: Listing): HTMLDivElement => {
     const card = document.createElement('div');
     card.className =
-      'listing-card group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-2xl bg-surface-container-lowest p-4 shadow-sm transition-all duration-300 hover:shadow-xl';
+      'listing-card group relative flex cursor-pointer flex-col justify-between overflow-hidden rounded-md border border-surface-variant bg-surface-container-lowest p-4 transition-colors duration-150 hover:border-outline';
     card.setAttribute('role', 'button');
     card.tabIndex = 0;
     card.dataset.category = listing.category;
     const photo = imageUrl(listing.images[0]);
     const photoStyle = photo ? `background-image:url('${photo}')` : '';
-    card.innerHTML = `<div class="relative mb-4 h-48 w-full overflow-hidden rounded-xl bg-surface-container">
-      <div class="h-full w-full bg-cover bg-center transition-transform duration-500 group-hover:scale-105" aria-hidden="true" data-product-image style="${photoStyle}"></div>
-      <span class="absolute left-3 top-3 rounded-lg bg-surface/90 px-2.5 py-1 text-label-sm font-semibold text-primary backdrop-blur-md">${listing.status === 'active' ? '在售' : listing.status === 'reserved' ? '已预订' : '已售出'}</span>
+    card.innerHTML = `<div class="relative mb-4 h-48 w-full overflow-hidden rounded bg-surface-container">
+      <div class="h-full w-full bg-cover bg-center" aria-hidden="true" data-product-image style="${photoStyle}"></div>
+      <span class="absolute left-3 top-3 rounded-lg bg-surface px-2.5 py-1 text-label-sm font-semibold text-primary">${listing.status === 'active' ? '在售' : listing.status === 'reserved' ? '已预订' : '已售出'}</span>
       <span class="absolute bottom-3 right-3 rounded-lg bg-primary px-2.5 py-1 text-label-sm font-bold text-on-primary">¥${Number(listing.price).toFixed(0)}</span>
     </div>
     <div><div class="mb-1 flex items-center gap-2"><span class="text-label-sm text-outline">${escapeHtml(listing.condition)}</span><span class="text-outline-variant">·</span><span class="text-label-sm text-outline">${escapeHtml(listing.location)}</span></div><h3 class="line-clamp-1 font-headline-sm font-bold text-primary transition-colors group-hover:text-secondary">${escapeHtml(listing.title)}</h3><p class="mt-1 line-clamp-2 text-body-sm text-on-surface-variant">${escapeHtml(listing.description)}</p></div>
@@ -103,7 +103,7 @@ export function initMarket(): void {
           ownerAction.type = 'button';
           ownerAction.dataset.ownerAction = 'true';
           ownerAction.className =
-            'mt-3 w-full rounded-xl border border-outline-variant px-4 py-2 text-label-sm text-primary hover:bg-surface-container-low';
+            'mt-3 w-full rounded border border-outline-variant px-4 py-2 text-label-sm text-primary hover:bg-surface-container-low';
           ownerAction.textContent = '标记为已售出';
           ownerAction.addEventListener('click', async () => {
             await api(
@@ -141,7 +141,7 @@ export function initMarket(): void {
     if (!visible.length) {
       const empty = document.createElement('p');
       empty.className =
-        'col-span-full rounded-xl border border-dashed border-outline-variant p-10 text-center text-body-sm text-outline';
+        'col-span-full rounded border border-dashed border-outline-variant p-10 text-center text-body-sm text-outline';
       empty.textContent = '这个分类暂时没有在售闲置。';
       grid.append(empty);
       return;
@@ -151,7 +151,7 @@ export function initMarket(): void {
       const more = document.createElement('button');
       more.type = 'button';
       more.className =
-        'col-span-full rounded-xl border border-outline-variant bg-surface px-4 py-3 text-label-sm text-primary hover:bg-surface-container-low';
+        'col-span-full rounded border border-outline-variant bg-surface px-4 py-3 text-label-sm text-primary hover:bg-surface-container-low';
       more.textContent = `加载更多（已显示 ${listings.length} / ${listingTotal}）`;
       more.addEventListener('click', () => void loadListings(true));
       grid.append(more);
@@ -184,7 +184,7 @@ export function initMarket(): void {
           ?.click();
     } catch (error) {
       grid.hidden = false;
-      grid.innerHTML = `<p class="col-span-full rounded-xl border border-error/20 bg-error-container p-8 text-body-sm text-on-error-container">${escapeHtml(error instanceof Error ? error.message : '集市数据加载失败')}。请启动 API 后重试。</p>`;
+      grid.innerHTML = `<p class="col-span-full rounded border border-error/20 bg-error-container p-8 text-body-sm text-on-error-container">${escapeHtml(error instanceof Error ? error.message : '集市数据加载失败')}。请启动 API 后重试。</p>`;
     }
   };
 
@@ -299,9 +299,6 @@ export function initMarket(): void {
     const title = form.querySelector<HTMLInputElement>('[name="title"]');
     if (title) window.setTimeout(() => title.focus(), 0);
     modal?.classList.remove('hidden', 'opacity-0');
-    document
-      .querySelector('#publish-modal-content')
-      ?.classList.remove('scale-95');
   };
 
   void loadListings();

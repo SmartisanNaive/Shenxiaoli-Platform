@@ -28,24 +28,18 @@
           class="mx-auto flex w-full max-w-[1200px] flex-col items-start justify-between gap-6 px-[32px] pb-8 pt-12 md:flex-row md:items-end"
         >
           <div class="flex flex-col gap-2">
-            <div
-              class="flex items-center gap-2 text-label-sm font-semibold uppercase tracking-wider text-secondary"
-            >
-              <span class="material-symbols-outlined text-sm">handshake</span>
-              深小狸 · 技能互助
-            </div>
             <h1 class="font-headline-xl text-headline-xl text-primary">
               技能互助
             </h1>
             <p class="max-w-xl text-body-lg text-on-surface-variant">
-              你会的，可能正是别人需要的。打破信息壁垒，以技能换技能，以经验聚同道。
+              分享技能或发布求助，与同学约定交流内容和时间。
             </p>
           </div>
           <div class="flex items-center gap-3">
             <button
               type="button"
               id="skill-publish-open"
-              class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-label-md font-semibold text-on-primary shadow-sm transition-all hover:bg-secondary"
+              class="flex items-center gap-2 rounded bg-primary px-6 py-3 text-label-md font-semibold text-on-primary shadow-sm transition-colors duration-150 hover:bg-secondary"
               onclick="
                 document
                   .getElementById('publish-modal')
@@ -65,42 +59,42 @@
             <button
               type="button"
               data-skill-category="all"
-              class="whitespace-nowrap rounded-xl bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary shadow-sm transition-all"
+              class="whitespace-nowrap rounded bg-primary px-5 py-2.5 text-label-md font-medium text-on-primary shadow-sm transition-colors duration-150"
             >
               全部领域
             </button>
             <button
               type="button"
               data-skill-category="数据与科研"
-              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="whitespace-nowrap rounded bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
             >
               数据与科研
             </button>
             <button
               type="button"
               data-skill-category="生物实验"
-              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="whitespace-nowrap rounded bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
             >
               生物实验
             </button>
             <button
               type="button"
               data-skill-category="工程开发"
-              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="whitespace-nowrap rounded bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
             >
               工程开发
             </button>
             <button
               type="button"
               data-skill-category="AI与计算"
-              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="whitespace-nowrap rounded bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
             >
               AI与计算
             </button>
             <button
               type="button"
               data-skill-category="设计创作"
-              class="whitespace-nowrap rounded-xl bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="whitespace-nowrap rounded bg-surface-container px-5 py-2.5 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
             >
               设计创作
             </button>
@@ -109,11 +103,9 @@
         <!-- Notice Banner -->
         <section class="mx-auto mb-12 w-full max-w-[1200px] px-[32px]">
           <div
-            class="flex items-start gap-4 rounded-2xl bg-surface-container-low p-6 shadow-sm"
+            class="flex items-start gap-3 border-y border-surface-variant py-5"
           >
-            <div
-              class="flex-shrink-0 rounded-xl bg-primary-fixed p-2.5 text-primary"
-            >
+            <div class="flex-shrink-0 text-primary">
               <span
                 class="material-symbols-outlined"
                 style="font-variation-settings: 'FILL' 1"
@@ -125,7 +117,7 @@
                 学术诚信与互助准则
               </h3>
               <p class="text-body-md text-on-surface-variant">
-                技能互助是学习、指导与协作，不是学术代做。请遵守课程学术诚信要求，共同营造严谨求实的校园学术氛围。
+                可以交流方法、指导练习和协作学习，请勿代写作业、论文或代做考核。
               </p>
             </div>
           </div>
@@ -155,7 +147,7 @@
           class="mx-auto mb-20 w-full max-w-[1200px] px-[32px]"
           aria-labelledby="skill-stats-title"
         >
-          <div class="rounded-2xl border border-outline-variant bg-surface p-6">
+          <div class="rounded-md border border-outline-variant bg-surface p-6">
             <div class="flex flex-wrap items-end justify-between gap-2">
               <div>
                 <h2
@@ -172,8 +164,10 @@
                 >统计周期加载中…</span
               >
             </div>
-            <div class="mt-5 grid gap-4 sm:grid-cols-3">
-              <article class="rounded-xl bg-surface-container-low p-4">
+            <div
+              class="mt-5 grid divide-y divide-surface-variant sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+            >
+              <article class="py-4 sm:py-0 sm:pr-6">
                 <p class="text-body-sm text-outline">本月成功配对</p>
                 <strong
                   class="mt-1 block font-headline-lg text-primary"
@@ -181,7 +175,7 @@
                   >读取中…</strong
                 >
               </article>
-              <article class="rounded-xl bg-surface-container-low p-4">
+              <article class="py-4 sm:px-6 sm:py-0">
                 <p class="text-body-sm text-outline">本月双方确认完成</p>
                 <strong
                   class="mt-1 block font-headline-lg text-primary"
@@ -189,7 +183,7 @@
                   >读取中…</strong
                 >
               </article>
-              <article class="rounded-xl bg-surface-container-low p-4">
+              <article class="py-4 sm:py-0 sm:pl-6">
                 <p class="text-body-sm text-outline">本月求助解决率</p>
                 <strong
                   class="mt-1 block font-headline-lg text-primary"
@@ -204,11 +198,11 @@
         </section>
         <!-- Publish Modal (Hidden by default) -->
         <div
-          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 p-4 backdrop-blur-sm"
+          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 p-4"
           id="publish-modal"
         >
           <div
-            class="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col gap-6 overflow-y-auto rounded-2xl bg-surface-container-lowest p-5 shadow-xl sm:p-8"
+            class="relative flex max-h-[calc(100dvh-2rem)] w-full max-w-lg flex-col gap-6 overflow-y-auto rounded-md bg-surface-container-lowest p-5 shadow-md sm:p-8"
             id="skill-form"
             role="form"
           >
@@ -237,14 +231,14 @@
                   <button
                     type="button"
                     data-skill-kind="offer"
-                    class="rounded-xl border border-primary bg-primary py-2.5 text-label-md font-medium text-on-primary"
+                    class="rounded border border-primary bg-primary py-2.5 text-label-md font-medium text-on-primary"
                   >
                     提供技能共享
                   </button>
                   <button
                     type="button"
                     data-skill-kind="request"
-                    class="rounded-xl border border-outline-variant py-2.5 text-label-md font-medium text-on-surface"
+                    class="rounded border border-outline-variant py-2.5 text-label-md font-medium text-on-surface"
                   >
                     发起求助广场
                   </button>
@@ -262,7 +256,7 @@
                   required
                   minlength="3"
                   maxlength="100"
-                  class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="例如：擅长 Python 数据分析 / 求助 FPGA 仿真"
                   type="text"
                 />
@@ -279,7 +273,7 @@
                   required
                   minlength="10"
                   maxlength="1000"
-                  class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="请描述您的技能细节或求助问题背景..."
                   rows="3"
                 ></textarea>
@@ -290,7 +284,7 @@
                   >我能提供<input
                     name="canOffer"
                     maxlength="200"
-                    class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    class="rounded bg-surface-container-low px-4 py-2.5 text-body-md focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="例如：R 语言入门辅导"
                 /></label>
                 <label
@@ -298,7 +292,7 @@
                   >我想交流<input
                     name="wants"
                     maxlength="200"
-                    class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md focus:outline-none focus:ring-1 focus:ring-primary"
+                    class="rounded bg-surface-container-low px-4 py-2.5 text-body-md focus:outline-none focus:ring-1 focus:ring-primary"
                     placeholder="例如：嵌入式开发"
                 /></label>
               </div>
@@ -312,7 +306,7 @@
                   id="skill-category"
                   name="category"
                   required
-                  class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="数据与科研">数据与科研</option>
                   <option value="生物实验">生物实验</option>
@@ -329,7 +323,7 @@
                 <input
                   id="skill-tags"
                   name="tags"
-                  class="rounded-xl bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="rounded bg-surface-container-low px-4 py-2.5 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="#R #生物信息学 #STM32"
                   type="text"
                 />
@@ -338,7 +332,7 @@
             <div class="flex items-center justify-end gap-3 pt-2">
               <button
                 type="button"
-                class="rounded-xl px-5 py-2.5 text-label-md text-on-surface-variant transition-all hover:bg-surface-container"
+                class="rounded px-5 py-2.5 text-label-md text-on-surface-variant transition-colors duration-150 hover:bg-surface-container"
                 onclick="
                   document
                     .getElementById('publish-modal')
@@ -350,7 +344,7 @@
               <button
                 id="skill-submit"
                 type="button"
-                class="rounded-xl bg-primary px-6 py-2.5 text-label-md font-semibold text-on-primary transition-all hover:bg-secondary"
+                class="rounded bg-primary px-6 py-2.5 text-label-md font-semibold text-on-primary transition-colors duration-150 hover:bg-secondary"
               >
                 确认发布
               </button>

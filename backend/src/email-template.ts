@@ -11,6 +11,24 @@ interface EmailPurpose {
 }
 
 const purposes: Record<string, EmailPurpose> = {
+  设置登录密码验证码: {
+    title: "设置登录密码",
+    introduction:
+      "请验证账号邮箱，再设置或重设登录密码。此验证码不能用于登录或找回其他账号。",
+    verification: true,
+  },
+  邮箱登录验证码: {
+    title: "登录 / 注册深小狸",
+    introduction:
+      "使用下方验证码进入该邮箱对应的账号，首次验证将自动创建账号。",
+    verification: true,
+  },
+  账号找回验证码: {
+    title: "找回深小狸账号",
+    introduction:
+      "你正在通过事先绑定的辅助邮箱找回原账号。验证后将回到原账号。",
+    verification: true,
+  },
   校园邮箱验证码: {
     title: "登录深小狸",
     introduction: "使用下方验证码验证校园邮箱并登录，首次登录将创建账号。",
@@ -78,11 +96,11 @@ export function renderEmailHtml(content: EmailContent): string {
   const code = purpose.verification
     ? /验证码是\s*(\d{6})(?!\d)/.exec(content.text)?.[1]
     : undefined;
-  const account = /^校园账号：([^\n]+)$/m.exec(content.text)?.[1];
+  const account = /^(?:校园账号|原账号)：([^\n]+)$/m.exec(content.text)?.[1];
   let detail = content.text;
   if (subject === "你有新的站内消息")
     detail = detail.replace(/^你有新的站内消息。请登录深小狸查看。\s*/, "");
-  if (account) detail = detail.replace(/^校园账号：[^\n]+\n?/m, "");
+  if (account) detail = detail.replace(/^(?:校园账号|原账号)：[^\n]+\n?/m, "");
   if (code)
     detail = detail.replace(
       /你的(?:注销|当前邮箱|新辅助邮箱|登录)?验证码是\s*\d{6}[，,]\s*5\s*分钟内有效[。.]?/,
@@ -114,7 +132,7 @@ export function renderEmailHtml(content: EmailContent): string {
 <tr><td style="padding:32px 24px;background-color:#ffffff;border:1px solid #e2e6df;border-top:3px solid #1b4332;border-radius:12px;">
 <h1 style="margin:0 0 14px;color:#012d1d;font-size:26px;font-weight:650;line-height:1.4;">${escapeHtml(purpose.title)}</h1>
 ${purpose.introduction ? `<p style="margin:0 0 24px;color:#414844;font-size:15px;line-height:1.8;">${escapeHtml(purpose.introduction)}</p>` : ""}
-${account ? `<p style="margin:0 0 20px;color:#717973;font-size:13px;line-height:1.7;overflow-wrap:anywhere;">校园账号<br><span style="color:#414844;">${escapeHtml(account)}</span></p>` : ""}
+${account ? `<p style="margin:0 0 20px;color:#717973;font-size:13px;line-height:1.7;overflow-wrap:anywhere;">原账号<br><span style="color:#414844;">${escapeHtml(account)}</span></p>` : ""}
 ${code ? `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;background-color:#f3f6f1;border:1px solid #e2e6df;border-radius:8px;"><tr><td align="center" style="padding:22px 12px;"><p style="margin:0 0 10px;color:#717973;font-size:12px;">验证码</p><p dir="ltr" translate="no" data-verification-code style="margin:0;color:#012d1d;font-family:Consolas,'Courier New',monospace;font-size:36px;font-weight:700;letter-spacing:8px;line-height:1.3;">${code}</p><p style="margin:12px 0 0;color:#717973;font-size:12px;line-height:1.6;">5 分钟内有效 · 仅限本次操作</p></td></tr></table>` : ""}
 ${paragraphs}
 ${purpose.verification ? '<p style="margin:22px 0 0;padding-top:18px;border-top:1px solid #eeeeeb;color:#717973;font-size:12px;line-height:1.8;">请勿向任何人透露或转发验证码。如果不是你本人操作，请忽略这封邮件。</p>' : ""}

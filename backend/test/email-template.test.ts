@@ -9,6 +9,9 @@ import { renderEmailHtml } from "../src/email-template";
 test("verification emails highlight one code, preserve action details, and do not expose codes in the preheader", () => {
   for (const purpose of [
     "校园邮箱验证码",
+    "邮箱登录验证码",
+    "设置登录密码验证码",
+    "账号找回验证码",
     "确认当前校园邮箱",
     "确认新的校园邮箱",
     "辅助邮箱登录验证码",
@@ -117,4 +120,20 @@ test("Resend receives the branded sender and both representations with the origi
     if (previousFrom === undefined) delete process.env.RESEND_FROM;
     else process.env.RESEND_FROM = previousFrom;
   }
+});
+
+test("login and recovery emails explain the account entered after verification", () => {
+  const login = renderEmailHtml({
+    subject: "深小狸：邮箱登录验证码",
+    text: "你的验证码是 123456，5 分钟内有效。",
+  });
+  expect(login).toContain("首次验证将自动创建账号");
+  const recovery = renderEmailHtml({
+    subject: "深小狸：账号找回验证码",
+    text: "原账号：student@stu.suat-sz.edu.cn\n你的登录验证码是 654321，5 分钟内有效。",
+  });
+  expect(recovery).toContain("验证后将回到原账号");
+  expect(recovery).toContain("原账号<br>");
+  expect(recovery).toContain("student@stu.suat-sz.edu.cn");
+  expect(recovery.match(/654321/g)).toHaveLength(1);
 });

@@ -1,9 +1,15 @@
 import { resolve } from "node:path";
 import { createApp } from "./app";
 import { createDatabase } from "./db";
+import { localAcademicFixture } from "./local-testing-academic";
 
 const production = process.env.NODE_ENV === "production";
 const localTestMode = process.env.LOCAL_TEST_MODE === "true";
+const academicFixture = process.env.ACADEMIC_IMPORT_FIXTURE === "true";
+if (academicFixture && (!localTestMode || production))
+  throw new Error(
+    "Academic fixtures require the isolated local testing environment",
+  );
 if (localTestMode && production)
   throw new Error("Local test mode is forbidden in production");
 if (localTestMode) {
@@ -59,9 +65,11 @@ const db = createDatabase({
 const app = createApp({
   database: db,
   demoAuthEnabled,
+  qqEmailLoginEnabled: process.env.QQ_EMAIL_LOGIN_ENABLED === "true",
   localTestMode,
   production,
   sessionSecret: process.env.SESSION_SECRET,
+  academicClientFactory: academicFixture ? localAcademicFixture : undefined,
 });
 const port = Number(process.env.PORT ?? 8787);
 

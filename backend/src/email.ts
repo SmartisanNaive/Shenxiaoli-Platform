@@ -30,6 +30,18 @@ export function normalizeCampusEmail(value: string): string | null {
     : null;
 }
 
+export function normalizeLoginEmail(
+  value: string,
+  qqEmailLoginEnabled = false,
+): string | null {
+  const email = normalizeEmail(value);
+  return email &&
+    (normalizeCampusEmail(email) ||
+      (qqEmailLoginEnabled && email.split("@")[1] === "qq.com"))
+    ? email
+    : null;
+}
+
 export async function deliverCampusEmail(
   message: EmailMessage,
   override?: EmailSender,

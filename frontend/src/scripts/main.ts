@@ -1,3 +1,4 @@
+import { initPasswordForm } from './password-settings';
 import {
   api,
   escapeHtml,
@@ -85,7 +86,7 @@ function initToast(): void {
         : detail.tone === 'success'
           ? 'border-secondary/30 bg-secondary-container text-on-secondary-container'
           : 'border-outline-variant bg-surface text-on-surface';
-    toast.className = `rounded-xl border px-4 py-3 text-body-sm shadow-lg ${toneClass}`;
+    toast.className = `rounded border px-4 py-3 text-body-sm shadow-lg ${toneClass}`;
     toast.textContent = detail.message;
     container.append(toast);
     window.setTimeout(() => toast.remove(), 4200);
@@ -100,7 +101,10 @@ function authWidget(): void {
   const root = document.querySelector<HTMLElement>('[data-auth-widget]');
   if (!root) return;
   const toggle = root.querySelector<HTMLButtonElement>('[data-auth-toggle]');
-  const panel = root.querySelector<HTMLElement>('[data-auth-panel]');
+  const dialog = root.querySelector<HTMLDialogElement>('[data-auth-dialog]')!;
+  const panel = root.querySelector<HTMLElement>('[data-auth-panel]')!;
+  const accountMenu = root.querySelector<HTMLElement>('[data-account-menu]')!;
+  const dialogTitle = root.querySelector<HTMLElement>('[data-auth-title]')!;
   const label = root.querySelector<HTMLElement>('[data-auth-label]');
   const message = root.querySelector<HTMLElement>('[data-auth-message]');
   const loginOptions = root.querySelector<HTMLElement>(
@@ -108,40 +112,105 @@ function authWidget(): void {
   );
   const adminLink = root.querySelector<HTMLAnchorElement>('[data-admin-link]');
   const logout = root.querySelector<HTMLButtonElement>('[data-auth-logout]');
-  const emailForm = root.querySelector<HTMLFormElement>('[data-email-login]');
-  const emailInput = root.querySelector<HTMLInputElement>('[data-login-email]');
-  const nameInput = root.querySelector<HTMLInputElement>('[data-login-name]');
-  const otpInput = root.querySelector<HTMLInputElement>('[data-login-otp]');
-  const nameField = root.querySelector<HTMLElement>('[data-login-name-field]');
-  const otpField = root.querySelector<HTMLElement>('[data-login-otp-field]');
-  const sendButton = root.querySelector<HTMLButtonElement>('[data-login-send]');
-  const verifyButton = root.querySelector<HTMLButtonElement>(
-    '[data-login-verify]',
-  );
-  let pendingEmail = '';
-  let recoveryChallengeId = '';
-  const recoveryToggle = root.querySelector<HTMLInputElement>(
-    '[data-login-recovery]',
-  );
-  let pendingRecovery = false;
+  const views = root.querySelectorAll<HTMLElement>('[data-auth-view]');
+  const switches =
+    root.querySelectorAll<HTMLButtonElement>('[data-auth-switch]');
+  type AuthView = 'password' | 'login' | 'recovery' | 'reset';
+  let activeView: AuthView = 'password';
+  const passwordLogin = root.querySelector<HTMLFormElement>(
+    '[data-password-login]',
+  )!;
+  const passwordEmail = passwordLogin.elements.namedItem(
+    'email',
+  ) as HTMLInputElement;
+  const passwordInput = passwordLogin.elements.namedItem(
+    'password',
+  ) as HTMLInputElement;
+  const passwordError = passwordLogin.querySelector<HTMLElement>(
+    '[data-password-login-error]',
+  )!;
+  let authenticated = false;
+  let demoAuthAvailable = false;
+  let busy = false;
 
+  const renderViews = (): void => {
+    views.forEach((view) => {
+      view.hidden = authenticated || view.dataset.authView !== activeView;
+    });
+    root.querySelector<HTMLElement>('[data-auth-methods]')!.hidden =
+      authenticated || !['login', 'password'].includes(activeView);
+    root.querySelector<HTMLElement>('[data-auth-help]')!.hidden =
+      authenticated || !['login', 'password'].includes(activeView);
+    switches.forEach((button) => {
+      if (!button.closest('[data-auth-methods]')) return;
+      const selected = button.dataset.authSwitch === activeView;
+      button.setAttribute('aria-pressed', String(selected));
+    });
+    dialogTitle.textContent = {
+      password: '登录深小狸',
+      login: '邮箱登录 / 注册',
+      recovery: '找回账号',
+      reset: '设置登录密码',
+    }[activeView];
+    if (loginOptions)
+      loginOptions.hidden =
+        authenticated ||
+        !demoAuthAvailable ||
+        !['login', 'password'].includes(activeView);
+  };
   const close = (): void => {
-    panel?.classList.add('hidden');
+    dialog.close();
+    accountMenu.hidden = true;
+    document.documentElement.classList.remove('auth-modal-open');
     toggle?.setAttribute('aria-expanded', 'false');
   };
   const render = (state: SessionState): void => {
     if (label) label.textContent = state.user?.displayName ?? '未登录';
+    const policy = root.querySelector<HTMLElement>('[data-login-email-policy]');
+    if (policy) {
+      policy.textContent = state.qqEmailLoginEnabled
+        ? '支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱；测试期间临时支持 @qq.com 邮箱。邮箱验证仅证明邮箱访问权，不代表学籍认证。'
+        : '注册仅接受 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。';
+    }
+    const emailInput =
+      root.querySelector<HTMLInputElement>('[data-login-email]');
+    const recoveryEmail = root.querySelector<HTMLInputElement>(
+      '[data-recovery-email]',
+    );
+    const emailHint = root.querySelector<HTMLElement>('[data-auth-email-hint]');
+    if (emailHint)
+      emailHint.textContent = state.qqEmailLoginEnabled
+        ? '支持校园邮箱 · QQ 邮箱仅测试期间开放'
+        : '支持 SUAT 校园邮箱登录';
+    const qqNote = root.querySelector<HTMLElement>('[data-login-qq-note]');
+    if (qqNote) qqNote.hidden = !state.qqEmailLoginEnabled;
+    if (recoveryEmail)
+      recoveryEmail.placeholder = state.qqEmailLoginEnabled
+        ? '原校园邮箱或 QQ 账号邮箱'
+        : '原校园邮箱';
+    if (emailInput)
+      emailInput.placeholder = state.qqEmailLoginEnabled
+        ? '校园邮箱或 QQ 邮箱'
+        : 'name@stu.suat-sz.edu.cn';
     if (message) {
       message.textContent = state.user
         ? `${state.user.displayName} · ${state.syntheticIdentity ? '本地合成测试身份（未进行真实收信验证）' : state.campusEmailVerified ? '校园邮箱已验证' : state.user.emailVerified ? '邮箱已验证' : state.user.role === 'moderator' ? '本地审核员演示身份' : '本地演示身份'}`
         : state.demoAuthAvailable
           ? '使用校园邮箱验证码登录；也可选择本地演示身份。'
-          : '使用校园邮箱登录；已绑定辅助邮箱的账号可通过辅助邮箱验证。';
+          : state.qqEmailLoginEnabled
+            ? '支持校园邮箱和测试用 QQ 邮箱登录。'
+            : '使用校园邮箱登录。';
     }
-    if (emailForm) emailForm.hidden = Boolean(state.authenticated);
-    if (loginOptions)
-      loginOptions.hidden =
-        Boolean(state.authenticated) || !state.demoAuthAvailable;
+    authenticated = state.authenticated;
+    demoAuthAvailable = state.demoAuthAvailable;
+    if (authenticated) {
+      flows.forEach((flow) => flow.reset());
+      resetForm.reset();
+      passwordInput.value = '';
+      passwordError.textContent = '';
+      activeView = 'password';
+    }
+    renderViews();
     if (adminLink) {
       const canModerate =
         state.user?.role === 'moderator' || state.user?.role === 'admin';
@@ -151,19 +220,85 @@ function authWidget(): void {
     logout?.classList.toggle('hidden', !state.authenticated);
   };
 
+  const open = (): void => {
+    if (authenticated) {
+      accountMenu.hidden = false;
+    } else {
+      if (!dialog.open) dialog.showModal();
+      document.documentElement.classList.add('auth-modal-open');
+      if (!busy) selectView(activeView);
+    }
+    toggle?.setAttribute('aria-expanded', 'true');
+  };
   toggle?.addEventListener('click', () => {
-    const opening = panel?.classList.contains('hidden') ?? false;
-    panel?.classList.toggle('hidden', !opening);
-    toggle.setAttribute('aria-expanded', String(opening));
+    if (dialog.open || !accountMenu.hidden) close();
+    else open();
+  });
+  root.querySelector('[data-auth-close]')?.addEventListener('click', close);
+  dialog.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab') return;
+    const controls = [
+      ...dialog.querySelectorAll<HTMLElement>(
+        'button, input, select, textarea, a[href], summary, [tabindex]',
+      ),
+    ].filter(
+      (control) =>
+        control.tabIndex >= 0 &&
+        !control.matches(':disabled') &&
+        control.getClientRects().length > 0,
+    );
+    const first = controls[0];
+    const last = controls.at(-1);
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last?.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first?.focus();
+    }
+  });
+  dialog.addEventListener('cancel', (event) => {
+    event.preventDefault();
+    close();
+  });
+  dialog.addEventListener('close', () => {
+    document.documentElement.classList.remove('auth-modal-open');
+    toggle?.setAttribute('aria-expanded', 'false');
+  });
+  dialog.addEventListener('click', (event) => {
+    if (event.target !== dialog) return;
+    const bounds = panel.getBoundingClientRect();
+    if (
+      event.clientX < bounds.left ||
+      event.clientX > bounds.right ||
+      event.clientY < bounds.top ||
+      event.clientY > bounds.bottom
+    )
+      close();
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && !accountMenu.hidden) {
+      close();
+      toggle?.focus();
+    }
   });
   document.addEventListener('click', (event) => {
-    if (!root.contains(event.target as Node)) close();
+    if (
+      event.target instanceof Element &&
+      event.target.closest('[data-open-login]')
+    ) {
+      if (!busy) selectView('password');
+      open();
+      return;
+    }
+    if (!dialog.open && !root.contains(event.target as Node)) close();
   });
   root
     .querySelectorAll<HTMLButtonElement>('[data-demo-login]')
     .forEach((button) => {
       button.addEventListener('click', async () => {
-        button.disabled = true;
+        if (busy) return;
+        setBusy(true);
         try {
           const role =
             button.dataset.demoLogin === 'moderator' ? 'moderator' : 'student';
@@ -184,7 +319,7 @@ function authWidget(): void {
             'error',
           );
         } finally {
-          button.disabled = false;
+          setBusy(false);
         }
       });
     });
@@ -206,102 +341,199 @@ function authWidget(): void {
       );
     }
   });
-  emailForm?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    if (!emailInput || !sendButton || !emailInput.reportValidity()) return;
-    const email = emailInput.value.trim().toLowerCase();
-    pendingEmail = email;
-    sendButton.disabled = true;
-    emailInput.disabled = true;
-    if (recoveryToggle) recoveryToggle.disabled = true;
-    try {
-      pendingRecovery = Boolean(recoveryToggle?.checked);
-      if (pendingRecovery) {
-        const result = await api<{ challengeId: string }>(
-          '/api/auth/recovery-email/login/request',
-          { method: 'POST', body: jsonBody({ email }) },
-        );
-        recoveryChallengeId = result.challengeId;
-      } else {
-        await api('/api/auth/email-otp/send-verification-otp', {
-          method: 'POST',
-          body: jsonBody({ email, type: 'sign-in' }),
-        });
-      }
-      nameField?.classList.toggle('hidden', pendingRecovery);
-      otpField?.classList.remove('hidden');
-      verifyButton?.classList.remove('hidden');
-      sendButton.textContent = '重新发送验证码';
-      showToast(
-        pendingRecovery
-          ? '如果账号已绑定辅助邮箱，验证码已发送到该辅助邮箱。'
-          : '验证码已发送到校园邮箱。',
-        'success',
-      );
-      otpInput?.focus();
-    } catch (error) {
-      showToast(
-        error instanceof Error ? error.message : '验证码发送失败',
-        'error',
-      );
-    } finally {
-      sendButton.disabled = false;
-      emailInput.disabled = false;
-      if (recoveryToggle) recoveryToggle.disabled = false;
-    }
-  });
-  verifyButton?.addEventListener('click', async () => {
-    if (!otpInput || !pendingEmail) return;
-    verifyButton.disabled = true;
-    try {
-      if (pendingRecovery) {
-        await api('/api/auth/recovery-email/login/confirm', {
-          method: 'POST',
-          body: jsonBody({
-            email: pendingEmail,
-            challengeId: recoveryChallengeId,
-            otp: otpInput.value.trim(),
-          }),
-        });
-      } else {
-        await api('/api/auth/sign-in/email-otp', {
-          method: 'POST',
-          body: jsonBody({
-            email: pendingEmail,
-            otp: otpInput.value.trim(),
-            name:
-              nameInput?.value.trim() ||
-              pendingEmail.split('@')[0] ||
-              '校园同学',
-          }),
-        });
-      }
-      const state = await api<SessionState>('/api/session');
-      if (!state.authenticated || !state.user?.emailVerified)
-        throw new Error('邮箱验证尚未完成，请重新登录。');
-      render(state);
-      close();
-      showToast('邮箱已验证，登录成功。', 'success');
-      window.dispatchEvent(
-        new CustomEvent('shenxiaoli:session-changed', { detail: state }),
-      );
-    } catch (error) {
-      showToast(error instanceof Error ? error.message : '登录失败', 'error');
-    } finally {
-      verifyButton.disabled = false;
-    }
-  });
-  const resetLogin = () => {
-    pendingEmail = '';
-    recoveryChallengeId = '';
-    otpField?.classList.add('hidden');
-    nameField?.classList.add('hidden');
-    verifyButton?.classList.add('hidden');
-    if (sendButton) sendButton.textContent = '发送验证码';
-    if (otpInput) otpInput.value = '';
+  const setBusy = (value: boolean): void => {
+    busy = value;
+    root
+      .querySelectorAll<HTMLButtonElement | HTMLInputElement>(
+        '[data-auth-view] button, [data-auth-view] input, [data-auth-switch], [data-demo-login]',
+      )
+      .forEach((control) => {
+        control.disabled = value;
+      });
   };
-  emailInput?.addEventListener('input', resetLogin);
-  recoveryToggle?.addEventListener('change', resetLogin);
+  const initFlow = (mode: 'login' | 'recovery') => {
+    const form = root.querySelector<HTMLFormElement>(
+      mode === 'login' ? '[data-email-login]' : '[data-account-recovery]',
+    )!;
+    const email = form.querySelector<HTMLInputElement>(`[data-${mode}-email]`)!;
+    const otp = form.querySelector<HTMLInputElement>(`[data-${mode}-otp]`)!;
+    const otpField = form.querySelector<HTMLElement>(
+      `[data-${mode}-otp-field]`,
+    )!;
+    const send = form.querySelector<HTMLButtonElement>(`[data-${mode}-send]`)!;
+    const verify = form.querySelector<HTMLButtonElement>(
+      `[data-${mode}-verify]`,
+    )!;
+    const resend = form.querySelector<HTMLButtonElement>(
+      `[data-${mode}-resend]`,
+    )!;
+    const status = form.querySelector<HTMLElement>(`[data-${mode}-status]`)!;
+    const error = form.querySelector<HTMLElement>(`[data-${mode}-error]`)!;
+    let pendingEmail = '';
+    let challengeId = '';
+    const reset = (): void => {
+      pendingEmail = '';
+      challengeId = '';
+      otp.value = '';
+      otpField.hidden = true;
+      verify.hidden = true;
+      resend.hidden = true;
+      send.hidden = false;
+      status.textContent = '';
+      error.textContent = '';
+    };
+    const requestCode = async (): Promise<void> => {
+      if (busy || authenticated || activeView !== mode) return;
+      email.value = email.value.trim();
+      if (!email.reportValidity()) return;
+      const target = email.value.toLowerCase();
+      reset();
+      setBusy(true);
+      try {
+        let issuedChallengeId = '';
+        if (mode === 'recovery') {
+          const result = await api<{ challengeId: string }>(
+            '/api/auth/recovery-email/login/request',
+            { method: 'POST', body: jsonBody({ email: target }) },
+          );
+          issuedChallengeId = result.challengeId;
+        } else {
+          await api('/api/auth/email-otp/send-verification-otp', {
+            method: 'POST',
+            body: jsonBody({ email: target, type: 'sign-in' }),
+          });
+        }
+        pendingEmail = target;
+        challengeId = issuedChallengeId;
+        otpField.hidden = false;
+        verify.hidden = false;
+        resend.hidden = false;
+        send.hidden = true;
+        status.textContent =
+          mode === 'recovery'
+            ? '如果该账号可恢复且已绑定辅助邮箱，验证码将发送至该辅助邮箱。验证后回到原账号。'
+            : `验证码已发送至 ${target}，验证后进入该邮箱对应的账号。`;
+      } catch (reason) {
+        error.textContent =
+          reason instanceof Error ? reason.message : '验证码发送失败，请重试。';
+      } finally {
+        setBusy(false);
+        if (pendingEmail) otp.focus();
+      }
+    };
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      if (busy || authenticated || activeView !== mode) return;
+      if (!pendingEmail) {
+        await requestCode();
+        return;
+      }
+      if (!otp.reportValidity()) return;
+      error.textContent = '';
+      setBusy(true);
+      try {
+        await api(
+          mode === 'recovery'
+            ? '/api/auth/recovery-email/login/confirm'
+            : '/api/auth/sign-in/email-otp',
+          {
+            method: 'POST',
+            body: jsonBody(
+              mode === 'recovery'
+                ? { email: pendingEmail, challengeId, otp: otp.value.trim() }
+                : {
+                    email: pendingEmail,
+                    otp: otp.value.trim(),
+                    name: pendingEmail.split('@')[0] || '校园同学',
+                  },
+            ),
+          },
+        );
+        await completeSignIn(
+          mode === 'recovery' ? '已回到原账号。' : '邮箱已验证，登录成功。',
+        );
+      } catch (reason) {
+        error.textContent =
+          reason instanceof Error ? reason.message : '验证失败，请重试。';
+      } finally {
+        setBusy(false);
+      }
+    });
+    resend.addEventListener('click', () => {
+      void requestCode();
+    });
+    email.addEventListener('input', reset);
+    return { reset, focus: () => email.focus() };
+  };
+  const completeSignIn = async (successMessage: string): Promise<void> => {
+    const state = await api<SessionState>('/api/session');
+    if (!state.authenticated || !state.user?.emailVerified)
+      throw new Error('登录尚未完成，请重新登录。');
+    render(state);
+    close();
+    showToast(successMessage, 'success');
+    window.dispatchEvent(
+      new CustomEvent('shenxiaoli:session-changed', { detail: state }),
+    );
+  };
+  const flows = [initFlow('login'), initFlow('recovery')];
+  const resetForm = initPasswordForm(
+    root.querySelector<HTMLElement>('[data-auth-view="reset"]')!,
+    {
+      onBusy: setBusy,
+      onSuccess: (email) => {
+        selectView('password');
+        passwordEmail.value = email;
+        passwordInput.focus();
+        showToast('登录密码已设置，请使用新密码登录。', 'success');
+      },
+    },
+  );
+  const selectView = (mode: AuthView): void => {
+    flows.forEach((flow) => flow.reset());
+    resetForm.reset();
+    passwordInput.value = '';
+    passwordError.textContent = '';
+    activeView = mode;
+    renderViews();
+    if (mode === 'password') passwordEmail.focus();
+    else if (mode === 'reset') resetForm.focus();
+    else flows[mode === 'login' ? 0 : 1]!.focus();
+  };
+  switches.forEach((button) => {
+    button.addEventListener('click', () => {
+      if (!busy) selectView(button.dataset.authSwitch as AuthView);
+    });
+  });
+  passwordLogin.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    if (busy || authenticated || activeView !== 'password') return;
+    passwordEmail.value = passwordEmail.value.trim();
+    if (!passwordLogin.reportValidity()) return;
+    passwordError.textContent = '';
+    setBusy(true);
+    try {
+      await api('/api/auth/sign-in/email', {
+        method: 'POST',
+        body: jsonBody({
+          email: passwordEmail.value.toLowerCase(),
+          password: passwordInput.value,
+        }),
+      });
+      await completeSignIn('登录成功。');
+    } catch (reason) {
+      passwordError.textContent =
+        reason instanceof Error && reason.message.includes('429')
+          ? '尝试次数过多，请稍后重试。'
+          : '邮箱或密码不正确，请重试；未设置密码可使用验证码登录。';
+    } finally {
+      setBusy(false);
+    }
+  });
+  passwordEmail.addEventListener('input', () => {
+    passwordInput.value = '';
+    passwordError.textContent = '';
+  });
   api<SessionState>('/api/session')
     .then(render)
     .catch(() => {
@@ -319,7 +551,7 @@ function searchResults(): void {
     wrapper.classList.add('relative');
     const dropdown = document.createElement('div');
     dropdown.className =
-      'absolute left-0 right-0 top-full z-40 mt-2 hidden max-h-80 overflow-auto rounded-xl border border-surface-variant bg-surface p-2 shadow-xl';
+      'absolute left-0 right-0 top-full z-40 mt-2 hidden max-h-80 overflow-auto rounded border border-surface-variant bg-surface p-2 shadow-sm';
     dropdown.setAttribute('role', 'listbox');
     wrapper.append(dropdown);
     let timer = 0;
@@ -389,7 +621,7 @@ function inboxDialog(): void {
   if (!button) return;
   const dialog = document.createElement('dialog');
   dialog.className =
-    'w-[min(92vw,38rem)] rounded-2xl border border-surface-variant bg-surface p-0 text-on-surface shadow-2xl backdrop:bg-primary/30';
+    'w-[min(92vw,38rem)] rounded-md border border-surface-variant bg-surface p-0 text-on-surface shadow-md backdrop:bg-primary/30';
   dialog.innerHTML = `<div class="flex items-center justify-between border-b border-surface-variant px-6 py-4"><div><h2 class="font-headline-md text-primary">社区消息</h2><p class="mt-1 text-body-sm text-outline">通知、联系请求和私信入口</p></div><button class="rounded-lg p-2 text-outline hover:bg-surface-container-low" data-close-inbox aria-label="关闭">关闭</button></div><div class="max-h-[65vh] overflow-auto p-6" data-inbox-content><p class="text-body-sm text-outline">正在加载…</p></div><div class="flex flex-wrap gap-2 border-t border-surface-variant px-6 py-4"><a class="rounded-lg bg-primary px-4 py-2 text-label-sm text-on-primary" href="./account.html#requests">查看联系请求</a><a class="rounded-lg border border-outline-variant px-4 py-2 text-label-sm text-primary" href="./account.html#messages">打开私信</a><a class="rounded-lg border border-outline-variant px-4 py-2 text-label-sm text-primary" href="./account.html#notifications">全部通知</a></div>`;
   document.body.append(dialog);
   const content = dialog.querySelector<HTMLElement>('[data-inbox-content]');
@@ -504,11 +736,8 @@ function enforcePageAccess(): void {
   const gate = document.createElement('main');
   gate.className = 'min-h-[65vh] bg-background px-4 pb-16 pt-32 sm:px-6';
   gate.innerHTML =
-    '<section class="mx-auto max-w-xl rounded-2xl bg-surface-container-lowest p-8 text-center shadow-sm"><span class="material-symbols-outlined text-4xl text-secondary" aria-hidden="true">lock</span><h1 class="mt-4 font-headline-lg text-primary">登录后查看校园内容</h1><p class="mt-3 text-body-md text-on-surface-variant" data-gate-message>正在检查登录状态…</p><button class="mt-5 rounded-lg bg-primary px-5 py-2.5 text-label-sm text-on-primary" data-open-login>校园邮箱登录</button><a class="mt-4 hidden text-label-sm text-primary underline" data-appeal-link href="./account.html#appeals">查看处置记录并提交申诉</a></section>';
+    '<section class="mx-auto max-w-xl rounded-md bg-surface-container-lowest p-8 text-center shadow-sm"><span class="material-symbols-outlined text-4xl text-secondary" aria-hidden="true">lock</span><h1 class="mt-4 font-headline-lg text-primary">登录后查看校园内容</h1><p class="mt-3 text-body-md text-on-surface-variant" data-gate-message>正在检查登录状态…</p><button class="mt-5 rounded-lg bg-primary px-5 py-2.5 text-label-sm text-on-primary" data-open-login>校园邮箱登录</button><a class="mt-4 hidden text-label-sm text-primary underline" data-appeal-link href="./account.html#appeals">查看处置记录并提交申诉</a></section>';
   main.before(gate);
-  gate.querySelector('[data-open-login]')?.addEventListener('click', () => {
-    document.querySelector<HTMLButtonElement>('[data-auth-toggle]')?.click();
-  });
   let initialized = false;
   const update = (state: SessionState): void => {
     const isAccountPage = window.location.pathname.endsWith('account.html');
@@ -534,12 +763,20 @@ function enforcePageAccess(): void {
     main.hidden = true;
     gate.hidden = false;
     const message = gate.querySelector<HTMLElement>('[data-gate-message]');
+    const loginButton =
+      gate.querySelector<HTMLButtonElement>('[data-open-login]');
+    if (loginButton)
+      loginButton.textContent = state.qqEmailLoginEnabled
+        ? '校园 / QQ 邮箱登录'
+        : '校园邮箱登录';
     if (message)
       message.textContent =
         state.user?.accountStatus === 'banned' ||
         state.user?.accountStatus === 'deleting'
           ? '账号当前处于受限状态。如需查看处罚或申诉，请联系社区管理。'
-          : '课程、集市、技能互助和树洞仅向已登录的校园邮箱账号开放。';
+          : state.qqEmailLoginEnabled
+            ? '请验证校园邮箱或 QQ 邮箱后查看校园内容，QQ 邮箱入口仅在测试期间开放。'
+            : '课程、集市、技能互助和树洞仅向已登录的校园邮箱账号开放。';
     gate
       .querySelector<HTMLAnchorElement>('[data-appeal-link]')
       ?.classList.toggle('hidden', state.user?.accountStatus !== 'banned');

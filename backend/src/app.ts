@@ -13,8 +13,11 @@ import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { SCHEMA_VERSION, type AppDatabase } from "./db";
 import { createAuth, deliverCampusEmail, normalizeCampusEmail } from "./auth";
+import { normalizeLoginEmail } from "./email";
 import { enqueueEmail } from "./notifications";
 import { Resend } from "resend";
+import { createCourseImports } from "./course-imports";
+import type { AcademicClient } from "./academic-client";
 import {
   initializeLocalTesting,
   isSyntheticTestEmail,
@@ -36,11 +39,14 @@ interface AppConfig {
   database: AppDatabase;
   localTestMode?: boolean;
   demoAuthEnabled?: boolean;
+  qqEmailLoginEnabled?: boolean;
   production?: boolean;
   sessionSecret?: string;
   allowedOrigins?: string[];
   uploadsDir?: string;
   sendEmail?: Parameters<typeof createAuth>[0]["sendEmail"];
+  academicClientFactory?: () => AcademicClient;
+  academicNow?: () => number;
 }
 
 interface Variables {
@@ -427,6 +433,9 @@ export function createApp(config: AppConfig): Hono<AppContext> {
   const { database: db } = config;
   const production = config.production ?? process.env.NODE_ENV === "production";
   const demoAuthEnabled = Boolean(config.demoAuthEnabled) && !production;
+  const qqEmailLoginEnabled = Boolean(config.qqEmailLoginEnabled);
+  const normalizeAllowedEmail = (value: string) =>
+    normalizeLoginEmail(value, qqEmailLoginEnabled);
   if (production && config.localTestMode)
     throw new Error("Local test mode must not be enabled in production");
   if (config.localTestMode) initializeLocalTesting(db);
@@ -477,6 +486,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         secret,
         trustedOrigins: [...allowedOrigins],
         sendEmail,
+        qqEmailLoginEnabled,
       });
       // Bound memory when a tunnel changes hosts or a client varies Host.
       if (authInstances.size >= 32)
@@ -487,12 +497,31 @@ export function createApp(config: AppConfig): Hono<AppContext> {
   };
 
   const app = new Hono<AppContext>();
+  const courseImports = createCourseImports({
+    db,
+    secret,
+    factory: config.academicClientFactory,
+    now: config.academicNow,
+    rateLimit: (userId, action, limit, windowMs) =>
+      consumeRateLimit(db, userId, action, limit, windowMs),
+  });
 
   app.use("*", async (c, next) => {
     c.header("X-Content-Type-Options", "nosniff");
     c.header("Referrer-Policy", "strict-origin-when-cross-origin");
     c.header("X-Frame-Options", "DENY");
     await next();
+    if (
+      c.res.status < 400 &&
+      [
+        "/api/auth/sign-out",
+        "/api/auth/logout",
+        "/api/me/account/delete",
+      ].includes(c.req.path)
+    ) {
+      const user = c.get("user");
+      if (user) courseImports.clear(user.id);
+    }
   });
 
   app.use("*", async (c, next) => {
@@ -537,7 +566,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       headers: c.req.raw.headers,
     });
     if (authSession?.user.emailVerified) {
-      const email = normalizeCampusEmail(authSession.user.email);
+      const email = normalizeAllowedEmail(authSession.user.email);
       if (email) {
         const now = nowIso();
         db.query(
@@ -581,6 +610,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       "/api/testing",
       localTestRouter(db, async () => {
         authInstances.clear();
+        courseImports.clear();
         if (
           uploadsDir.startsWith(
             `${resolve(import.meta.dir, "../../.local-test")}/`,
@@ -589,6 +619,8 @@ export function createApp(config: AppConfig): Hono<AppContext> {
           await rm(uploadsDir, { recursive: true, force: true });
       }),
     );
+
+  app.route("/api/me", courseImports.router);
 
   app.get("/api/health", (c) =>
     c.json({ status: "ok", service: "shenxiaoli-api" }),
@@ -656,6 +688,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
       authenticated: Boolean(user),
       user,
       demoAuthAvailable: demoAuthEnabled,
+      qqEmailLoginEnabled,
       localTestMode: Boolean(config.localTestMode),
       syntheticIdentity: Boolean(
         config.localTestMode && user?.email && isSyntheticTestEmail(user.email),
@@ -785,6 +818,10 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         user.id,
       );
       db.query("DELETE FROM content_favorites WHERE user_id = ?").run(user.id);
+      db.query("DELETE FROM user_courses WHERE user_id = ?").run(user.id);
+      db.query("DELETE FROM academic_import_batches WHERE user_id = ?").run(
+        user.id,
+      );
       db.query("DELETE FROM notification_preferences WHERE user_id = ?").run(
         user.id,
       );
@@ -2101,7 +2138,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     const page = pagination(c);
     const rows = db
       .query(
-        `SELECT c.id, c.code, c.title, c.english_title AS englishTitle,
+        `SELECT c.id, c.code, c.code_pending AS codePending, c.credits_known AS creditsKnown, c.title, c.english_title AS englishTitle,
            c.department, c.course_type AS courseType,
            c.enrollment_type AS enrollmentType, c.credits, c.term,
            c.assessment, ROUND(COALESCE(AVG(r.rating), 0), 1) AS rating,
@@ -2135,7 +2172,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     requireUser(c);
     const course = db
       .query(
-        `SELECT c.id, c.code, c.title, c.english_title AS englishTitle, c.department,
+        `SELECT c.id, c.code, c.code_pending AS codePending, c.credits_known AS creditsKnown, c.title, c.english_title AS englishTitle, c.department,
       c.course_type AS courseType, c.enrollment_type AS enrollmentType, c.credits, c.term, c.assessment,
       ROUND(COALESCE(AVG(r.rating), 0), 1) AS rating,
       ROUND(COALESCE(AVG(r.difficulty), c.difficulty), 1) AS difficulty, COUNT(r.id) AS reviewCount
@@ -2147,13 +2184,19 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     if (!course) throw new HttpError(404, "NOT_FOUND", "课程不存在");
     const offerings = db
       .query(
-        "SELECT id, term, section FROM course_offerings WHERE course_id = ? AND active = 1 ORDER BY term DESC, section",
+        "SELECT id, term, section, imported_teachers_json AS teacherNamesJson FROM course_offerings WHERE course_id = ? AND active = 1 ORDER BY term DESC, section",
       )
-      .all(course.id) as { id: string; term: string; section: string }[];
+      .all(course.id) as {
+      id: string;
+      term: string;
+      section: string;
+      teacherNamesJson: string;
+    }[];
     return c.json({
       ...course,
-      offerings: offerings.map((offering) => ({
+      offerings: offerings.map(({ teacherNamesJson, ...offering }) => ({
         ...offering,
+        teacherNames: parseJsonArray(teacherNamesJson),
         teachers: db
           .query(
             `SELECT t.id, t.name, t.department FROM offering_teachers ot JOIN teachers t ON t.id = ot.teacher_id WHERE ot.offering_id = ? AND t.active = 1 ORDER BY t.name, t.id`,
@@ -4072,6 +4115,55 @@ export function createApp(config: AppConfig): Hono<AppContext> {
 
   app.all("/api/auth/*", async (c) => {
     const auth = c.get("auth");
+    const passwordLogin = c.req.path === "/api/auth/sign-in/email";
+    const passwordResetRequest = [
+      "/api/auth/email-otp/request-password-reset",
+      "/api/auth/forget-password/email-otp",
+    ].includes(c.req.path);
+    const passwordResetConfirm =
+      c.req.path === "/api/auth/email-otp/reset-password";
+    if (c.req.method === "POST" && (passwordLogin || passwordResetConfirm)) {
+      const body: unknown = await c.req.raw
+        .clone()
+        .json()
+        .catch(() => null);
+      const email =
+        isRecord(body) && typeof body.email === "string"
+          ? normalizeAllowedEmail(body.email)
+          : null;
+      if (passwordLogin && email)
+        return auth.handler(
+          new Request(c.req.raw, {
+            body: JSON.stringify({ ...(isRecord(body) ? body : {}), email }),
+          }),
+        );
+      const account = email
+        ? (db
+            .query(
+              "SELECT a.emailVerified, u.account_status FROM auth_users a LEFT JOIN users u ON u.id = a.id WHERE a.email = ? COLLATE NOCASE",
+            )
+            .get(email) as {
+            emailVerified: number;
+            account_status: string | null;
+          } | null)
+        : null;
+      if (
+        !account?.emailVerified ||
+        ["banned", "deleting"].includes(account.account_status ?? "")
+      )
+        throw new HttpError(
+          passwordLogin ? 401 : 400,
+          passwordLogin ? "INVALID_CREDENTIALS" : "INVALID_OTP",
+          passwordLogin
+            ? "邮箱或密码不正确，或账号暂不可用。"
+            : "验证码无效、已过期或账号暂不可用。",
+        );
+      return auth.handler(
+        new Request(c.req.raw, {
+          body: JSON.stringify({ ...(isRecord(body) ? body : {}), email }),
+        }),
+      );
+    }
     if (
       c.req.method === "POST" &&
       c.req.path === "/api/auth/sign-in/email-otp"
@@ -4082,7 +4174,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const email =
         isRecord(body) && typeof body.email === "string"
-          ? normalizeCampusEmail(body.email)
+          ? normalizeAllowedEmail(body.email)
           : null;
       if (email) {
         const deleting = db
@@ -4100,7 +4192,8 @@ export function createApp(config: AppConfig): Hono<AppContext> {
     }
     if (
       c.req.method === "POST" &&
-      c.req.path === "/api/auth/email-otp/send-verification-otp"
+      (c.req.path === "/api/auth/email-otp/send-verification-otp" ||
+        passwordResetRequest)
     ) {
       const body: unknown = await c.req.raw
         .clone()
@@ -4108,26 +4201,33 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const email =
         isRecord(body) && typeof body.email === "string"
-          ? normalizeCampusEmail(body.email)
+          ? normalizeAllowedEmail(body.email)
           : null;
       if (!email)
         throw new HttpError(
           400,
           "CAMPUS_EMAIL_REQUIRED",
-          "仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱",
+          qqEmailLoginEnabled
+            ? "仅支持 SUAT 校园邮箱或测试用 @qq.com 邮箱"
+            : "仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱",
         );
+      const resettingPassword =
+        passwordResetRequest ||
+        (isRecord(body) && body.type === "forget-password");
       const deleting = db
         .query(
           "SELECT 1 FROM users WHERE email = ? AND account_status = 'deleting'",
         )
         .get(email);
-      if (deleting)
+      if (deleting && !resettingPassword)
         throw new HttpError(
           410,
           "ACCOUNT_DELETION_PENDING",
           "该账号正在注销流程中，30 天清理完成后可重新注册。",
         );
-      const emailHash = createHash("sha256").update(email).digest("hex");
+      const emailHash = createHash("sha256")
+        .update(resettingPassword ? `password:${email}` : email)
+        .digest("hex");
       const now = Math.floor(Date.now() / 1000);
       const claimed = db
         .query(
@@ -4142,6 +4242,21 @@ export function createApp(config: AppConfig): Hono<AppContext> {
           "OTP_COOLDOWN",
           "请等待 60 秒后再申请新的验证码",
         );
+      if (resettingPassword) {
+        const account = db
+          .query(
+            "SELECT a.emailVerified, u.account_status FROM auth_users a LEFT JOIN users u ON u.id = a.id WHERE a.email = ? COLLATE NOCASE",
+          )
+          .get(email) as {
+          emailVerified: number;
+          account_status: string | null;
+        } | null;
+        if (
+          !account?.emailVerified ||
+          ["banned", "deleting"].includes(account.account_status ?? "")
+        )
+          return c.json({ success: true });
+      }
       const normalizedRequest = new Request(c.req.raw, {
         body: JSON.stringify({ ...(isRecord(body) ? body : {}), email }),
       });

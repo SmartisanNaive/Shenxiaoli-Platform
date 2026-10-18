@@ -31,23 +31,14 @@
             class="flex flex-col justify-between gap-6 md:flex-row md:items-end"
           >
             <div>
-              <div class="mb-2 flex items-center gap-2">
-                <span
-                  class="rounded-full bg-surface-container-high px-3 py-1 text-label-sm font-semibold uppercase tracking-wider text-primary"
-                  >深小狸 · 校园集市</span
-                >
-                <span class="text-body-sm text-outline"
-                  >• 校内闲置流转平台</span
-                >
-              </div>
               <h1 class="font-headline-xl font-bold text-primary">校园集市</h1>
               <p class="mt-1 text-body-lg text-on-surface-variant">
-                让闲置在校园里继续流动，寻找属于它们的下一位主人。
+                出售或寻找校内闲置，查看物品详情后联系同学。
               </p>
             </div>
             <div class="flex items-center gap-3">
               <button
-                class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-label-md text-on-primary shadow-sm transition-all hover:bg-secondary"
+                class="flex items-center gap-2 rounded bg-primary px-6 py-3 font-label-md text-on-primary shadow-sm transition-colors duration-150 hover:bg-secondary"
                 onclick="openPublishModal()"
               >
                 <span class="material-symbols-outlined text-sm">add_circle</span
@@ -60,55 +51,55 @@
             class="scrollbar-hidden mt-8 flex items-center gap-2 overflow-x-auto pb-2"
           >
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-primary px-4 py-2 text-label-md font-medium text-on-primary transition-all"
+              class="category-btn whitespace-nowrap rounded bg-primary px-4 py-2 text-label-md font-medium text-on-primary transition-colors duration-150"
               onclick="filterCategory('all', this)"
             >
               全部
             </button>
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="category-btn whitespace-nowrap rounded bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
               onclick="filterCategory('数码电子', this)"
             >
               数码电子
             </button>
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="category-btn whitespace-nowrap rounded bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
               onclick="filterCategory('教材书籍', this)"
             >
               教材书籍
             </button>
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="category-btn whitespace-nowrap rounded bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
               onclick="filterCategory('宿舍用品', this)"
             >
               宿舍用品
             </button>
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="category-btn whitespace-nowrap rounded bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
               onclick="filterCategory('生活用品', this)"
             >
               生活用品
             </button>
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="category-btn whitespace-nowrap rounded bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
               onclick="filterCategory('运动户外', this)"
             >
               运动户外
             </button>
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="category-btn whitespace-nowrap rounded bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
               onclick="filterCategory('乐器', this)"
             >
               乐器
             </button>
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="category-btn whitespace-nowrap rounded bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
               onclick="filterCategory('自行车', this)"
             >
               自行车
             </button>
             <button
-              class="category-btn whitespace-nowrap rounded-xl bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-all hover:bg-surface-container-high"
+              class="category-btn whitespace-nowrap rounded bg-surface-container px-4 py-2 text-label-md font-medium text-on-surface transition-colors duration-150 hover:bg-surface-container-high"
               onclick="filterCategory('其他', this)"
             >
               其他
@@ -128,7 +119,7 @@
         </section>
         <!-- Item Detail Modal -->
         <div
-          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 opacity-0 transition-opacity duration-300"
           id="detail-modal"
           aria-describedby="modal-desc"
           aria-labelledby="modal-title"
@@ -136,7 +127,7 @@
           role="dialog"
         >
           <div
-            class="relative m-4 max-h-[90vh] w-full max-w-2xl scale-95 transform overflow-y-auto rounded-3xl bg-surface-container-lowest p-8 shadow-2xl transition-transform duration-300"
+            class="relative m-4 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-surface-container-lowest p-8 shadow-md"
             id="detail-modal-content"
           >
             <button
@@ -164,7 +155,7 @@
             <div class="mb-6 grid grid-cols-1 gap-6 md:grid-cols-2">
               <div
                 aria-label="商品图片"
-                class="h-64 w-full rounded-2xl bg-surface-container bg-cover bg-center"
+                class="h-64 w-full rounded-md bg-surface-container bg-cover bg-center"
                 id="modal-image"
                 role="img"
                 style="
@@ -257,7 +248,7 @@
                 商品详情
               </h4>
               <p
-                class="rounded-xl bg-surface-container-low p-4 text-body-md leading-relaxed text-on-surface-variant"
+                class="rounded bg-surface-container-low p-4 text-body-md leading-relaxed text-on-surface-variant"
                 id="modal-desc"
               >
                 红轴热插拔，蓝牙双模，箱说全。因换了配列故出，无磕碰无暗病，成色极新。
@@ -265,7 +256,7 @@
             </div>
             <!-- Campus Face-to-Face Notice -->
             <div
-              class="mb-6 flex items-center gap-3 rounded-xl bg-surface-container-low p-4"
+              class="mb-6 flex items-center gap-3 rounded bg-surface-container-low p-4"
             >
               <span class="material-symbols-outlined text-2xl text-secondary"
                 >handshake</span
@@ -281,13 +272,13 @@
             </div>
             <div class="flex items-center justify-end gap-4">
               <button
-                class="rounded-xl bg-surface-container px-6 py-3 font-label-md text-on-surface transition-colors hover:bg-surface-container-high"
+                class="rounded bg-surface-container px-6 py-3 font-label-md text-on-surface transition-colors hover:bg-surface-container-high"
                 onclick="closeDetailModal()"
               >
                 关闭
               </button>
               <button
-                class="flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:bg-surface-variant disabled:text-on-surface-variant"
+                class="flex items-center gap-2 rounded bg-primary px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-secondary disabled:cursor-not-allowed disabled:bg-surface-variant disabled:text-on-surface-variant"
                 id="contact-seller"
                 onclick="contactSeller()"
                 type="button"
@@ -300,14 +291,14 @@
         </div>
         <!-- Publish Listing Modal -->
         <div
-          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 opacity-0 backdrop-blur-sm transition-opacity duration-300"
+          class="fixed inset-0 z-50 flex hidden items-center justify-center bg-inverse-surface/40 opacity-0 transition-opacity duration-300"
           id="publish-modal"
           aria-labelledby="publish-modal-title"
           aria-modal="true"
           role="dialog"
         >
           <div
-            class="relative m-4 max-h-[90vh] w-full max-w-xl scale-95 transform overflow-y-auto rounded-3xl bg-surface-container-lowest p-8 shadow-2xl transition-transform duration-300"
+            class="relative m-4 max-h-[90vh] w-full max-w-xl overflow-y-auto rounded-lg bg-surface-container-lowest p-8 shadow-md"
             id="publish-modal-content"
           >
             <button
@@ -342,7 +333,7 @@
                 <input
                   id="listing-title"
                   name="title"
-                  class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="w-full rounded bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="例如：九成新机械键盘、考研英语高分笔记…"
                   required=""
                   type="text"
@@ -357,7 +348,7 @@
                   <select
                     id="listing-category"
                     name="category"
-                    class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                    class="w-full rounded bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option>数码电子</option>
                     <option>教材书籍</option>
@@ -377,7 +368,7 @@
                   <input
                     id="listing-price"
                     name="price"
-                    class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                    class="w-full rounded bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
                     min="0"
                     placeholder="0.00"
                     required=""
@@ -395,7 +386,7 @@
                   <select
                     id="listing-condition"
                     name="condition"
-                    class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                    class="w-full rounded bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option>全新</option>
                     <option>九成新</option>
@@ -411,7 +402,7 @@
                   <select
                     id="listing-location"
                     name="location"
-                    class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
+                    class="w-full rounded bg-surface-container-low px-4 py-3 text-body-md text-on-surface focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option>图书馆门前</option>
                     <option>学生宿舍区</option>
@@ -428,7 +419,7 @@
                 <textarea
                   id="listing-description"
                   name="description"
-                  class="w-full rounded-xl bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
+                  class="w-full rounded bg-surface-container-low px-4 py-3 text-body-md text-on-surface placeholder:text-outline focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="描述一下物品的来源、使用感受、转手原因等…"
                   required=""
                   rows="3"
@@ -440,7 +431,7 @@
                   >上传图片</span
                 >
                 <label
-                  class="block cursor-pointer rounded-2xl border-2 border-dashed border-outline-variant bg-surface-container-low p-6 text-center transition-colors hover:bg-surface-container"
+                  class="block cursor-pointer rounded-md border-2 border-dashed border-outline-variant bg-surface-container-low p-6 text-center transition-colors hover:bg-surface-container"
                   for="listing-images"
                 >
                   <input
@@ -469,14 +460,14 @@
               </div>
               <div class="flex items-center justify-end gap-4 pt-4">
                 <button
-                  class="rounded-xl bg-surface-container px-6 py-3 font-label-md text-on-surface transition-colors hover:bg-surface-container-high"
+                  class="rounded bg-surface-container px-6 py-3 font-label-md text-on-surface transition-colors hover:bg-surface-container-high"
                   onclick="closePublishModal()"
                   type="button"
                 >
                   取消
                 </button>
                 <button
-                  class="rounded-xl bg-primary px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-secondary"
+                  class="rounded bg-primary px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-secondary"
                   type="submit"
                 >
                   立即发布

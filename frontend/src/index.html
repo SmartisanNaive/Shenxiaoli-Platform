@@ -17,7 +17,7 @@
   </head>
   <body class="bg-background font-body-md text-on-surface">
     <div data-layout="header" data-active="home"></div>
-    <main class="min-h-screen w-full bg-background pt-20">
+    <main class="w-full bg-background pt-20">
       <div class="flex w-full flex-col">
         <div
           class="relative mb-16 w-full overflow-hidden bg-primary px-6 py-24 text-on-primary md:px-12"
@@ -32,10 +32,7 @@
           <div
             class="relative z-10 mx-auto flex max-w-[1200px] flex-col items-start gap-6"
           >
-            <div
-              class="inline-flex items-center gap-2 rounded-full bg-surface/10 px-3 py-1 text-label-sm text-primary-fixed-dim backdrop-blur-md"
-            >
-              <span class="material-symbols-outlined text-sm">school</span>
+            <div class="text-label-sm text-primary-fixed-dim">
               <span>学生共建的校园社区</span>
             </div>
             <h1
@@ -44,18 +41,18 @@
               深小狸
             </h1>
             <p class="max-w-xl font-body-lg text-lg text-primary-fixed-dim">
-              属于校园里的课程、物品、技能与故事。在这里探索纯粹的学术氛围与互助共融的校园生态。
+              查看课程评价、发布闲置、交流技能，也可以在树洞里聊聊校园生活。
             </p>
-            <div class="mt-4 flex items-center gap-4">
+            <div class="mt-4 flex flex-wrap items-center gap-3 sm:gap-4">
               <a
-                class="rounded-xl bg-surface px-6 py-3 font-label-md text-primary shadow-sm transition-colors hover:bg-surface-bright"
+                class="rounded bg-surface px-6 py-3 font-label-md text-primary shadow-sm transition-colors hover:bg-surface-bright"
                 data-path="course-evaluation"
                 href="./course-evaluation.html"
               >
                 探索课程评价
               </a>
               <a
-                class="rounded-xl border border-outline-variant bg-transparent px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-surface/10"
+                class="rounded border border-outline-variant bg-transparent px-6 py-3 font-label-md text-on-primary transition-colors hover:bg-surface/10"
                 data-path="tree-hole"
                 href="./tree-hole.html"
               >
@@ -67,14 +64,12 @@
         <div class="mx-auto mb-20 w-full max-w-[1200px] px-[32px]">
           <div class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <a
-              class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-surface-container-lowest p-8 shadow-sm transition-all duration-300 hover:shadow-xl"
+              class="group relative flex flex-col justify-between rounded-md border border-surface-variant bg-surface-container-lowest p-6 transition-colors duration-150 hover:border-outline"
               data-path="course-evaluation"
               href="./course-evaluation.html"
             >
               <div>
-                <div
-                  class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container-low text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary"
-                >
+                <div class="mb-4 text-primary">
                   <span
                     class="material-symbols-outlined text-2xl"
                     style="font-variation-settings: 'FILL' 1"
@@ -87,11 +82,11 @@
                   课程评价
                 </h3>
                 <p class="font-body-md text-on-surface-variant">
-                  查课程 · 看老师 · 写评价，真实避坑与高分指南。
+                  查看课程内容、考核方式和同学的修读建议。
                 </p>
               </div>
               <div
-                class="mt-8 flex items-center gap-2 font-label-md text-primary transition-transform group-hover:translate-x-1"
+                class="mt-6 flex items-center gap-2 font-label-md text-primary"
               >
                 <span>立即查看</span>
                 <span class="material-symbols-outlined text-sm"
@@ -100,14 +95,12 @@
               </div>
             </a>
             <a
-              class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-surface-container-lowest p-8 shadow-sm transition-all duration-300 hover:shadow-xl"
+              class="group relative flex flex-col justify-between rounded-md border border-surface-variant bg-surface-container-lowest p-6 transition-colors duration-150 hover:border-outline"
               data-path="market"
               href="./market.html"
             >
               <div>
-                <div
-                  class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container-low text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary"
-                >
+                <div class="mb-4 text-primary">
                   <span
                     class="material-symbols-outlined text-2xl"
                     style="font-variation-settings: 'FILL' 1"
@@ -120,11 +113,11 @@
                   校园集市
                 </h3>
                 <p class="font-body-md text-on-surface-variant">
-                  淘闲置 · 出闲置，安全靠谱的同校二手交易平台。
+                  发布闲置物品，查看价格、成色和校内面交地点。
                 </p>
               </div>
               <div
-                class="mt-8 flex items-center gap-2 font-label-md text-primary transition-transform group-hover:translate-x-1"
+                class="mt-6 flex items-center gap-2 font-label-md text-primary"
               >
                 <span>去逛集市</span>
                 <span class="material-symbols-outlined text-sm"
@@ -133,14 +126,12 @@
               </div>
             </a>
             <a
-              class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-surface-container-lowest p-8 shadow-sm transition-all duration-300 hover:shadow-xl"
+              class="group relative flex flex-col justify-between rounded-md border border-surface-variant bg-surface-container-lowest p-6 transition-colors duration-150 hover:border-outline"
               data-path="skill-mutual-aid"
               href="./skill-mutual-aid.html"
             >
               <div>
-                <div
-                  class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container-low text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary"
-                >
+                <div class="mb-4 text-primary">
                   <span
                     class="material-symbols-outlined text-2xl"
                     style="font-variation-settings: 'FILL' 1"
@@ -153,11 +144,11 @@
                   技能互助
                 </h3>
                 <p class="font-body-md text-on-surface-variant">
-                  找技能 · 找搭子 · 帮同学，共建互助共享的校园圈子。
+                  分享你会的技能，发布求助，和同学交流经验。
                 </p>
               </div>
               <div
-                class="mt-8 flex items-center gap-2 font-label-md text-primary transition-transform group-hover:translate-x-1"
+                class="mt-6 flex items-center gap-2 font-label-md text-primary"
               >
                 <span>寻找搭子</span>
                 <span class="material-symbols-outlined text-sm"
@@ -166,14 +157,12 @@
               </div>
             </a>
             <a
-              class="group relative flex flex-col justify-between overflow-hidden rounded-xl bg-surface-container-lowest p-8 shadow-sm transition-all duration-300 hover:shadow-xl"
+              class="group relative flex flex-col justify-between rounded-md border border-surface-variant bg-surface-container-lowest p-6 transition-colors duration-150 hover:border-outline"
               data-path="tree-hole"
               href="./tree-hole.html"
             >
               <div>
-                <div
-                  class="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-surface-container-low text-primary transition-colors group-hover:bg-primary group-hover:text-on-primary"
-                >
+                <div class="mb-4 text-primary">
                   <span
                     class="material-symbols-outlined text-2xl"
                     style="font-variation-settings: 'FILL' 1"
@@ -186,11 +175,11 @@
                   深小狸树洞
                 </h3>
                 <p class="font-body-md text-on-surface-variant">
-                  校园生活 · 匿名交流，倾听真实心声与趣闻轶事。
+                  不署名地聊校园生活，也听听同学们的近况。
                 </p>
               </div>
               <div
-                class="mt-8 flex items-center gap-2 font-label-md text-primary transition-transform group-hover:translate-x-1"
+                class="mt-6 flex items-center gap-2 font-label-md text-primary"
               >
                 <span>进入树洞</span>
                 <span class="material-symbols-outlined text-sm"

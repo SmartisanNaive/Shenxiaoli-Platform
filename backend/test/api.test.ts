@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { Database } from "bun:sqlite";
 import { createApp } from "../src/app";
-import { createDatabase } from "../src/db";
+import { createDatabase, SCHEMA_VERSION } from "../src/db";
 import { cleanupExpiredDeletedAccounts } from "../src/maintenance";
 import { normalizeCampusEmail } from "../src/auth";
 
@@ -1304,7 +1304,7 @@ describe("Shenxiaoli API", () => {
         migrated
           .query("SELECT MAX(version) AS version FROM schema_migrations")
           .get(),
-      ).toEqual({ version: 10 });
+      ).toEqual({ version: SCHEMA_VERSION });
       expect(migrated.query("PRAGMA integrity_check").get()).toEqual({
         integrity_check: "ok",
       });
