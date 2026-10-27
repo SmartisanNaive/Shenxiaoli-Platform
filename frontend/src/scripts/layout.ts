@@ -150,19 +150,19 @@ export const renderHeader = (activeKey?: NavKey): string => {
                   <button data-login-resend type="button" hidden class="auth-secondary">重新发送验证码</button>
                 </form>
                 <p data-login-qq-note hidden class="auth-note">直接使用 QQ 邮箱，将创建或进入该 QQ 邮箱对应的账号。</p>
-                <details class="auth-email-policy"><summary>支持哪些邮箱？</summary><p data-login-email-policy>注册仅接受 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。</p></details>
+                <details class="auth-email-policy"><summary>支持哪些邮箱？</summary><p data-login-email-policy>支持使用有效邮箱注册和登录。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。</p></details>
               </section>
               <section data-auth-view="recovery" hidden>
                 <p class="auth-description">填写原账号邮箱，验证码将发往已绑定的辅助邮箱。</p>
                 <form data-account-recovery class="auth-form" novalidate>
-                  <label class="auth-field">原账号邮箱<input data-recovery-email autocomplete="email" type="email" required placeholder="原校园邮箱" /></label>
+                  <label class="auth-field">原账号邮箱<input data-recovery-email autocomplete="email" type="email" required placeholder="原账号邮箱" /></label>
                   <label data-recovery-otp-field hidden class="auth-field">辅助邮箱验证码<input data-recovery-otp inputmode="numeric" autocomplete="one-time-code" required pattern="[0-9]{6}" maxlength="6" placeholder="6 位验证码" /></label>
                   <p data-recovery-status role="status" class="break-words text-xs leading-5 text-on-surface-variant"></p>
                   <p data-recovery-error role="alert" class="text-xs leading-5 text-error"></p>
                   <button data-recovery-send type="submit" class="auth-primary">获取验证码</button>
                   <button data-recovery-verify type="submit" hidden class="auth-primary">验证并回到原账号</button>
                   <button data-recovery-resend type="button" hidden class="auth-secondary">重新发送验证码</button>
-                  <p class="auth-note">找回校园账号时，请填写原校园邮箱，即使辅助邮箱是 QQ 邮箱。验证后回到原账号。</p>
+                  <p class="auth-note">找回账号时，请填写原账号邮箱。验证后回到原账号。</p>
                 </form>
                 <button data-auth-switch="login" type="button" class="auth-back">返回邮箱登录 / 注册</button>
               </section>
@@ -173,7 +173,7 @@ export const renderHeader = (activeKey?: NavKey): string => {
                 <button data-auth-switch="password" type="button" class="auth-back">返回密码登录</button>
               </section>
               <div data-auth-help class="auth-help">
-                <p data-auth-email-hint class="auth-note">支持校园邮箱登录</p>
+                <p data-auth-email-hint class="auth-note">支持任意有效邮箱登录</p>
                 <button data-auth-switch="recovery" type="button" class="auth-text-link">无法使用原邮箱？找回账号</button>
               </div>
               <div class="mt-5 flex flex-col gap-2" data-demo-login-options hidden>

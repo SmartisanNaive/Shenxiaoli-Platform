@@ -8,26 +8,21 @@ afterEach(() => {
   for (const db of databases.splice(0)) db.close();
 });
 
-test("QQ login is opt-in and accepts only the exact qq.com domain", () => {
-  expect(normalizeLoginEmail("123456@qq.com")).toBeNull();
-  expect(normalizeLoginEmail(" 123456@QQ.COM ", true)).toBe("123456@qq.com");
-  expect(normalizeCampusEmail("123456@qq.com")).toBeNull();
+test("all valid email domains are accepted without granting campus status", () => {
   for (const email of [
+    "123456@qq.com",
     "a@vip.qq.com",
-    "a@qq.com.evil.test",
     "a@gmail.com",
-    "a@@qq.com",
-    "invalid",
-  ])
-    expect(normalizeLoginEmail(email, true)).toBeNull();
-  for (const enabled of [false, true]) {
-    expect(normalizeLoginEmail("student@stu.suat-sz.edu.cn", enabled)).toBe(
-      "student@stu.suat-sz.edu.cn",
-    );
+    "a@sub.example.org",
+  ]) {
+    expect(normalizeLoginEmail(email)).toBe(email);
+    expect(normalizeCampusEmail(email)).toBeNull();
   }
+  for (const email of ["a@@qq.com", "invalid"])
+    expect(normalizeLoginEmail(email)).toBeNull();
 });
 
-test("QQ accounts require an OTP, can access member pages, and lose access when the switch closes", async () => {
+test("QQ accounts require an OTP, can access member pages, and retain access regardless of the former switch", async () => {
   const db = createDatabase({ path: ":memory:" });
   databases.push(db);
   const messages: { to: string; text: string }[] = [];
@@ -92,14 +87,15 @@ test("QQ accounts require an OTP, can access member pages, and lose access when 
       await closed.request("/api/session", { headers: { ...headers, cookie } })
     ).json(),
   ).toMatchObject({
-    authenticated: false,
+    authenticated: true,
     qqEmailLoginEnabled: false,
     campusEmailVerified: false,
   });
   expect(
     (await closed.request("/api/home", { headers: { ...headers, cookie } }))
       .status,
-  ).toBe(401);
+  ).toBe(200);
+  db.query("DELETE FROM auth_email_cooldowns").run();
   expect(
     (
       await closed.request("/api/auth/email-otp/send-verification-otp", {
@@ -108,7 +104,7 @@ test("QQ accounts require an OTP, can access member pages, and lose access when 
         body: JSON.stringify({ email, type: "sign-in" }),
       })
     ).status,
-  ).toBe(400);
+  ).toBe(200);
   // Closing the switch preserves campus login and the QQ account's saved data.
   expect(
     (
@@ -127,7 +123,7 @@ test("QQ accounts require an OTP, can access member pages, and lose access when 
   ).toEqual({ email });
 });
 
-test("QQ login remains disabled when no switch is provided", async () => {
+test("QQ login is available when no switch is provided", async () => {
   const db = createDatabase({ path: ":memory:" });
   databases.push(db);
   let deliveries = 0;
@@ -145,8 +141,8 @@ test("QQ login remains disabled when no switch is provided", async () => {
         body: JSON.stringify({ email: "123456789@qq.com", type: "sign-in" }),
       })
     ).status,
-  ).toBe(400);
-  expect(deliveries).toBe(0);
+  ).toBe(200);
+  expect(deliveries).toBe(1);
 });
 
 test("a QQ inbox can own a separate account and recover the campus account even with QQ login disabled", async () => {

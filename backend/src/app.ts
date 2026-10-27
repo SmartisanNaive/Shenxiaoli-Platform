@@ -4207,9 +4207,7 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         throw new HttpError(
           400,
           "CAMPUS_EMAIL_REQUIRED",
-          qqEmailLoginEnabled
-            ? "仅支持 SUAT 校园邮箱或测试用 @qq.com 邮箱"
-            : "仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱",
+          "请填写有效的邮箱地址",
         );
       const resettingPassword =
         passwordResetRequest ||
@@ -4280,13 +4278,13 @@ export function createApp(config: AppConfig): Hono<AppContext> {
         .catch(() => null);
       const newEmail =
         isRecord(body) && typeof body.newEmail === "string"
-          ? normalizeCampusEmail(body.newEmail)
+          ? normalizeAllowedEmail(body.newEmail)
           : null;
       if (!newEmail)
         throw new HttpError(
           400,
           "CAMPUS_EMAIL_REQUIRED",
-          "新邮箱仅支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn",
+          "请填写有效的新邮箱地址",
         );
     }
     return auth.handler(c.req.raw);

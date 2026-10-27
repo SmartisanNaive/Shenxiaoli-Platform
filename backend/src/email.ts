@@ -32,14 +32,10 @@ export function normalizeCampusEmail(value: string): string | null {
 
 export function normalizeLoginEmail(
   value: string,
-  qqEmailLoginEnabled = false,
+  _qqEmailLoginEnabled = false,
 ): string | null {
-  const email = normalizeEmail(value);
-  return email &&
-    (normalizeCampusEmail(email) ||
-      (qqEmailLoginEnabled && email.split("@")[1] === "qq.com"))
-    ? email
-    : null;
+  void _qqEmailLoginEnabled; // Retained for compatibility with existing configuration.
+  return normalizeEmail(value);
 }
 
 export async function deliverCampusEmail(

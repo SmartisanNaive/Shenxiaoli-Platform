@@ -173,11 +173,16 @@ export function createCourseImports(options: {
 
   const router = new Hono<Env>();
   router.onError((error, c) => {
-    if (error instanceof AcademicError)
+    if (error instanceof AcademicError) {
+      if (error.status >= 500)
+        console.warn(
+          `[course-import] ${c.req.method} ${c.req.routePath} ${error.code}: ${error.message}`,
+        );
       return c.json(
         { error: { code: error.code, message: error.message } },
         error.status as 400,
       );
+    }
     throw error;
   });
   router.use("*", async (c, next) => {
@@ -358,7 +363,19 @@ export function createCourseImports(options: {
       });
       assertLive(s);
       s.state = result.state;
-      if (s.state === "authenticated") s.semesters = await s.client.semesters();
+      if (s.state === "authenticated") {
+        try {
+          s.semesters = await s.client.semesters();
+        } catch (error) {
+          if (error instanceof AcademicError && error.status >= 500)
+            throw new AcademicError(
+              error.code,
+              `登录成功，但获取学期失败：${error.message}。请重试获取学期`,
+              error.status,
+            );
+          throw error;
+        }
+      }
     });
     return c.json(publicState(s));
   });

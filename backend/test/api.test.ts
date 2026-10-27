@@ -132,7 +132,7 @@ describe("Shenxiaoli API", () => {
     }
   });
 
-  test("registration accepts exact campus domains and never promotes an external admin email", async () => {
+  test("campus classification remains restricted to exact campus domains", async () => {
     expect(normalizeCampusEmail(" STUDENT@STU.SUAT-SZ.EDU.CN ")).toBe(
       "student@stu.suat-sz.edu.cn",
     );
@@ -147,16 +147,6 @@ describe("Shenxiaoli API", () => {
       "a@@suat-sz.edu.cn",
     ]) {
       expect(normalizeCampusEmail(email)).toBeNull();
-      const { app } = setup();
-      const denied = await app.request(
-        "/api/auth/email-otp/send-verification-otp",
-        {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, type: "sign-in" }),
-        },
-      );
-      expect(denied.status).toBe(400);
     }
   });
 
@@ -729,7 +719,7 @@ describe("Shenxiaoli API", () => {
     ).toEqual({ action: "dispute-resume" });
   });
 
-  test("campus email OTP creates a verified account and rejects unapproved domains", async () => {
+  test("campus email OTP creates a verified account and rejects malformed addresses", async () => {
     let sentText = "";
     const { app, db } = setup(async ({ text }) => {
       sentText = text;
@@ -743,7 +733,7 @@ describe("Shenxiaoli API", () => {
           "content-type": "application/json",
         },
         body: JSON.stringify({
-          email: "student@sub.stu.suat-sz.edu.cn",
+          email: "invalid",
           type: "sign-in",
         }),
       },
@@ -901,6 +891,7 @@ describe("Shenxiaoli API", () => {
         method: "POST",
         headers: {
           origin: "http://localhost:5173",
+          "x-forwarded-for": "192.0.2.199",
           "content-type": "application/json",
         },
         body: JSON.stringify({

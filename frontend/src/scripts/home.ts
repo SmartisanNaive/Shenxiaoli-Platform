@@ -71,13 +71,7 @@ export async function initHome(): Promise<void> {
     const session = await api<SessionState>('/api/session');
     if (!session.authenticated) {
       section.innerHTML =
-        '<div class="rounded border border-outline-variant bg-surface p-8"><h2 class="font-headline-md text-primary">校园内容仅向已登录成员开放</h2><p class="mt-2 text-body-md text-on-surface-variant">请使用指定校园邮箱验证登录；邮箱验证不代表学籍认证。</p><button type="button" class="mt-4 rounded-lg bg-primary px-4 py-2 text-label-sm text-on-primary" data-home-login data-open-login>校园邮箱登录</button></div>';
-      if (session.qqEmailLoginEnabled) {
-        section.querySelector('[data-home-login]')!.textContent =
-          '校园 / QQ 邮箱登录';
-        section.querySelector('p')!.textContent =
-          '测试期间可使用校园邮箱或 QQ 邮箱验证登录；邮箱验证不代表学籍认证。';
-      }
+        '<div class="rounded border border-outline-variant bg-surface p-8"><h2 class="font-headline-md text-primary">校园内容仅向已登录成员开放</h2><p class="mt-2 text-body-md text-on-surface-variant">请使用邮箱验证登录；邮箱验证不代表学籍认证。</p><button type="button" class="mt-4 rounded-lg bg-primary px-4 py-2 text-label-sm text-on-primary" data-home-login data-open-login>邮箱登录</button></div>';
       return;
     }
     const data = await api<HomeData>('/api/home');

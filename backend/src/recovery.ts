@@ -354,9 +354,7 @@ export function recoveryEmailPlugin(options: {
           if (!email)
             throw new APIError("BAD_REQUEST", {
               code: "CAMPUS_EMAIL_REQUIRED",
-              message: options.qqEmailLoginEnabled
-                ? "请填写注册时的校园邮箱或 QQ 邮箱"
-                : "请填写注册时的 SUAT 校园邮箱",
+              message: "请填写注册时的账号邮箱",
             });
           cooldown(`login:${email}`);
           const challengeId = randomUUID();

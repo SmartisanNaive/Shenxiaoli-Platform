@@ -24,9 +24,7 @@ interface AuthOptions {
 export function createAuth(options: AuthOptions) {
   const normalizeAllowedEmail = (value: string) =>
     normalizeLoginEmail(value, options.qqEmailLoginEnabled);
-  const emailRequirement = options.qqEmailLoginEnabled
-    ? "仅支持 SUAT 校园邮箱或测试用 @qq.com 邮箱"
-    : "仅支持 SUAT 校园邮箱";
+  const emailRequirement = "请填写有效的邮箱地址";
   const origin =
     options.baseURL ??
     (process.env.BETTER_AUTH_URL?.trim() || "http://127.0.0.1:8787");
@@ -103,7 +101,7 @@ export function createAuth(options: AuthOptions) {
             const email = normalizeAllowedEmail(user.email);
             if (!email) throw new Error(emailRequirement);
             if (user.emailVerified !== true) {
-              throw new Error("请先完成校园邮箱验证");
+              throw new Error("请先完成邮箱验证");
             }
             return { data: { ...user, email } };
           },
@@ -143,9 +141,9 @@ export function createAuth(options: AuthOptions) {
           if (!email) throw new Error(emailRequirement);
           const subject =
             type === "change-email"
-              ? "深小狸：确认新的校园邮箱"
+              ? "深小狸：确认新的邮箱"
               : type === "email-verification"
-                ? "深小狸：确认当前校园邮箱"
+                ? "深小狸：确认当前邮箱"
                 : type === "forget-password"
                   ? "深小狸：设置登录密码验证码"
                   : "深小狸：邮箱登录验证码";

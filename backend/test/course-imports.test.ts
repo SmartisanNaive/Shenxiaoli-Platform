@@ -40,6 +40,7 @@ class FakeAcademic implements AcademicClient {
   factor = false;
   failure = false;
   smsFailure = false;
+  semesterFailure = false;
   pending: Promise<void> | null = null;
   async initialize() {
     return this.config;
@@ -64,6 +65,8 @@ class FakeAcademic implements AcademicClient {
       throw new AcademicError("ACADEMIC_AUTH_FAILED", "验证码错误");
   }
   async semesters() {
+    if (this.semesterFailure)
+      throw new AcademicError("UPSTREAM_CHANGED", "学校响应异常", 502);
     return [semester, { id: "99", name: "2026春", current: false }];
   }
   async courses() {
@@ -335,6 +338,32 @@ describe("personal academic imports", () => {
       ).status,
     ).toBe(409);
   });
+  test("semester retrieval can be retried after successful authentication", async () => {
+    const f = await setup();
+    const { path, fake } = await f.start();
+    fake.semesterFailure = true;
+    const failed = await f.owner.request(path + "/login", "POST", {
+      method: "sms",
+      account: "13800000000",
+      mobileCode: "123456",
+    });
+    expect(failed.status).toBe(502);
+    expect(await failed.json()).toMatchObject({
+      error: { message: expect.stringContaining("登录成功") },
+    });
+    expect(await (await f.owner.request(path)).json()).toMatchObject({
+      state: "authenticated",
+      semesters: [],
+    });
+    fake.semesterFailure = false;
+    const retry = await f.owner.request(path + "/semesters");
+    expect(retry.status).toBe(200);
+    expect(await retry.json()).toMatchObject({
+      state: "authenticated",
+      semesters: [semester, expect.anything()],
+    });
+  });
+
   test("invalid credentials, captcha coordinates and semester fail without catalogue writes", async () => {
     const f = await setup(),
       { path, fake } = await f.start();
@@ -608,6 +637,7 @@ function upstream(
     failed?: boolean;
     changePassword?: boolean;
     external?: boolean;
+    httpRedirect?: boolean;
   } = {},
 ) {
   const calls: {
@@ -684,7 +714,11 @@ function upstream(
     if (target.pathname === "/oauth2/login")
       return new Response(null, {
         status: 302,
-        headers: { location: "/home" },
+        headers: {
+          location: options.httpRedirect
+            ? "http://jw.suat-sz.edu.cn/home"
+            : "/home",
+        },
       });
     if (target.pathname === "/home") return new Response("school-home");
     if (target.pathname === "/student/for-std/course-table")
@@ -752,6 +786,24 @@ test("school transport signs SMS requests, keeps host-scoped cookies and exchang
     client.dispose();
   }
 });
+test("school HTTP redirect is upgraded before sending cookies", async () => {
+  const { client, calls } = upstream({ httpRedirect: true });
+  try {
+    await client.initialize();
+    await client.login({
+      method: "sms",
+      account: "13800000000",
+      mobileCode: "123456",
+    });
+    expect(await client.semesters()).toEqual([semester]);
+    const home = calls.find((call) => call.url.pathname === "/home")!;
+    expect(home.url.origin).toBe("https://jw.suat-sz.edu.cn");
+    expect(home.headers.get("cookie")).toContain("SESSION=academic");
+    expect(calls.every((call) => call.url.protocol === "https:")).toBe(true);
+  } finally {
+    client.dispose();
+  }
+});
 test("password, puzzle verification and SMS second factor follow school protocol", async () => {
   const { client, calls } = upstream({ slider: true, factor: true });
   try {
@@ -775,6 +827,7 @@ test("password, puzzle verification and SMS second factor follow school protocol
     const call = calls.find((c) => c.url.pathname.endsWith("web_login"))!;
     expect(JSON.stringify(call.body)).not.toContain("raw-school-password");
     expect(call.body!.data).toHaveProperty("captchaVerification");
+    expect(call.body!.data).not.toHaveProperty("time");
     await client.sendFactor();
     await client.verifyFactor("123456");
     expect(

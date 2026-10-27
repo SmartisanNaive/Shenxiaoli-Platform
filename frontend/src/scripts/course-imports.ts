@@ -267,6 +267,8 @@ export function initCourseImports(
       content.innerHTML = `<p class="mb-4 text-body-md">学校要求短信二次验证，请获取发送到账号绑定手机号的验证码。</p><form data-import-factor><label class="block text-label-md">二次验证短信验证码<input name="code" required pattern="[0-9]{4,8}" maxlength="8" inputmode="numeric" autocomplete="one-time-code" class="${fieldClass}"></label><div class="mt-4 flex flex-wrap gap-3"><button type="button" data-import-send class="${buttonClass}">获取短信验证码</button><button type="submit" class="${primaryClass}">验证并获取学期</button></div></form>`;
     } else if (preview) {
       content.innerHTML = `<p class="mb-4 text-body-md">${esc(preview.term)} · ${preview.items.length} 门课程${preview.items.some((v) => v.requiresChoice) ? '，请确认同名课程的关联。' : ''}</p><form data-import-confirm><div class="space-y-4">${preview.items.map((course, index) => `<div class="border-b border-surface-variant pb-4"><strong>${esc(course.title)}</strong><p class="mt-1 text-body-sm text-outline">${esc(course.teachers.join('、') || '教师待补充')} · ${esc(course.courseCode || '课程代码待补充')}</p>${course.requiresChoice ? `<label class="mt-2 block text-body-sm">课程关联<select required data-match-index="${index}" class="${fieldClass}"><option value="">请选择关联方式</option>${course.candidates.map((v) => `<option value="${esc(v.id)}" ${v.active ? '' : 'disabled'}>${esc(v.code)} · ${esc(v.title)}${v.active ? '' : '（已停用）'}</option>`).join('')}<option value="new">新增为另一门课程</option></select></label>` : `<p class="mt-1 text-body-sm text-outline">${course.matchedCourseId ? '关联已有课程' : '补充到公共课程库'}</p>`}</div>`).join('')}</div><div class="mt-5 flex flex-wrap gap-3"><button type="submit" class="${primaryClass}" ${preview.items.length ? '' : 'disabled'}>确认导入课程</button><button type="button" data-import-back class="${buttonClass}">重新选择学期</button></div></form>`;
+    } else if (!session.semesters.length) {
+      content.innerHTML = `<p class="mb-4 text-body-sm">教务登录已完成，尚未获取到学期列表。</p><button type="button" data-import-retry-semesters class="${primaryClass}">重试获取学期</button>`;
     } else {
       content.innerHTML = `<form data-import-semester><label class="block text-label-md">选择导入学期<select name="semesterId" required class="${fieldClass}">${session.semesters.map((v) => `<option value="${esc(v.id)}" ${v.id === session!.defaultSemesterId ? 'selected' : ''}>${esc(v.name)}${v.current ? '（当前学期）' : ''}</option>`).join('')}</select></label><button type="submit" class="${primaryClass} mt-5">获取课程并导入</button></form>`;
     }
@@ -373,6 +375,12 @@ export function initCourseImports(
       render();
       return;
     }
+    if (target.hasAttribute('data-import-retry-semesters'))
+      void perform(async () => {
+        session = await api<ImportSession>(endpoint('/semesters'));
+        notice('已获取学期，请选择导入。');
+        render();
+      });
     if (target.hasAttribute('data-import-send'))
       void perform(async () => {
         if (session?.state === 'second-factor')

@@ -170,7 +170,7 @@ test.beforeEach(async ({ page, context }, testInfo) => {
   expect(response.status()).toBe(200);
 });
 
-test('public information, login gating, and invalid external registration', async ({
+test('public information, login gating, and external email registration', async ({
   page,
 }) => {
   await page.goto('/information.html');
@@ -189,13 +189,20 @@ test('public information, login gating, and invalid external registration', asyn
   expect((await page.request.get('/api/admin/queue')).status()).toBe(401);
   await page.locator('[data-auth-toggle]').click();
   await page.locator('[data-auth-switch="login"]:visible').click();
+  await page.route(
+    '**/api/auth/email-otp/send-verification-otp',
+    async (route) => {
+      expect(route.request().postDataJSON().email).toBe('unbound@example.test');
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    },
+  );
   await page.locator('[data-login-email]').fill('unbound@example.test');
   await page.locator('[data-login-send]').click();
-  await expect(
-    page.getByText('仅支持 SUAT 校园邮箱或测试用 @qq.com 邮箱', {
-      exact: true,
-    }),
-  ).toBeVisible();
+  await expect(page.locator('[data-login-verify]')).toBeVisible();
   await expect(page.locator('[data-local-test-tools]')).toBeVisible();
 });
 
@@ -205,7 +212,7 @@ for (const path of ['/index.html', '/market.html?category=books']) {
   }) => {
     await page.goto(path);
     const entry = page.getByRole('button', {
-      name: /校园.*邮箱登录/,
+      name: /邮箱登录/,
     });
     const panel = page.locator('[data-auth-panel]');
     const toggle = page.locator('[data-auth-toggle]');
@@ -218,10 +225,10 @@ for (const path of ['/index.html', '/market.html?category=books']) {
     await page.locator('[data-auth-switch="login"]:visible').click();
     await expect(page.locator('[data-login-email]')).toHaveAttribute(
       'placeholder',
-      '校园邮箱或 QQ 邮箱',
+      '邮箱地址',
     );
     await expect(page.locator('[data-login-email-policy]')).toContainText(
-      '测试期间临时支持 @qq.com 邮箱',
+      '支持使用有效邮箱注册和登录',
     );
     await expect(page.locator('[data-auth-dialog]')).toHaveJSProperty(
       'open',
@@ -733,7 +740,7 @@ test('login and recovery views isolate proofs, validate on Enter and reset after
   await expect(page.locator('[data-auth-view="login"]')).toContainText(
     '首次验证将自动创建账号',
   );
-  await expect(page.locator('[data-login-qq-note]')).toBeVisible();
+  await expect(page.locator('[data-login-qq-note]')).toBeHidden();
   await expect(
     page.locator('[data-login-recovery], [data-login-name]'),
   ).toHaveCount(0);
@@ -757,7 +764,7 @@ test('login and recovery views isolate proofs, validate on Enter and reset after
   await expect(page.locator('[data-email-login]')).toBeHidden();
   await expect(page.locator('[data-login-otp]')).toHaveValue('');
   await expect(page.locator('[data-account-recovery]')).toContainText(
-    '即使辅助邮箱是 QQ 邮箱',
+    '请填写原账号邮箱',
   );
   await page.locator('[data-recovery-email]').fill(student);
   await page.locator('[data-recovery-send]').click();

@@ -86,12 +86,14 @@ export function encryptAcademicValue(value: string, key: string): string {
     "base64",
   );
 }
-const upstreamChanged = () =>
-  new AcademicError(
+const upstreamChanged = (stage = "unknown") => {
+  console.warn(`[course-import] unexpected upstream response: ${stage}`);
+  return new AcademicError(
     "UPSTREAM_CHANGED",
     "学校返回的数据格式发生变化，请稍后重试",
     502,
   );
+};
 
 // Only parse JSON embedded in the page. Never execute upstream JavaScript.
 export function embeddedArray(html: string, name: string): unknown[] | null {
@@ -263,8 +265,12 @@ export class SuatAcademicClient implements AcademicClient {
           ![JW, SSO].includes(url.origin) ||
           url.username ||
           url.password
-        )
-          throw upstreamChanged();
+        ) {
+          console.warn(
+            `[course-import] redirect protocol=${url.protocol} host=${url.hostname}`,
+          );
+          throw upstreamChanged("redirect destination");
+        }
         const headers: Record<string, string> = {
           accept: "application/json, text/html;q=0.9",
           "user-agent": "Shenxiaoli-Course-Import/1.0",
@@ -288,14 +294,25 @@ export class SuatAcademicClient implements AcademicClient {
         if ([301, 302, 303, 307, 308].includes(response.status)) {
           const location = response.headers.get("location");
           await response.body?.cancel();
-          if (!location) throw upstreamChanged();
+          if (!location) throw upstreamChanged("redirect without location");
           const destination = new URL(location, url);
+          // The school sometimes redirects back to its own HTTP URL. Upgrade
+          // navigational requests before sending cookies or authorization codes.
+          if (
+            destination.protocol === "http:" &&
+            destination.hostname === new URL(JW).hostname &&
+            !destination.port &&
+            !destination.username &&
+            !destination.password &&
+            (method === "GET" || [301, 302, 303].includes(response.status))
+          )
+            destination.protocol = "https:";
           if (
             method === "POST" &&
             [307, 308].includes(response.status) &&
             destination.origin !== url.origin
           )
-            throw upstreamChanged();
+            throw upstreamChanged("cross-origin post redirect");
           url = destination;
           if ([301, 302, 303].includes(response.status)) {
             method = "GET";
@@ -305,6 +322,9 @@ export class SuatAcademicClient implements AcademicClient {
           continue;
         }
         if (!response.ok) {
+          console.warn(
+            `[course-import] upstream HTTP status=${response.status} host=${url.hostname} stage=${url.pathname === AUTH + "/oauth2/v1/web_login" ? "login" : "other"}`,
+          );
           await response.body?.cancel();
           throw new AcademicError(
             "UPSTREAM_UNAVAILABLE",
@@ -324,14 +344,14 @@ export class SuatAcademicClient implements AcademicClient {
             length += value.length;
             if (length > 4_000_000) {
               await reader.cancel();
-              throw upstreamChanged();
+              throw upstreamChanged("response size");
             }
             chunks.push(value);
           }
         if (signal.aborted) throw new Error("aborted");
         return { text: Buffer.concat(chunks).toString("utf8"), url };
       }
-      throw upstreamChanged();
+      throw upstreamChanged("redirect limit");
     } catch (error) {
       if (error instanceof AcademicError) throw error;
       throw new AcademicError(
@@ -370,9 +390,10 @@ export class SuatAcademicClient implements AcademicClient {
     try {
       value = JSON.parse(result.text);
     } catch {
-      throw upstreamChanged();
+      throw upstreamChanged("authentication response is not JSON");
     }
-    if (!isObject(value)) throw upstreamChanged();
+    if (!isObject(value))
+      throw upstreamChanged("authentication response is not an object");
     if (value.code !== 1000) {
       const msg = textValue(value.msg);
       const message = /验证码/.test(msg)
@@ -546,7 +567,13 @@ export class SuatAcademicClient implements AcademicClient {
     this.codeKey = value.authorizationCode
       ? "authorization_code"
       : this.codeRename || "cosmos_code";
-    if (!this.authorizationCode) throw upstreamChanged();
+    if (!this.authorizationCode) {
+      throw new AcademicError(
+        "UPSTREAM_CHANGED",
+        "学校登录响应缺少授权信息，请重新获取验证码后重试",
+        502,
+      );
+    }
     if (value.needTwoFactorAuthenticate) {
       if (value.authenticationType !== "sms" || !value.smsOpen || !this.userId)
         throw new AcademicError(

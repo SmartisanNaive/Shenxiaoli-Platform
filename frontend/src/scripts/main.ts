@@ -167,39 +167,26 @@ function authWidget(): void {
   const render = (state: SessionState): void => {
     if (label) label.textContent = state.user?.displayName ?? '未登录';
     const policy = root.querySelector<HTMLElement>('[data-login-email-policy]');
-    if (policy) {
-      policy.textContent = state.qqEmailLoginEnabled
-        ? '支持 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱；测试期间临时支持 @qq.com 邮箱。邮箱验证仅证明邮箱访问权，不代表学籍认证。'
-        : '注册仅接受 @stu.suat-sz.edu.cn、@suat-sz.edu.cn 校园邮箱。邮箱验证证明你能访问该邮箱，不代表学校学籍认证。';
-    }
+    if (policy)
+      policy.textContent =
+        '支持使用有效邮箱注册和登录。邮箱验证证明你能访问该邮箱，不代表学籍认证。';
     const emailInput =
       root.querySelector<HTMLInputElement>('[data-login-email]');
     const recoveryEmail = root.querySelector<HTMLInputElement>(
       '[data-recovery-email]',
     );
     const emailHint = root.querySelector<HTMLElement>('[data-auth-email-hint]');
-    if (emailHint)
-      emailHint.textContent = state.qqEmailLoginEnabled
-        ? '支持校园邮箱 · QQ 邮箱仅测试期间开放'
-        : '支持 SUAT 校园邮箱登录';
+    if (emailHint) emailHint.textContent = '支持任意有效邮箱登录';
     const qqNote = root.querySelector<HTMLElement>('[data-login-qq-note]');
-    if (qqNote) qqNote.hidden = !state.qqEmailLoginEnabled;
-    if (recoveryEmail)
-      recoveryEmail.placeholder = state.qqEmailLoginEnabled
-        ? '原校园邮箱或 QQ 账号邮箱'
-        : '原校园邮箱';
-    if (emailInput)
-      emailInput.placeholder = state.qqEmailLoginEnabled
-        ? '校园邮箱或 QQ 邮箱'
-        : 'name@stu.suat-sz.edu.cn';
+    if (qqNote) qqNote.hidden = true;
+    if (recoveryEmail) recoveryEmail.placeholder = '原账号邮箱';
+    if (emailInput) emailInput.placeholder = '邮箱地址';
     if (message) {
       message.textContent = state.user
         ? `${state.user.displayName} · ${state.syntheticIdentity ? '本地合成测试身份（未进行真实收信验证）' : state.campusEmailVerified ? '校园邮箱已验证' : state.user.emailVerified ? '邮箱已验证' : state.user.role === 'moderator' ? '本地审核员演示身份' : '本地演示身份'}`
         : state.demoAuthAvailable
-          ? '使用校园邮箱验证码登录；也可选择本地演示身份。'
-          : state.qqEmailLoginEnabled
-            ? '支持校园邮箱和测试用 QQ 邮箱登录。'
-            : '使用校园邮箱登录。';
+          ? '使用邮箱验证码登录；也可选择本地演示身份。'
+          : '使用邮箱登录。';
     }
     authenticated = state.authenticated;
     demoAuthAvailable = state.demoAuthAvailable;
@@ -736,7 +723,7 @@ function enforcePageAccess(): void {
   const gate = document.createElement('main');
   gate.className = 'min-h-[65vh] bg-background px-4 pb-16 pt-32 sm:px-6';
   gate.innerHTML =
-    '<section class="mx-auto max-w-xl rounded-md bg-surface-container-lowest p-8 text-center shadow-sm"><span class="material-symbols-outlined text-4xl text-secondary" aria-hidden="true">lock</span><h1 class="mt-4 font-headline-lg text-primary">登录后查看校园内容</h1><p class="mt-3 text-body-md text-on-surface-variant" data-gate-message>正在检查登录状态…</p><button class="mt-5 rounded-lg bg-primary px-5 py-2.5 text-label-sm text-on-primary" data-open-login>校园邮箱登录</button><a class="mt-4 hidden text-label-sm text-primary underline" data-appeal-link href="./account.html#appeals">查看处置记录并提交申诉</a></section>';
+    '<section class="mx-auto max-w-xl rounded-md bg-surface-container-lowest p-8 text-center shadow-sm"><span class="material-symbols-outlined text-4xl text-secondary" aria-hidden="true">lock</span><h1 class="mt-4 font-headline-lg text-primary">登录后查看校园内容</h1><p class="mt-3 text-body-md text-on-surface-variant" data-gate-message>正在检查登录状态…</p><button class="mt-5 rounded-lg bg-primary px-5 py-2.5 text-label-sm text-on-primary" data-open-login>邮箱登录</button><a class="mt-4 hidden text-label-sm text-primary underline" data-appeal-link href="./account.html#appeals">查看处置记录并提交申诉</a></section>';
   main.before(gate);
   let initialized = false;
   const update = (state: SessionState): void => {
@@ -765,18 +752,13 @@ function enforcePageAccess(): void {
     const message = gate.querySelector<HTMLElement>('[data-gate-message]');
     const loginButton =
       gate.querySelector<HTMLButtonElement>('[data-open-login]');
-    if (loginButton)
-      loginButton.textContent = state.qqEmailLoginEnabled
-        ? '校园 / QQ 邮箱登录'
-        : '校园邮箱登录';
+    if (loginButton) loginButton.textContent = '邮箱登录';
     if (message)
       message.textContent =
         state.user?.accountStatus === 'banned' ||
         state.user?.accountStatus === 'deleting'
           ? '账号当前处于受限状态。如需查看处罚或申诉，请联系社区管理。'
-          : state.qqEmailLoginEnabled
-            ? '请验证校园邮箱或 QQ 邮箱后查看校园内容，QQ 邮箱入口仅在测试期间开放。'
-            : '课程、集市、技能互助和树洞仅向已登录的校园邮箱账号开放。';
+          : '课程、集市、技能互助和树洞向已登录账号开放。';
     gate
       .querySelector<HTMLAnchorElement>('[data-appeal-link]')
       ?.classList.toggle('hidden', state.user?.accountStatus !== 'banned');

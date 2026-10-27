@@ -3,11 +3,11 @@ import { cleanupExpiredDeletedAccounts } from "../src/maintenance";
 import { fixture } from "./fixtures";
 
 describe("account lifecycle and catalog boundaries", () => {
-  test("campus email changes verify both addresses and reject external primary addresses", async () => {
+  test("email changes verify both addresses, including external addresses", async () => {
     const f = fixture();
     const c = f.client();
     const previous = "test.user.previous@stu.suat-sz.edu.cn";
-    const next = "test.user.next@suat-sz.edu.cn";
+    const next = "test.user.next@example.test";
     const user = await c.signIn(previous);
     expect(
       (

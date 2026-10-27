@@ -218,7 +218,7 @@ test("restricted and unverified accounts cannot use or reset passwords and reset
   }
 });
 
-test("QQ password login follows the QQ feature switch and password guessing is limited", async () => {
+test("QQ password login works regardless of the former switch and password guessing is limited", async () => {
   const qq = "123456789@qq.com";
   const f = fixture(false, true);
   const c = f.client();
@@ -239,17 +239,15 @@ test("QQ password login follows the QQ feature switch and password guessing is l
     qqEmailLoginEnabled: false,
     sessionSecret: "integration-tests-secret-at-least-32-characters",
   });
-  for (const path of [signInPassword, requestReset, resetPassword]) {
-    expect(
-      (
-        await closed.request(path, {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email: qq, password, otp: "123456" }),
-        })
-      ).ok,
-    ).toBe(false);
-  }
+  expect(
+    (
+      await closed.request(signInPassword, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email: qq, password }),
+      })
+    ).status,
+  ).toBe(200);
   const attacker = f.client();
   for (let attempt = 0; attempt < 5; attempt++)
     expect(
